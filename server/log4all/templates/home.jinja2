@@ -1,0 +1,141 @@
+{% extends "layout.jinja2" %}
+
+{% block middle %}
+
+
+    <div class="panel" style="float:left;display: inline-block;">
+        <div class="title">Add Log</div>
+        <div class="content">
+            <form id="addLogFrm">
+                <div class="ui fluid input" style="margin-top: 5px;">
+                    <textarea id="logEdt" name="log" type="text" placeholder="Log..." cols="50"
+                              rows="5"></textarea>
+                </div>
+                <div style="margin-top:5px;display: block;" id="addBtn" class="ui green button">Add</div>
+                <input type="submit" style="display: none;">
+            </form>
+        </div>
+    </div>
+
+    <script language="JavaScript">
+        function addLog() {
+            $.ajax({
+                type: "POST",
+                url: "{{ 'api_logs_add'|route_url }}",
+                data: $('#addLogFrm').serializeArray(),
+                success: function (data, textStatus, jqXHR) {
+                    alert("Log added");
+                }
+            });
+        }
+        ;
+        $('#addBtn').click(addLog);
+        $('#addLogFrm').submit(addLog);
+
+    </script>
+    <script src="{{'log4all:static/js/bootstrap-datepicker.js'|static_url }}"></script>
+    <script src="{{'log4all:static/js/jquery.timepicker.min.js'|static_url }}"></script>
+    <script src="{{'log4all:static/js/jquery.datepair.min.js'|static_url }}"></script>
+    <div class="panel" style="float:left;width: 50%;">
+        <div class="title">Search</div>
+        <div class="content">
+            <form id="searchFrm">
+                <div id="timePanel" style="text-align: center;">
+                    Since:
+                    <div class="ui input" style="width: 24%; margin-left: 5px;">
+                        <input id="sinceEdt" class="date start" type="text" placeholder="Since...">
+                    </div>
+                    <div class="ui input" style="width: 100px; margin-left: 5px;">
+                        <input id="sinceTimeEdt" class="time start" type="text">
+                    </div>
+                    To:
+                    <div class="ui input" style="width:24%;">
+                        <input id="toEdt" class="date end" type="text" placeholder="To...">
+                    </div>
+                    <div class="ui input" style="width:100px;">
+                        <input id="toTimeEdt" class="time end" type="text">
+                    </div>
+                </div>
+                <div class="ui fluid input" style="margin-top: 5px;">
+                    <input id="searchEdt" name="query" type="text" placeholder="Query...">
+                </div>
+                <div style="margin-top:5px;display: block;" id="searchBtn" class="ui green button">Search</div>
+                <input type="submit" style="display: none;">
+            </form>
+        </div>
+    </div>
+    <script language="JavaScript">
+        $('#timePanel .date').datepicker({"format": "yyyy-mm-dd"});
+        $('#timePanel .time').timepicker({"timeFormat": "H:i:s","showDuration": true});
+        $('#timePanel').datepair();
+    </script>
+
+    <div id="resultPnl" class="panel" style="display:inline-block;width: 95%;">
+        <div class="title">Result</div>
+        <div class="content" style="overflow: auto;">
+            <table id="resultTbl" class="ui table segment">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script language="JavaScript">
+        function search() {
+            var dtSince=$("#sinceEdt").datepicker('getDate');
+            var timeSince=$("#sinceTimeEdt").timepicker('getTime');
+            var dtTo=$("#toEdt").datepicker('getDate');
+            var timeTo=$("#toTimeEdt").timepicker('getTime');
+            var sinceSeconds=(dtSince.getTime()/1000)+(timeSince.getHours()*3600+timeSince.getMinutes()*60+timeSince.getSeconds());
+            var toSeconds=(dtTo.getTime()/1000)+(timeTo.getHours()*3600+timeTo.getMinutes()*60+timeTo.getSeconds());
+            var searchParam = {
+                query: $("#searchEdt").val(),
+                dtSince: sinceSeconds,
+                dtTo: toSeconds
+            };
+            var url = "{{ 'api_logs_search' | route_url }}?" + $.param(searchParam);
+            $.getJSON(url, function (data) {
+                var col_names = [];
+                var row_datas = [];
+                var tbl_body = "";
+                $.each(data, function () {
+                    var row_data = {};
+                    $.each(this, function (k, v) {
+                        if (col_names.indexOf(k) == -1) {
+                            col_names.push(k);
+                        }
+                        row_data[k] = v;
+                    });
+                    row_datas.push(row_data);
+                });
+                /*Header*/
+                col_names.sort();
+                var tbl_header = "<tr>";
+                for (var i = 0; i < col_names.length; i++) {
+                    tbl_header += "<th>" + col_names[i] + "</th>";
+                }
+                tbl_header += "</tr>";
+                /*Table body*/
+                for (var r = 0; r < row_datas.length; r++) {
+                    tbl_body += "<tr>";
+                    for (var c = 0; c < col_names.length; c++) {
+                        var tdContent = ""
+                        if (row_datas[r][col_names[c]] != null) {
+                            tdContent = row_datas[r][col_names[c]];
+                        }
+                        tbl_body += "<td>" + tdContent + "</td>";
+                    }
+                    tbl_body += "</tr>";
+                }
+                $("#resultTbl thead").html(tbl_header);
+                $("#resultTbl tbody").html(tbl_body);
+                $("#resultPnl").show();
+            });
+        }
+        ;
+        $('#searchBtn').click(search);
+        $('#searchFrm').submit(function (event) {
+            search();
+            event.preventDefault();
+        });
+    </script>
+{% endblock %}
