@@ -2,10 +2,10 @@ Log4All
 
 Client/Server(RESTful) Logging system
 
-[ Server ]
+= Server =
 Python - pyramid framework
 
-[ Clients - developing ]
+= Clients - developing =
 * python
 * java
 * log4j appender
