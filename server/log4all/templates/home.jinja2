@@ -81,10 +81,21 @@
     </div>
     <script language="JavaScript">
         function search() {
+
             var dtSince=$("#sinceEdt").datepicker('getDate');
             var timeSince=$("#sinceTimeEdt").timepicker('getTime');
             var dtTo=$("#toEdt").datepicker('getDate');
+            if ($("#sinceEdt").val().trim()=="" || $("#toEdt").val().trim()==""){
+                alert("The date range is mandatory");
+                return;
+            }
             var timeTo=$("#toTimeEdt").timepicker('getTime');
+            if (timeSince == null ){
+                timeSince = new Date(0,0,0,0,0,0);
+            }
+            if (timeTo == null ){
+                timeTo = new Date(0,0,0,0,0,0);
+            }
             var sinceSeconds=(dtSince.getTime()/1000)+(timeSince.getHours()*3600+timeSince.getMinutes()*60+timeSince.getSeconds());
             var toSeconds=(dtTo.getTime()/1000)+(timeTo.getHours()*3600+timeTo.getMinutes()*60+timeTo.getSeconds());
             var searchParam = {

@@ -1,3 +1,9 @@
+import json
+from sqlalchemy import and_, or_
+from log4all.models.Log import Log
+from log4all.models.LogsTags import LogsTags
+from log4all.models.Tag import Tag
+
 __author__ = 'igor'
 import logging
 from pyramid.view import view_config
@@ -6,7 +12,7 @@ import datetime
 import re
 
 logger = logging.getLogger('log4all')
-hashtag_search_regexp = "#(\\w+)([=|>|<]|!=|~=)(\\w+)"
+hashtag_search_regexp = "#(\\w+)([=|>|<]|>=|<=|!=|~=)(\\w+)"
 hashtag_value_regexp = "#(\\w+)(:)(\\w+)"
 
 
@@ -20,10 +26,33 @@ def parse_raw_log(raw_log):
             tag = raw_tag[0]
             value = raw_tag[2]
             result[tag] = value
-        result['message'] = re.sub(hashtag_value_regexp, "", raw_log)
+        result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
         return result
     except Exception as e:
         logger.error(str(e))
+
+
+def db_insert(request, log):
+    if request.registry.settings['db.type'] == 'monodb':
+        log['_date'] = datetime.datetime.now()
+        request.mongodb.logs.insert(log)
+    else:
+        db_log = Log()
+        for k in log.keys():
+            if k == '_message':
+                db_log.message = log[k]
+            else:
+                #tags
+                tag = request.sqldb.query(Tag).filter(Tag.name == k).first()
+                if tag is None:
+                    #new tag
+                    tag = Tag(name=k)
+                    request.sqldb.add(tag)
+                    request.sqldb.flush()  # to get the autoincrement tag id
+                log_tag = LogsTags(log[k])
+                log_tag.tag_id = tag.id
+                db_log.tags.append(log_tag)
+        request.sqldb.add(db_log)
 
 
 @view_config(route_name='api_logs_add', renderer='json',
@@ -33,9 +62,7 @@ def api_logs_add(request):
         raw_log = request.POST['log']
         logger.debug("toAdd:" + raw_log)
         log = parse_raw_log(raw_log)
-        if log.get('date') is None:
-            log['date'] = datetime.datetime.now()
-        request.db.logs.insert(log)
+        db_insert(request, log)
         return {'result': 'success'}
     except Exception as e:
         logger.error(str(e))
@@ -62,7 +89,7 @@ def parse_hash_expression(raw):
         logger.error(str(e))
 
 
-def parse_filter(query):
+def mongodb_parse_filter(query):
     expr_operators, text = parse_hash_expression(query)
     logger.debug("expr_operators:" + str(expr_operators))
     mongo_src = {}
@@ -78,24 +105,80 @@ def parse_filter(query):
                 mongo_src[src['key']] = {"$gt": src['value']}
             if op == '<':
                 mongo_src[src['key']] = {"$lt": src['value']}
+            if op == '>=':
+                mongo_src[src['key']] = {"$gte": src['value']}
+            if op == '<=':
+                mongo_src[src['key']] = {"$lte": src['value']}
     logger.debug("mongo_src" + str(mongo_src))
     return mongo_src
+
+
+def sqlalchemy_parse_filter(request, query):
+    expr_operators, text = parse_hash_expression(query)
+    query = request.sqldb.query(Log)
+    for op in expr_operators.keys():
+        for src in expr_operators[op]:
+            if op == '=':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value == src['value'])))
+            if op == '~=':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id,
+                         LogsTags.value.like('%' + src['value'] + '%'))))
+            if op == '!=':
+                query = query.filter(or_(
+                    Log.tags.any(
+                        and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value != src['value'])
+                    ),
+                    ~Log.tags.any(and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id))))
+            if op == '>':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value > int(src['value']))))
+            if op == '<':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value < int(src['value']))))
+            if op == '>=':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value >= int(src['value']))))
+            if op == '<=':
+                query = query.filter(Log.tags.any(
+                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value <= int(src['value']))))
+    logger.debug("sql query:" + str(query))
+    return query
+
+
+def db_search(request, query, dt_since, dt_to):
+    if request.registry.settings['db.type'] == 'monodb':
+        search_filter = mongodb_parse_filter(query)
+        search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
+        logger.debug("Search filter:" + str(search_filter))
+        return list(request.mongodb.logs.find(search_filter))
+    else:
+        # sqlalchemy
+        query = sqlalchemy_parse_filter(request, query)
+        query = query.filter(Log.dt_insert <= dt_to, Log.dt_insert >= dt_since)
+        logs = query.all()
+        result = []
+        for log in logs:
+            result.append(log.as_dict())
+        return result
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
              request_param=['query', 'dtSince', 'dtTo'])
 def api_logs_search(request):
     logger.debug(str(request.GET))
-    search_filter = parse_filter(request.GET['query'])
+    query = request.GET['query']
     dt_since_str = request.GET['dtSince']
     dt_to_str = request.GET['dtTo']
+    dt_since = None
+    dt_to = None
     if dt_since_str.strip() != '' and dt_to_str.strip() != '':
         dt_since = datetime.datetime.fromtimestamp(int(dt_since_str))
         dt_to = datetime.datetime.fromtimestamp(int(dt_to_str))
-        search_filter['date'] = {'$gte': dt_since, '$lte': dt_to}
-    logger.debug("Search filter:" + str(search_filter))
     # Search
-    result = list(request.db.logs.find(search_filter))
+    result = db_search(request, query, dt_since, dt_to)
+    # Converting result to json compatible
     for res in result:
         for key in res.keys():
             if key == '_id':
