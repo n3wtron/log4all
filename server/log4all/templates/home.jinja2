@@ -71,6 +71,21 @@
 
     <div id="resultPnl" class="panel" style="display:inline-block;width: 95%;">
         <div class="title">Result</div>
+        <div class="nav">
+            <form>
+                Results per page
+                <select id="nPerPage">
+                    <option>10</option>
+                    <option>20</option>
+                    <option>30</option>
+                    <option>40</option>
+                    <option>50</option>
+                    <option>100</option>
+                </select>
+                Page:<div id="pageLinks"></div>
+            </form>
+
+        </div>
         <div class="content" style="overflow: auto;">
             <table id="resultTbl" class="ui table segment">
                 <thead></thead>
@@ -79,6 +94,12 @@
         </div>
     </div>
     <script language="JavaScript">
+        var currPage=0;
+        function changePage(newPage){
+            currPage = newPage;
+            search();
+        };
+
         function search() {
 
             var dtSince=$("#sinceEdt").datepicker('getDate');
@@ -100,14 +121,16 @@
             var searchParam = {
                 query: $("#searchEdt").val(),
                 dtSince: sinceSeconds,
-                dtTo: toSeconds
+                dtTo: toSeconds,
+                page : currPage,
+                result_per_page : $('#nPerPage').val()
             };
             var url = "{{ 'api_logs_search' | route_url }}?" + $.param(searchParam);
             $.getJSON(url, function (data) {
                 var col_names = [];
                 var row_datas = [];
                 var tbl_body = "";
-                $.each(data, function () {
+                $.each(data['logs'], function () {
                     var row_data = {};
                     $.each(this, function (k, v) {
                         if (col_names.indexOf(k) == -1) {
@@ -117,6 +140,17 @@
                     });
                     row_datas.push(row_data);
                 });
+                /*Page Link*/
+                var lnks ="";
+
+                for (var p=0;p<data['pages'];p++){
+                    if (p!=currPage){
+                        lnks+="<a href=\"#\" onclick=\"changePage("+p+");\">["+(p+1)+"]</a>";
+                    }else{
+                        lnks+="<a><b>["+(p+1)+"]</b></a>";
+                    }
+                }
+                $('#pageLinks').html(lnks);
                 /*Header*/
                 col_names.sort();
                 var tbl_header = "<tr>";
@@ -140,8 +174,7 @@
                 $("#resultTbl tbody").html(tbl_body);
                 $("#resultPnl").show();
             });
-        }
-        ;
+        };
         $('#searchBtn').click(search);
         $('#searchEdt').keypress(function (event){
             if ( event.which == 13 ) {
@@ -151,6 +184,9 @@
         $('#searchFrm').submit(function (event) {
             search();
             event.preventDefault();
+        });
+        $('#nPerPage').change(function(){
+           search();
         });
     </script>
 {% endblock %}

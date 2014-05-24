@@ -18,10 +18,11 @@ image {
     margin: 0px;
 }
 
-input, textarea {
+input, textarea, select {
     font-family: inherit;
     font-size: 100%;
 }
+
 
 #container {
     min-height: 100%;
@@ -47,8 +48,8 @@ input, textarea {
 }
 
 #bottom {
-    position:fixed;
-    bottom:0;
+    position: fixed;
+    bottom: 0;
     width: 100%;
     text-align: right;
     font-size: 0.7em;
@@ -102,7 +103,7 @@ input, textarea {
     background-color: #ffffff;
 }
 
-#searchEdt{
+#searchEdt {
     padding-left: 10px;
     line-height: 30px;
     font-family: inherit;
@@ -110,8 +111,22 @@ input, textarea {
 }
 
 #searchHighlight .highlight {
-    padding:0 3px;
-    margin:-1px -4px;
-    border-radius:0.5em;
-    border:1px solid #c5dbec;
+    padding: 0 3px;
+    margin: -1px -4px;
+    border-radius: 0.5em;
+    border: 1px solid #c5dbec;
+}
+
+.nav {
+    text-align: right;
+    background-color: white;
+}
+#pageLinks{
+    display: inline-block;
+}
+
+#pageLinks a {
+
+    color: black;
+    margin: 2px;
 }

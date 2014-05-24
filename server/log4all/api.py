@@ -147,21 +147,26 @@ def sqlalchemy_parse_filter(request, query):
     return query
 
 
-def db_search(request, query, dt_since, dt_to):
+def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
+    result = dict()
     if request.registry.settings['db.type'] == 'monodb':
         search_filter = mongodb_parse_filter(query)
         search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
         logger.debug("Search filter:" + str(search_filter))
-        return list(request.mongodb.logs.find(search_filter))
+        result['logs'] = list(request.mongodb.logs.find(search_filter))
     else:
         # sqlalchemy
         query = sqlalchemy_parse_filter(request, query)
         query = query.filter(Log.dt_insert <= dt_to, Log.dt_insert >= dt_since)
-        logs = query.all()
-        result = []
+        n_rows = query.count()
+        logs = query.slice(page * result_per_page, (page * result_per_page) + result_per_page)
+        result['n_rows'] = n_rows
+        result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
+        result['logs'] = []
         for log in logs:
-            result.append(log.as_dict())
-        return result
+            result['logs'].append(log.as_dict())
+
+    return result
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
@@ -171,15 +176,17 @@ def api_logs_search(request):
     query = request.GET['query']
     dt_since_str = request.GET['dtSince']
     dt_to_str = request.GET['dtTo']
+    page = request.GET['page']
+    result_per_page = request.GET['result_per_page']
     dt_since = None
     dt_to = None
     if dt_since_str.strip() != '' and dt_to_str.strip() != '':
         dt_since = datetime.datetime.fromtimestamp(int(dt_since_str))
         dt_to = datetime.datetime.fromtimestamp(int(dt_to_str))
     # Search
-    result = db_search(request, query, dt_since, dt_to)
+    result = db_search(request, query, dt_since, dt_to, int(page), int(result_per_page))
     # Converting result to json compatible
-    for res in result:
+    for res in result['logs']:
         for key in res.keys():
             if key == '_id':
                 res['_id'] = str(res['_id'])
