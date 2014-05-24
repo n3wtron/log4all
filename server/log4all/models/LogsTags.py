@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, Index
 from sqlalchemy.orm import relation, relationship
 from log4all.models import Base
 
@@ -12,6 +12,7 @@ class LogsTags(Base):
     tag = relationship('Tag')
     log = relationship('Log')
     value = Column(String)
+    Index('idx_logs_tags_value', tag_id, value)
 
     def __init__(self, value):
         self.value = value

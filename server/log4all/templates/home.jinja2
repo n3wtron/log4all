@@ -27,8 +27,7 @@
                     alert("Log added");
                 }
             });
-        }
-        ;
+        };
         $('#addBtn').click(addLog);
         $('#addLogFrm').submit(addLog);
 
@@ -144,6 +143,11 @@
         }
         ;
         $('#searchBtn').click(search);
+        $('#searchEdt').keypress(function (event){
+            if ( event.which == 13 ) {
+                search();
+            }
+        });
         $('#searchFrm').submit(function (event) {
             search();
             event.preventDefault();

@@ -19,7 +19,8 @@ image {
 }
 
 input, textarea {
-    font-family: 'Open Sans', sans-serif;
+    font-family: inherit;
+    font-size: 100%;
 }
 
 #container {
@@ -101,3 +102,16 @@ input, textarea {
     background-color: #ffffff;
 }
 
+#searchEdt{
+    padding-left: 10px;
+    line-height: 30px;
+    font-family: inherit;
+    font-size: 100%;
+}
+
+#searchHighlight .highlight {
+    padding:0 3px;
+    margin:-1px -4px;
+    border-radius:0.5em;
+    border:1px solid #c5dbec;
+}
