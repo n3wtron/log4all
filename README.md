@@ -7,7 +7,7 @@ Server
 ------
 Python - pyramid framework
 
-Clients - developing
+Clients - TODO
 --------------------
 * python
 * java
