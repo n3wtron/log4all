@@ -23,7 +23,6 @@ input, textarea, select {
     font-size: 100%;
 }
 
-
 #container {
     min-height: 100%;
     height: auto !important;
@@ -56,8 +55,8 @@ input, textarea, select {
     color: #ffffff;
 }
 
-#bottom a, a:visited, a:hover {
-    color: #ffffff;
+a, a:visited, a:hover {
+    color: #000000;
 }
 
 #leftMenu {
@@ -126,7 +125,6 @@ input, textarea, select {
 }
 
 #pageLinks a {
-
     color: black;
     margin: 2px;
 }

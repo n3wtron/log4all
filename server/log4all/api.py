@@ -12,8 +12,8 @@ import datetime
 import re
 
 logger = logging.getLogger('log4all')
-hashtag_search_regexp = "#(\\w+)([=|>|<]|>=|<=|!=|~=)(\\w+)"
-hashtag_value_regexp = "#(\\w+)(:)(\\w+)"
+hashtag_search_regexp = "#([\\w|.]+)([=|>|<]|>=|<=|!=|~=)([\\w|.]+)"
+hashtag_value_regexp = "#([\\w|.]+)(:)([\\w|.]+)"
 
 
 def parse_raw_log(raw_log):
@@ -26,14 +26,15 @@ def parse_raw_log(raw_log):
             tag = raw_tag[0]
             value = raw_tag[2]
             result[tag] = value
-        result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
+        result['_message'] = re.sub('#', "", raw_log)
+        #result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
         return result
     except Exception as e:
         logger.error(str(e))
 
 
 def db_insert(request, log):
-    if request.registry.settings['db.type'] == 'monodb':
+    if request.registry.settings['db.type'] == 'mongodb':
         log['_date'] = datetime.datetime.now()
         request.mongodb.logs.insert(log)
     else:
@@ -56,10 +57,11 @@ def db_insert(request, log):
 
 
 @view_config(route_name='api_logs_add', renderer='json',
-             request_method='POST', accept='application/x-www-form-urlencoded')
+             request_method='POST', accept='application/json')
 def api_logs_add(request):
     try:
-        raw_log = request.POST['log']
+        logger.debug(request.body)
+        raw_log = request.json_body['log']
         logger.debug("toAdd:" + raw_log)
         log = parse_raw_log(raw_log)
         db_insert(request, log)
@@ -70,6 +72,9 @@ def api_logs_add(request):
 
 
 def parse_hash_expression(raw):
+    """
+        Parse a string to return a dict[operand] that contain a dict[key|operator|value]
+    """
     assert isinstance(raw, unicode)
     result = {}
     try:
@@ -90,6 +95,9 @@ def parse_hash_expression(raw):
 
 
 def mongodb_parse_filter(query):
+    """
+        Query parser for mongodb
+    """
     expr_operators, text = parse_hash_expression(query)
     logger.debug("expr_operators:" + str(expr_operators))
     mongo_src = {}
@@ -114,6 +122,9 @@ def mongodb_parse_filter(query):
 
 
 def sqlalchemy_parse_filter(request, query):
+    """
+        Query parser for sqlalchemy
+    """
     expr_operators, text = parse_hash_expression(query)
     query = request.sqldb.query(Log)
     for op in expr_operators.keys():
@@ -148,24 +159,30 @@ def sqlalchemy_parse_filter(request, query):
 
 
 def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
+    """
+        Search method
+    """
     result = dict()
-    if request.registry.settings['db.type'] == 'monodb':
+    if request.registry.settings['db.type'] == 'mongodb':
         search_filter = mongodb_parse_filter(query)
         search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
         logger.debug("Search filter:" + str(search_filter))
-        result['logs'] = list(request.mongodb.logs.find(search_filter))
+        n_rows = request.mongodb.logs.find(search_filter).count()
+        result['logs'] = list(
+            request.mongodb.logs.find(search_filter, skip=page * result_per_page, limit=result_per_page))
     else:
         # sqlalchemy
         query = sqlalchemy_parse_filter(request, query)
         query = query.filter(Log.dt_insert <= dt_to, Log.dt_insert >= dt_since)
         n_rows = query.count()
         logs = query.slice(page * result_per_page, (page * result_per_page) + result_per_page)
-        result['n_rows'] = n_rows
-        result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
+
         result['logs'] = []
         for log in logs:
             result['logs'].append(log.as_dict())
 
+    result['n_rows'] = n_rows
+    result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
     return result
 
 

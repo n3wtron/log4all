@@ -22,7 +22,9 @@
             $.ajax({
                 type: "POST",
                 url: "{{ 'api_logs_add'|route_url }}",
-                data: $('#addLogFrm').serializeArray(),
+                contentType: "application/json",
+                dataType: 'json',
+                data: "{\"log\":\""+$('#logEdt').val()+"\"}",
                 success: function (data, textStatus, jqXHR) {
                     alert("Log added");
                 }
@@ -65,28 +67,32 @@
     </div>
     <script language="JavaScript">
         $('#timePanel .date').datepicker({"format": "yyyy-mm-dd"});
+        $('#timePanel .date').datepicker().datepicker("setDate", new Date());
         $('#timePanel .time').timepicker({"timeFormat": "H:i:s","showDuration": true});
         $('#timePanel').datepair();
+        $('#timePanel .date').change(function (event){
+            toReset = true;
+        })
     </script>
 
     <div id="resultPnl" class="panel" style="display:inline-block;width: 95%;">
-        <div class="title">Result</div>
-        <div class="nav">
-            <form>
-                Results per page
-                <select id="nPerPage">
-                    <option>10</option>
-                    <option>20</option>
-                    <option>30</option>
-                    <option>40</option>
-                    <option>50</option>
-                    <option>100</option>
-                </select>
-                Page:<div id="pageLinks"></div>
-            </form>
-
-        </div>
+        <div class="title">Results</div>
         <div class="content" style="overflow: auto;">
+            <div class="nav">
+                <div style="float:left;" id="infoResult"></div>
+                <form>
+                    Results per page
+                    <select id="nPerPage">
+                        <option>10</option>
+                        <option>20</option>
+                        <option>30</option>
+                        <option>40</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                    Page:<div id="pageLinks"></div>
+                </form>
+            </div>
             <table id="resultTbl" class="ui table segment">
                 <thead></thead>
                 <tbody></tbody>
@@ -95,13 +101,29 @@
     </div>
     <script language="JavaScript">
         var currPage=0;
+        var lastQuery=null;
+        var toReset=false;
+
+
+
         function changePage(newPage){
             currPage = newPage;
             search();
-        };
+        }
+
+        function searchTag(srcQuery){
+            if ($('#searchEdt').val().indexOf(srcQuery)==-1){
+                $('#searchEdt').val($('#searchEdt').val()+" "+srcQuery);
+                search();
+            }
+        }
 
         function search() {
-
+            if (toReset || lastQuery==null || lastQuery!=$("#searchEdt").val()){
+                currPage=0;
+                lastQuery=$("#searchEdt").val()
+                toReset=false;
+            }
             var dtSince=$("#sinceEdt").datepicker('getDate');
             var timeSince=$("#sinceTimeEdt").timepicker('getTime');
             var dtTo=$("#toEdt").datepicker('getDate');
@@ -118,10 +140,13 @@
             }
             var sinceSeconds=(dtSince.getTime()/1000)+(timeSince.getHours()*3600+timeSince.getMinutes()*60+timeSince.getSeconds());
             var toSeconds=(dtTo.getTime()/1000)+(timeTo.getHours()*3600+timeTo.getMinutes()*60+timeTo.getSeconds());
+            if (toSeconds == sinceSeconds){
+                sinceSeconds-=24*60*60;
+            }
             var searchParam = {
                 query: $("#searchEdt").val(),
-                dtSince: sinceSeconds,
-                dtTo: toSeconds,
+                dtSince: Math.ceil(sinceSeconds),
+                dtTo: Math.ceil(toSeconds),
                 page : currPage,
                 result_per_page : $('#nPerPage').val()
             };
@@ -133,10 +158,12 @@
                 $.each(data['logs'], function () {
                     var row_data = {};
                     $.each(this, function (k, v) {
-                        if (col_names.indexOf(k) == -1) {
-                            col_names.push(k);
+                        if (k!="_id"){
+                            if (col_names.indexOf(k) == -1) {
+                                col_names.push(k);
+                            }
+                            row_data[k] = v;
                         }
-                        row_data[k] = v;
                     });
                     row_datas.push(row_data);
                 });
@@ -151,6 +178,7 @@
                     }
                 }
                 $('#pageLinks').html(lnks);
+                $('#infoResult').html("Fetched "+data['n_rows']+" records");
                 /*Header*/
                 col_names.sort();
                 var tbl_header = "<tr>";
@@ -164,7 +192,13 @@
                     for (var c = 0; c < col_names.length; c++) {
                         var tdContent = ""
                         if (row_datas[r][col_names[c]] != null) {
-                            tdContent = row_datas[r][col_names[c]];
+                            var srcQry="#"+col_names[c]+"="+row_datas[r][col_names[c]];
+                            var tdLnk="<a href=\"#\" onclick=\"searchTag('"+srcQry+"');\">";
+                            if (col_names[c][0]!="_") {
+                                tdContent = tdLnk + row_datas[r][col_names[c]] + "</a>";
+                            }else{
+                                tdContent = row_datas[r][col_names[c]];
+                            }
                         }
                         tbl_body += "<td>" + tdContent + "</td>";
                     }
