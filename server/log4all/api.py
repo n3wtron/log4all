@@ -8,7 +8,7 @@ __author__ = 'igor'
 import logging
 from pyramid.view import view_config
 import datetime
-
+import time
 import re
 
 logger = logging.getLogger('log4all')
@@ -27,7 +27,7 @@ def parse_raw_log(raw_log):
             value = raw_tag[2]
             result[tag] = value
         result['_message'] = re.sub('#', "", raw_log)
-        #result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
+        # result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
         return result
     except Exception as e:
         logger.error(str(e))
@@ -43,10 +43,10 @@ def db_insert(request, log):
             if k == '_message':
                 db_log.message = log[k]
             else:
-                #tags
+                # tags
                 tag = request.sqldb.query(Tag).filter(Tag.name == k).first()
                 if tag is None:
-                    #new tag
+                    # new tag
                     tag = Tag(name=k)
                     request.sqldb.add(tag)
                     request.sqldb.flush()  # to get the autoincrement tag id
@@ -117,6 +117,7 @@ def mongodb_parse_filter(query):
                 mongo_src[src['key']] = {"$gte": src['value']}
             if op == '<=':
                 mongo_src[src['key']] = {"$lte": src['value']}
+
     logger.debug("mongo_src" + str(mongo_src))
     return mongo_src
 
@@ -163,6 +164,7 @@ def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
         Search method
     """
     result = dict()
+
     if request.registry.settings['db.type'] == 'mongodb':
         search_filter = mongodb_parse_filter(query)
         search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
@@ -181,6 +183,7 @@ def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
         for log in logs:
             result['logs'].append(log.as_dict())
 
+
     result['n_rows'] = n_rows
     result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
     return result
@@ -189,6 +192,7 @@ def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
              request_param=['query', 'dtSince', 'dtTo'])
 def api_logs_search(request):
+    start = time.time()
     logger.debug(str(request.GET))
     query = request.GET['query']
     dt_since_str = request.GET['dtSince']
@@ -210,4 +214,5 @@ def api_logs_search(request):
             if isinstance(res[key], datetime.datetime):
                 res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
     logging.getLogger('log4all').debug(result)
+    result['elapsed_time'] = time.time() - start
     return result

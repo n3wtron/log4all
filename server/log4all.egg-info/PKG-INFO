@@ -6,13 +6,23 @@ Home-page: UNKNOWN
 Author: UNKNOWN
 Author-email: UNKNOWN
 License: UNKNOWN
-Description: log4all README
+Description: Log4All
+        =======
+        
+        Client/Server(RESTful) Logging system
+        
+        Server
+        ------
+        Python - pyramid framework
+        
+        Clients - TODO
+        --------------------
+        * python
+        * java
+        * log4j appender
+        * bash command
         
         
-        0.0
-        ---
-        
-        -  Initial version
         
 Keywords: web pyramid pylons
 Platform: UNKNOWN

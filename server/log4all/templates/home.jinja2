@@ -32,11 +32,7 @@
         };
         $('#addBtn').click(addLog);
         $('#addLogFrm').submit(addLog);
-
     </script>
-    <script src="{{'log4all:static/js/bootstrap-datepicker.js'|static_url }}"></script>
-    <script src="{{'log4all:static/js/jquery.timepicker.min.js'|static_url }}"></script>
-    <script src="{{'log4all:static/js/jquery.datepair.min.js'|static_url }}"></script>
     <div class="panel" style="float:left;width: 50%;">
         <div class="title">Search</div>
         <div class="content">
@@ -44,17 +40,11 @@
                 <div id="timePanel" style="text-align: center;">
                     Since:
                     <div class="ui input" style="width: 24%; margin-left: 5px;">
-                        <input id="sinceEdt" class="date start" type="text" placeholder="Since...">
-                    </div>
-                    <div class="ui input" style="width: 100px; margin-left: 5px;">
-                        <input id="sinceTimeEdt" class="time start" type="text">
+                        <input id="sinceEdt" class="date" type="text" placeholder="Since...">
                     </div>
                     To:
                     <div class="ui input" style="width:24%;">
-                        <input id="toEdt" class="date end" type="text" placeholder="To...">
-                    </div>
-                    <div class="ui input" style="width:100px;">
-                        <input id="toTimeEdt" class="time end" type="text">
+                        <input id="toEdt" class="date" type="text" placeholder="To...">
                     </div>
                 </div>
                 <div class="ui fluid input" style="margin-top: 5px;">
@@ -66,10 +56,7 @@
         </div>
     </div>
     <script language="JavaScript">
-        $('#timePanel .date').datepicker({"format": "yyyy-mm-dd"});
-        $('#timePanel .date').datepicker().datepicker("setDate", new Date());
-        $('#timePanel .time').timepicker({"timeFormat": "H:i:s","showDuration": true});
-        $('#timePanel').datepair();
+        $('#timePanel .date').datetimepicker();
         $('#timePanel .date').change(function (event){
             toReset = true;
         })
@@ -114,32 +101,27 @@
         function searchTag(srcQuery){
             if ($('#searchEdt').val().indexOf(srcQuery)==-1){
                 $('#searchEdt').val($('#searchEdt').val()+" "+srcQuery);
-                search();
+            }else{
+                $('#searchEdt').val($('#searchEdt').val().replace(srcQuery,""));
             }
+            search();
         }
 
         function search() {
+            var startDt = new Date();
             if (toReset || lastQuery==null || lastQuery!=$("#searchEdt").val()){
                 currPage=0;
                 lastQuery=$("#searchEdt").val()
                 toReset=false;
             }
-            var dtSince=$("#sinceEdt").datepicker('getDate');
-            var timeSince=$("#sinceTimeEdt").timepicker('getTime');
-            var dtTo=$("#toEdt").datepicker('getDate');
+            var dtSince=$("#sinceEdt").datetimepicker('getDate');
+            var dtTo=$("#toEdt").datetimepicker('getDate');
             if ($("#sinceEdt").val().trim()=="" || $("#toEdt").val().trim()==""){
                 alert("The date range is mandatory");
                 return;
             }
-            var timeTo=$("#toTimeEdt").timepicker('getTime');
-            if (timeSince == null ){
-                timeSince = new Date(0,0,0,0,0,0);
-            }
-            if (timeTo == null ){
-                timeTo = new Date(0,0,0,0,0,0);
-            }
-            var sinceSeconds=(dtSince.getTime()/1000)+(timeSince.getHours()*3600+timeSince.getMinutes()*60+timeSince.getSeconds());
-            var toSeconds=(dtTo.getTime()/1000)+(timeTo.getHours()*3600+timeTo.getMinutes()*60+timeTo.getSeconds());
+            var sinceSeconds=(dtSince.getTime()/1000);
+            var toSeconds=(dtTo.getTime()/1000);
             if (toSeconds == sinceSeconds){
                 sinceSeconds-=24*60*60;
             }
@@ -178,7 +160,7 @@
                     }
                 }
                 $('#pageLinks').html(lnks);
-                $('#infoResult').html("Fetched "+data['n_rows']+" records");
+                $('#infoResult').html("Fetched "+data['n_rows']+" records in "+data['elapsed_time']+"msec");
                 /*Header*/
                 col_names.sort();
                 var tbl_header = "<tr>";
@@ -207,7 +189,11 @@
                 $("#resultTbl thead").html(tbl_header);
                 $("#resultTbl tbody").html(tbl_body);
                 $("#resultPnl").show();
+
+
             });
+            var endDt = new Date();
+            alert(""+endDt.getTime()-startDt.getTime()+"msec");
         };
         $('#searchBtn').click(search);
         $('#searchEdt').keypress(function (event){
