@@ -12,22 +12,24 @@ import time
 import re
 
 logger = logging.getLogger('log4all')
-hashtag_search_regexp = "#([\\w|.]+)([=|>|<]|>=|<=|!=|~=)([\\w|.]+)"
-hashtag_value_regexp = "#([\\w|.]+)(:)([\\w|.]+)"
+hash_regexp = "#([\\+]{0,1}[\\w|.|-]+)"
+value_regexp = "([\\w|.|-]+)"
+hashtag_search_regexp = hash_regexp + "([=|>|<]|>=|<=|!=|~=)" + value_regexp
+add_log_regexp = hash_regexp + "(:)" + value_regexp
 
 
 def parse_raw_log(raw_log):
     assert isinstance(raw_log, unicode)
     result = {}
     try:
-        matcher = re.compile(hashtag_value_regexp)
+        matcher = re.compile(add_log_regexp)
         raw_tags = matcher.findall(raw_log)
         for raw_tag in raw_tags:
-            tag = raw_tag[0]
+            tag = raw_tag[0].replace("+","")
             value = raw_tag[2]
             result[tag] = value
-        result['_message'] = re.sub('#', "", raw_log)
-        # result['_message'] = re.sub(hashtag_value_regexp, "", raw_log)
+        result['_message'] = re.sub('#\+', "", raw_log)
+        result['_message'] = re.sub(add_log_regexp, "", result['_message'])
         return result
     except Exception as e:
         logger.error(str(e))
@@ -65,10 +67,10 @@ def api_logs_add(request):
         logger.debug("toAdd:" + raw_log)
         log = parse_raw_log(raw_log)
         db_insert(request, log)
-        return {'result': 'success'}
+        return {'result': True}
     except Exception as e:
         logger.error(str(e))
-        return {'result': 'fail', 'message': str(e)}
+        return {'result': False, 'message': str(e)}
 
 
 def parse_hash_expression(raw):
@@ -182,7 +184,6 @@ def db_search(request, query, dt_since, dt_to, page=0, result_per_page=10):
         result['logs'] = []
         for log in logs:
             result['logs'].append(log.as_dict())
-
 
     result['n_rows'] = n_rows
     result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
