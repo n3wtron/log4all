@@ -77,7 +77,7 @@
                         <option>50</option>
                         <option>100</option>
                     </select>
-                    Page:<div id="pageLinks"></div>
+                    Page:<select id="pageSel"></select>
                 </form>
             </div>
             <table id="resultTbl" class="ui table segment">
@@ -91,12 +91,14 @@
         var lastQuery=null;
         var toReset=false;
 
-
-
         function changePage(newPage){
             currPage = newPage;
             search();
         }
+
+        $('#pageSel').change(function (){
+            changePage($(this).val());
+        });
 
         function searchTag(srcQuery){
             if ($('#searchEdt').val().indexOf(srcQuery)==-1){
@@ -149,18 +151,17 @@
                     });
                     row_datas.push(row_data);
                 });
-                /*Page Link*/
-                var lnks ="";
-
+                /*Page Selection*/
+                $('#pageSel').empty();
                 for (var p=0;p<data['pages'];p++){
                     if (p!=currPage){
-                        lnks+="<a href=\"#\" onclick=\"changePage("+p+");\">["+(p+1)+"]</a>";
+                        $('#pageSel').append($("<option></option>").attr("value",p).text(p));
                     }else{
-                        lnks+="<a><b>["+(p+1)+"]</b></a>";
+                        $('#pageSel').append($("<option></option>").attr("value",p).attr("selected","true").text(p));
                     }
                 }
-                $('#pageLinks').html(lnks);
-                $('#infoResult').html("Fetched "+data['n_rows']+" records in "+data['elapsed_time']+"msec");
+
+                $('#infoResult').html("Fetched "+data['n_rows']+" records in "+data['elapsed_time']+" msec");
                 /*Header*/
                 col_names.sort();
                 var tbl_header = "<tr>";
@@ -193,7 +194,7 @@
 
             });
             var endDt = new Date();
-            alert(""+endDt.getTime()-startDt.getTime()+"msec");
+            //alert(""+endDt.getTime()-startDt.getTime()+"msec");
         };
         $('#searchBtn').click(search);
         $('#searchEdt').keypress(function (event){
