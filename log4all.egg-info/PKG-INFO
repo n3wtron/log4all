@@ -1,0 +1,32 @@
+Metadata-Version: 1.1
+Name: log4all
+Version: 0.1
+Summary: log4all
+Home-page: UNKNOWN
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: UNKNOWN
+Description: Log4All
+        =======
+        
+        Client/Server(RESTful) Logging system
+        
+        Server
+        ------
+        Python - pyramid framework
+        
+        Clients - TODO
+        --------------------
+        * python
+        * java
+        * log4j appender
+        * bash command
+        
+        
+        
+Keywords: web pyramid pylons
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Framework :: Pyramid
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: WSGI :: Application
