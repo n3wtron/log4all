@@ -1,3 +1,4 @@
+<img src="https://travis-ci.org/n3wtron/log4all.svg?branch=master"/>
 Log4All
 =======
 
