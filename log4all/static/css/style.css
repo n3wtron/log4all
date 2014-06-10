@@ -5,6 +5,12 @@ html {
     height: 100%;
     position: relative;
     font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+code {
+    font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
 }
 
 body {
@@ -120,7 +126,8 @@ a, a:visited, a:hover {
     text-align: right;
     background-color: white;
 }
-#pageLinks{
+
+#pageLinks {
     display: inline-block;
 }
 

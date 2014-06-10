@@ -44,6 +44,7 @@ def main(global_config, **settings):
 
     #Routing
     config.add_route('home', '/')
+    config.add_route('detail', '/detail')
     config.add_route('api_logs_add', '/api/logs/add')
     config.add_route('api_logs_search', '/api/logs/search')
     config.scan()
