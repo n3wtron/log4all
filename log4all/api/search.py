@@ -35,7 +35,7 @@ def parse_hash_expression(raw):
             val['value'] = raw_tag[2]
         return result, matcher.sub("", raw)
     except Exception as e:
-        logger.error(str(e))
+        logger.exception(e)
 
 
 def mongodb_parse_filter(query):
@@ -66,81 +66,33 @@ def mongodb_parse_filter(query):
     return mongo_src
 
 
-def sqlalchemy_parse_filter(request, query):
-    """
-        Query parser for sqlalchemy
-    """
-    expr_operators, text = parse_hash_expression(query)
-    query = request.sqldb.query(Log)
-    for op in expr_operators.keys():
-        for src in expr_operators[op]:
-            if op == '=':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value == src['value'])))
-            if op == '~=':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id,
-                         LogsTags.value.like('%' + src['value'] + '%'))))
-            if op == '!=':
-                query = query.filter(or_(
-                    Log.tags.any(
-                        and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value != src['value'])
-                    ),
-                    ~Log.tags.any(and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id))))
-            if op == '>':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value > int(src['value']))))
-            if op == '<':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value < int(src['value']))))
-            if op == '>=':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value >= int(src['value']))))
-            if op == '<=':
-                query = query.filter(Log.tags.any(
-                    and_(Tag.name == src['key'], LogsTags.tag_id == Tag.id, LogsTags.value <= int(src['value']))))
-    logger.debug("sql query:" + str(query))
-    return query
-
-
 def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10):
     """
         Search method
     """
     result = dict()
-    if request.registry.settings['db.type'] == 'mongodb':
-        search_filter = mongodb_parse_filter(query)
-        search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
-        logger.debug("Search filter:" + str(search_filter))
-        n_rows = request.mongodb.logs.find(search_filter).count()
-        sort_param = ()
-        if order['column'][0] != '_':
-            sort_param = ('tags.' + order['column'], -1 if order['ascending'] else 1)
-        else:
-            sort_param = (order['column'], -1 if order['ascending'] else 1)
-        logger.debug("sort_param:" + str(sort_param))
-        qry_result = list(
-            request.mongodb.logs.find(search_filter, fields=['_date', '_message', 'tags'], skip=page * result_per_page,
-                                      limit=result_per_page).sort([sort_param]))
-        result['logs'] = list()
-        for row in qry_result:
-            try:
-                tags = row['tags']
-                del row['tags']
-                log = dict(row.items() + tags.items())
-            except KeyError:
-                log = row
-            result['logs'].append(log)
+    search_filter = mongodb_parse_filter(query)
+    search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
+    logger.debug("Search filter:" + str(search_filter))
+    n_rows = request.mongodb.logs.find(search_filter).count()
+    sort_param = ()
+    if order['column'][0] != '_':
+        sort_param = ('tags.' + order['column'], -1 if order['ascending'] else 1)
     else:
-        # sqlalchemy
-        query = sqlalchemy_parse_filter(request, query)
-        query = query.filter(Log.dt_insert <= dt_to, Log.dt_insert >= dt_since)
-        n_rows = query.count()
-        logs = query.slice(page * result_per_page, (page * result_per_page) + result_per_page)
-
-        result['logs'] = []
-        for log in logs:
-            result['logs'].append(log.as_dict())
+        sort_param = (order['column'], -1 if order['ascending'] else 1)
+    logger.debug("sort_param:" + str(sort_param))
+    qry_result = list(
+        request.mongodb.logs.find(search_filter, fields=['_date', '_message', 'tags'], skip=page * result_per_page,
+                                  limit=result_per_page).sort([sort_param]))
+    result['logs'] = list()
+    for row in qry_result:
+        try:
+            tags = row['tags']
+            del row['tags']
+            log = dict(row.items() + tags.items())
+        except KeyError:
+            log = row
+        result['logs'].append(log)
 
     result['n_rows'] = n_rows
     result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0

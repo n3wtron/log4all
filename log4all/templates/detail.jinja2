@@ -3,23 +3,68 @@
 {% block middle %}
     <div style="text-align: center;">
         <div class="panel"
-             style="margin-left:40px;margin-right:40px;min-width: 400px;display: inline-block; text-align: left;">
+             style="margin-left:40px;margin-right:40px;min-width: 500px;display: inline-block; text-align: left;">
+            <div id="sentDimmer" class="ui dimmer" style="">
+                <div class="content">
+                    <div class="center">
+                        <h2 class="ui inverted icon header">
+                            <i class="icon circular inverted emphasized green mail"></i>
+                            Notification Sent
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div id="notSentDimmer" class="ui dimmer" style="">
+                <div class="content">
+                    <div class="center">
+                        <h2 class="ui inverted icon header">
+                            <i class="icon circular inverted emphasized red mail"></i>
+                            Notification Error
+                        </h2>
+                    </div>
+                </div>
+            </div>
             <div class="title">Log</div>
-            <div class="content" style="padding: 15px;">
+            <div id="notifyPanel" style="float:right;background-color: #FFFFFF;">
+                <div class="ui left icon action input">
+                    <input placeholder="Email address" type="text" id="emailFld" style="width: 300px;">
+                    <i class="mail icon"></i>
+                    <div class="ui button" id="sendBtn">Notify</div>
+                </div>
+                <script>
+                    $('#sendBtn').click(function () {
+                        var notifParam = {
+                            'log_id': "{{ log['_id'] }}",
+                            'email': $('#emailFld').val(),
+                            'csrf': "{{ csrf_token }}"
+                        };
+                        var url = "{{ 'detail_send_notification' | route_url }}?" + $.param(notifParam);
+                        $.getJSON(url, function (data) {
+                            if (!data['result']) {
+                                $('#notSentDimmer').dimmer('show');
+                            } else {
+                                $('#sentDimmer').dimmer('show');
+                            }
+                        });
+                    });
+                </script>
+            </div>
+
+            <div class="contentPanel" style="padding: 15px;">
                 {% for tag in log['tags'] %}
                     <div class="ui ribbon label blue">{{ tag }}</div><br/>
                     <div style="margin-left: 10px;margin-bottom: 10px;">{{ log['tags'][tag] }}</div>
                 {% endfor %}
                 <div class="ui ribbon label green">Message</div>
                 <br/>
+
                 <div style="margin-left: 10px;">{{ log['_message'] }}</div>
                 <br/>
-                {% if log['stack'] %}
+                {% if stack %}
                     <div class="ui ribbon label red">Stack</div>
                     <div style="margin-left: 10px">
-                        <pre><code>{% for stack in log['stack'] %}{{ stack }}
-{% endfor %}
-                        </code></pre>
+<pre><code>{% for stacktrace in stack['stacktrace'] %}{{ stacktrace }}
+{% endfor %}</code></pre>
                     </div>
                 {% endif %}
             </div>

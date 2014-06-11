@@ -28,40 +28,30 @@ def parse_raw_log(raw_log):
         result['_message'] = re.sub(add_log_regexp, "", result['_message'])
         return result
     except Exception as e:
-        logger.error(str(e))
+        logger.exception(e)
 
 
 def db_insert(request, log, stack=None):
-    if request.registry.settings['db.type'] == 'mongodb':
-        if stack is not None:
-            log['stack'] = stack
-        if '_date' not in log.keys():
-            log['_date'] = datetime.datetime.now()
-        request.mongodb.logs.insert(log)
-    else:
-        db_log = Log()
-        for k in log.keys():
-            if k == 'message':
-                db_log.message = log[k]
-            else:
-                # tags
-                tag = request.sqldb.query(Tag).filter(Tag.name == k).first()
-                if tag is None:
-                    # new tag
-                    tag = Tag(name=k)
-                    request.sqldb.add(tag)
-                    request.sqldb.flush()  # to get the autoincrement tag id
-                log_tag = LogsTags(log[k])
-                log_tag.tag_id = tag.id
-                db_log.tags.append(log_tag)
-        request.sqldb.add(db_log)
+    # add stack if is present
+    if stack is not None:
+        stack_id = request.mongodb.stacks.insert({'stacktrace': stack})
+        log['stack_id'] = stack_id
+    if '_date' not in log.keys():
+        log['_date'] = datetime.datetime.now()
+    # insert log
+    request.mongodb.logs.insert(log)
+    # update tags collections
+    for tag in log['tags'].keys():
+        logger.debug("insert tag:" + tag)
+        request.mongodb.tags.insert({'name': tag, '_date': datetime.datetime.now()})
+        request.mongodb.tags.create_index('name', unique=True)
 
 
 def parse_raw_stack(raw_stack):
     result = []
     if isinstance(raw_stack, list):
         for line in raw_stack:
-            result.append(line.replace('\t', '    '))
+            result.append(line)
     return result
 
 
