@@ -109,7 +109,7 @@ def api_logs_search(request):
         dt_to = datetime.datetime.fromtimestamp(int(dt_to_str))
 
     # Order
-    order = dict();
+    order = dict()
     order['column'] = request.GET['order[column]']
     order['ascending'] = True if request.GET['order[ascending]'] == 'true' else False
     logger.debug("order:" + str(order))
@@ -123,7 +123,6 @@ def api_logs_search(request):
                 res['_id'] = str(res['_id'])
             if isinstance(res[key], datetime.datetime):
                 res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
-    logging.getLogger('log4all').debug(result)
     result['elapsed_time'] = time.time() - start
     result['order'] = order
     return result

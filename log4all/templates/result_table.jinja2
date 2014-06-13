@@ -1,18 +1,18 @@
 <div class="nav">
-    <div style="float:left;" id="infoResult"></div>
+    <div style="float:left;">Fetched <b>{{ n_rows }}</b> in <b>{{ elapsed_time }}</b> msec</div>
     <form>
         Results per page
         <select id="nPerPage">
-            <option>10</option>
-            <option>20</option>
-            <option>30</option>
-            <option>40</option>
-            <option>50</option>
-            <option>100</option>
+            <option {% if result_per_page==10 %} selected {% endif %}>10</option>
+            <option {% if result_per_page==20 %} selected {% endif %}>20</option>
+            <option {% if result_per_page==30 %} selected {% endif %}>30</option>
+            <option {% if result_per_page==40 %} selected {% endif %}>40</option>
+            <option {% if result_per_page==50 %} selected {% endif %}>50</option>
+            <option {% if result_per_page==100 %} selected {% endif %}>100</option>
         </select>
         Page:<select id="pageSel">
         {% for page in pages %}
-            <option value="{{ page }}" {% if page == curr_page %} selected {% endif %}>{{ page }}</option>
+            <option value="{{ page }}" {% if page == curr_page %} selected {% endif %}>{{ (page+1) }}</option>
         {% endfor %}
     </select>
     </form>

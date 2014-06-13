@@ -483,3 +483,4 @@ log4all/templates/detail.jinja2
 log4all/templates/home.jinja2
 log4all/templates/layout.jinja2
 log4all/templates/left_layout.jinja2
+log4all/templates/result_table.jinja2

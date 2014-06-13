@@ -29,7 +29,8 @@
                     alert("Log added");
                 }
             });
-        };
+        }
+        ;
         $('#addBtn').click(addLog);
         $('#addLogFrm').submit(addLog);
     </script>
@@ -69,7 +70,7 @@
     <div id="resultPnl" class="panel" style="display:inline-block;width: 95%;">
         <div class="title">Results</div>
         <div class="contentPanel" style="overflow: auto;">
-            <div id="resultDiv"></div>
+            <div id="resultDiv" class="ui segment" style="min-height: 300px;"></div>
         </div>
     </div>
     <script language="JavaScript">
@@ -78,9 +79,8 @@
         var toReset = false;
         var order = {};
         var result_per_page = 10;
-        order['column'] = '_date';
+        order['column'] = 'date';
         order['ascending'] = true;
-
 
         function searchTag(srcQuery) {
             if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
@@ -91,110 +91,13 @@
             search();
         }
 
-        /**
-         * Render Result Table
-         */
-        function renderResultTable(col_names, tag_names, row_datas) {
-            var tbl_header = "<tr>";
-            var tbl_body = "";
-            /*Header*/
-            col_names.sort();
-            tag_names.sort();
-            /*Additional column*/
-            tbl_header += "<th style=\"width:32px;\">Detail</th>";
-
-            /*Standard columns*/
-            for (var i = 0; i < col_names.length; i++) {
-                tbl_header += "<th style=\"white-space: nowrap;\">";
-                tbl_header += "<a class=\"colLnk\" href=\"" + col_names[i] + "\">" + col_names[i] + "</a>";
-                if (order['column'] == col_names[i]) {
-                    if (order['ascending']) {
-                        tbl_header += "<i class=\"sort ascending icon\"></i>"
-                    } else {
-                        tbl_header += "<i class=\"sort descending icon\"></i>"
-                    }
-                }
-                tbl_header += "</th>";
-            }
-            /*Tag columns*/
-            for (var i = 0; i < tag_names.length; i++) {
-                tbl_header += "<th style=\"white-space: nowrap;\">";
-                tbl_header += "<a class=\"colLnk\" href=\"tags." + tag_names[i] + "\">" + tag_names[i] + "</a>";
-                if (order['column'] == "tags." + tag_names[i]) {
-                    if (order['ascending']) {
-                        tbl_header += "<i class=\"sort ascending icon\"></i>"
-                    } else {
-                        tbl_header += "<i class=\"sort descending icon\"></i>"
-                    }
-                }
-                tbl_header += "</th>";
-            }
-            tbl_header += "</tr>";
-
-            /*Table body*/
-            for (var r = 0; r < row_datas.length; r++) {
-                tbl_body += "<tr>";
-                /*Additional column*/
-                tbl_body += "<td style=\"width:32px;\"><a href=\"{{ 'detail' | route_url }}?id=";
-                tbl_body += row_datas[r]['_id'] + "\">";
-                if ('_stack_id' in row_datas[r]) {
-                    tbl_body += "<img src=\"{{ 'log4all:static/images/32x32/stack.png'|static_url }}\" title=\"Stack Detail\" border=\"0\">";
-                } else {
-                    tbl_body += "<img src=\"{{ 'log4all:static/images/32x32/info.png'|static_url }}\" title=\"Detail\"border=\"0\">";
-                }
-                tbl_body += "</a></td>";
-                /*Standard values*/
-                for (var c = 0; c < col_names.length; c++) {
-                    var tdContent = ""
-                    if (row_datas[r][col_names[c]] != null) {
-                        tdContent = row_datas[r][col_names[c]];
-                    }
-                    tbl_body += "<td>" + tdContent + "</td>";
-                }
-                /*Tag values */
-                for (var c = 0; c < tag_names.length; c++) {
-                    var tdContent = ""
-                    if (row_datas[r]['tags'][tag_names[c]] != null) {
-                        var srcQry = "#" + tag_names[c] + "=" + row_datas[r]['tags'][tag_names[c]];
-                        var tdLnk = "<a href=\"#\" onclick=\"searchTag('" + srcQry + "');\">";
-                        tdContent = tdLnk + row_datas[r]['tags'][tag_names[c]] + "</a>";
-                    }
-                    tbl_body += "<td>" + tdContent + "</td>";
-                }
-                tbl_body += "</tr>";
-            }
-            $("#resultTbl thead").html(tbl_header);
-            $("#resultTbl tbody").html(tbl_body);
-            $("#resultPnl").show();
-            /**
-             * Click on result table column header
-             */
-            $('.colLnk').click(function (event) {
-                event.preventDefault();
-                var colname = $(this).attr('href');
-                if (order['column'] == null || order['column'] != colname) {
-                    order['column'] = colname;
-                    order['ascending'] = true;
-                } else {
-                    if (order['ascending'] == null) {
-                        order['ascending'] = true;
-                    } else {
-                        order['ascending'] = !order['ascending'];
-                    }
-                }
-                search();
-            });
-        }
-
         function cleanResult() {
-            /*$("#resultTbl thead").html("");
-             $("#resultTbl tbody").html("<div class=\"ui center active inline loader\"></div>");*/
+            $("#resultDiv").html("<div class=\"ui active inverted dimmer\"><div class=\"ui text loader\">Searching...</div></div>");
         }
         /**
          * main search function
          */
         function search() {
-            var startDt = new Date();
             if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
                 currPage = 0;
                 lastQuery = $("#searchEdt").val()
@@ -227,8 +130,6 @@
             }).done(function (data) {
                 $('#resultDiv').html(data);
             });
-            var endDt = new Date();
-            //alert(""+endDt.getTime()-startDt.getTime()+"msec");
         }// end search function
 
         $('#searchBtn').click(search);
