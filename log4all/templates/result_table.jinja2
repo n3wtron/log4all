@@ -1,0 +1,107 @@
+<div class="nav">
+    <div style="float:left;" id="infoResult"></div>
+    <form>
+        Results per page
+        <select id="nPerPage">
+            <option>10</option>
+            <option>20</option>
+            <option>30</option>
+            <option>40</option>
+            <option>50</option>
+            <option>100</option>
+        </select>
+        Page:<select id="pageSel">
+        {% for page in pages %}
+            <option value="{{ page }}" {% if page == curr_page %} selected {% endif %}>{{ page }}</option>
+        {% endfor %}
+    </select>
+    </form>
+</div>
+<script>
+    $('#pageSel').change(function () {
+        currPage = $(this).val();
+        search();
+    });
+
+    $('#nPerPage').change(function () {
+        result_per_page = $(this).val();
+        search();
+    });
+</script>
+<table id="resultTbl" class="ui table segment">
+    <tr>
+        <th style="width:32px;">Detail</th>
+        {% for col in normal_columns %}
+            <th style="white-space: nowrap;">
+                <a class="colLnk" href="{{ col }}">
+                    {{ col }}</a>
+                {% if order['column'] == col %}
+                    {% if order['ascending'] %}
+                        <i class="sort ascending icon"></i>
+                    {% else %}
+                        <i class="sort descending icon"></i>
+                    {% endif %}
+                {% endif %}
+            </th>
+        {% endfor %}
+        {% for col in tag_columns %}
+            <th style="white-space: nowrap;">
+                <a class="colLnk" href="tags.{{ col }}">
+                    {{ col }}</a>
+                {% if order['column'] == 'tags.'+col %}
+                    {% if order['ascending'] %}
+                        <i class="sort ascending icon"></i>
+                    {% else %}
+                        <i class="sort descending icon"></i>
+                    {% endif %}
+                {% endif %}
+            </th>
+        {% endfor %}
+    </tr>
+
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td style="width:32px;">
+                <a href="{{ 'detail' | route_url }}?id={{ log['_id'] }}">
+                    {% if '_stack_id' in log %}
+                        <img src="{{ 'log4all:static/images/32x32/stack.png'|static_url }}" title="Stack Detail"
+                             border="0">
+                    {% else %}
+                        <img src="{{ 'log4all:static/images/32x32/info.png'|static_url }}" title="Detail"
+                             border="0">
+                    {% endif %}
+                </a>
+            </td>
+            {% for col in normal_columns %}
+                <td>{{ log[col] }}</td>
+            {% endfor %}
+            {% for col in tag_columns %}
+                <td>
+                    <a href="#" onclick="searchTag('#{{ col }}={{ log['tags'][col] }}');">
+                        {{ log['tags'][col] }}
+                    </a>
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    $('.colLnk').click(function (event) {
+        event.preventDefault();
+        var colname = $(this).attr('href');
+        if (order['column'] == null || order['column'] != colname) {
+            order['column'] = colname;
+            order['ascending'] = true;
+        } else {
+            if (order['ascending'] == null) {
+                order['ascending'] = true;
+            } else {
+                order['ascending'] = !order['ascending'];
+            }
+        }
+        search();
+    });
+</script>

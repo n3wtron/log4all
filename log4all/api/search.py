@@ -125,4 +125,5 @@ def api_logs_search(request):
                 res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
     logging.getLogger('log4all').debug(result)
     result['elapsed_time'] = time.time() - start
+    result['order'] = order
     return result

@@ -21,6 +21,7 @@ def main(global_config, **settings):
 
     #Routing
     config.add_route('home', '/')
+    config.add_route('result_table', '/result')
     config.add_route('detail', '/detail')
     config.add_route('detail_send_notification', '/detail_send_notification')
     config.add_route('api_logs_add', '/api/logs/add')

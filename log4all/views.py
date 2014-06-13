@@ -3,6 +3,7 @@ import smtplib
 from bson import ObjectId
 from pyramid.url import route_url
 from pyramid.view import view_config
+from log4all.api.search import api_logs_search
 
 logger = logging.getLogger('log4all')
 
@@ -61,6 +62,30 @@ def detail_send_notification(request):
         return {'result': False}
 
 
+@view_config(route_name='result_table', renderer='templates/result_table.jinja2', request_method='GET',
+             request_param=['query', 'dtSince', 'dtTo'])
+def result_table(request):
+    result = api_logs_search(request)
+    normal_columns = set()
+    tag_columns = set()
+    for log in result['logs']:
+        for nc in log.keys():
+            if nc[0] != '_' and nc != 'tags':
+                normal_columns.add(nc)
+            if nc == 'tags':
+                tag_columns.update(log['tags'].keys())
+
+    return {'normal_columns': normal_columns,
+            'tag_columns': tag_columns,
+            'order': result['order'],
+            'curr_page': int(request.GET['page']),
+            'result_per_page': request.GET['result_per_page'],
+            'pages': range(0, result['pages']),
+            'n_rows': result['n_rows'],
+            'elapsed_time': result['elapsed_time'],
+            'logs': result['logs']}
+
+
 @view_config(route_name='api_tags_search', renderer='json', request_method='GET', request_param=['term'])
 def api_tags_search(request):
     result = list()
@@ -75,7 +100,7 @@ def api_tags_search(request):
         for c_tag in current_tags[:-1]:
             str_tags += c_tag + " "
         for tag in tags:
-            if '#'+tag['name'] not in str_tags:
-                choice = str_tags + '#'+tag['name']
+            if '#' + tag['name'] not in str_tags:
+                choice = str_tags + '#' + tag['name']
                 result.append({'label': choice, 'value': choice})
     return result
