@@ -3,7 +3,6 @@ development.ini
 production.ini
 setup.py
 log4all/__init__.py
-log4all/api.py
 log4all/views.py
 log4all.egg-info/PKG-INFO
 log4all.egg-info/SOURCES.txt
@@ -12,10 +11,9 @@ log4all.egg-info/entry_points.txt
 log4all.egg-info/not-zip-safe
 log4all.egg-info/requires.txt
 log4all.egg-info/top_level.txt
-log4all/models/Log.py
-log4all/models/LogsTags.py
-log4all/models/Tag.py
-log4all/models/__init__.py
+log4all/api/__init__.py
+log4all/api/add.py
+log4all/api/search.py
 log4all/static/pyramid-16x16.png
 log4all/static/pyramid.png
 log4all/static/theme.css
@@ -460,7 +458,9 @@ log4all/static/css/themes/vader/images/ui-icons_cccccc_256x240.png
 log4all/static/css/themes/vader/images/ui-icons_cd0a0a_256x240.png
 log4all/static/css/themes/vader/images/ui-icons_f29a00_256x240.png
 log4all/static/images/32x32/home.png
+log4all/static/images/32x32/info.png
 log4all/static/images/32x32/search.png
+log4all/static/images/32x32/stack.png
 log4all/static/images/64x64/logo.png
 log4all/static/js/bootstrap-datepicker.js
 log4all/static/js/jquery-2.1.1.min.js
@@ -479,6 +479,7 @@ log4all/static/semantic/images/loader-small-inverted.gif
 log4all/static/semantic/images/loader-small.gif
 log4all/static/semantic/javascript/semantic.js
 log4all/static/semantic/javascript/semantic.min.js
+log4all/templates/detail.jinja2
 log4all/templates/home.jinja2
 log4all/templates/layout.jinja2
 log4all/templates/left_layout.jinja2

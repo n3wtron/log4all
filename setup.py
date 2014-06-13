@@ -13,7 +13,6 @@ requires = [
     'pyramid_debugtoolbar',
     'waitress',
     'pymongo',
-    'pyramid_sqlalchemy'
     ]
 
 setup(name='log4all',

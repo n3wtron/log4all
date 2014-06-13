@@ -62,7 +62,7 @@
             toReset = true;
         })
         $('#searchEdt').autocomplete({
-            minLength:2,
+            minLength: 2,
             source: "{{ 'api_tags_search' | route_url }}"
         });
     </script>
@@ -92,176 +92,216 @@
         </div>
     </div>
     <script language="JavaScript">
-        var currPage = 0;
-        var lastQuery = null;
-        var toReset = false;
-        var order = {};
-        order['column'] = '_date';
-        order['ascending'] = true;
+    var currPage = 0;
+    var lastQuery = null;
+    var toReset = false;
+    var order = {};
+    order['column'] = '_date';
+    order['ascending'] = true;
 
-        function changePage(newPage) {
-            currPage = newPage;
-            search();
+    function changePage(newPage) {
+        currPage = newPage;
+        search();
+    }
+
+    $('#pageSel').change(function () {
+        changePage($(this).val());
+    });
+
+    function searchTag(srcQuery) {
+        if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
+            $('#searchEdt').val($('#searchEdt').val() + " " + srcQuery);
+        } else {
+            $('#searchEdt').val($('#searchEdt').val().replace(srcQuery, ""));
         }
+        search();
+    }
 
-        $('#pageSel').change(function () {
-            changePage($(this).val());
-        });
+    /**
+     * Render Result Table
+     */
+    function renderResultTable(col_names, tag_names, row_datas) {
+        var tbl_header = "<tr>";
+        var tbl_body = "";
+        /*Header*/
+        col_names.sort();
+        tag_names.sort();
+        /*Additional column*/
+        tbl_header += "<th style=\"width:32px;\">Detail</th>";
 
-        function searchTag(srcQuery) {
-            if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
-                $('#searchEdt').val($('#searchEdt').val() + " " + srcQuery);
-            } else {
-                $('#searchEdt').val($('#searchEdt').val().replace(srcQuery, ""));
+        /*Standard columns*/
+        for (var i = 0; i < col_names.length; i++) {
+            tbl_header += "<th style=\"white-space: nowrap;\">";
+            tbl_header += "<a class=\"colLnk\" href=\"" + col_names[i] + "\">" + col_names[i] + "</a>";
+            if (order['column'] == col_names[i]) {
+                if (order['ascending']) {
+                    tbl_header += "<i class=\"sort ascending icon\"></i>"
+                } else {
+                    tbl_header += "<i class=\"sort descending icon\"></i>"
+                }
             }
-            search();
+            tbl_header += "</th>";
         }
+        /*Tag columns*/
+        for (var i = 0; i < tag_names.length; i++) {
+            tbl_header += "<th style=\"white-space: nowrap;\">";
+            tbl_header += "<a class=\"colLnk\" href=\"tags." + tag_names[i] + "\">" + tag_names[i] + "</a>";
+            if (order['column'] == "tags." + tag_names[i]) {
+                if (order['ascending']) {
+                    tbl_header += "<i class=\"sort ascending icon\"></i>"
+                } else {
+                    tbl_header += "<i class=\"sort descending icon\"></i>"
+                }
+            }
+            tbl_header += "</th>";
+        }
+        tbl_header += "</tr>";
 
-        /**
-         * Render Result Table
-         */
-        function renderResultTable(col_names, row_datas) {
-            var tbl_header = "<tr>";
-            var tbl_body = "";
-            /*Header*/
-            col_names.sort();
+        /*Table body*/
+        for (var r = 0; r < row_datas.length; r++) {
+            tbl_body += "<tr>";
             /*Additional column*/
-            tbl_header += "<th style=\"width:32px;\">Detail</th>";
-            for (var i = 0; i < col_names.length; i++) {
-                tbl_header += "<th style=\"white-space: nowrap;\">";
-                tbl_header += "<a class=\"colLnk\" href=\"" + col_names[i] + "\">" + col_names[i] + "</a>";
-                if (order['column'] == col_names[i]) {
-                    if (order['ascending']) {
-                        tbl_header += "<i class=\"sort ascending icon\"></i>"
-                    } else {
-                        tbl_header += "<i class=\"sort descending icon\"></i>"
-                    }
-                }
-                tbl_header += "</th>";
+            tbl_body += "<td style=\"width:32px;\"><a href=\"{{ 'detail' | route_url }}?id=";
+            tbl_body += row_datas[r]['_id'] + "\">";
+            if ('_stack_id' in row_datas[r]) {
+                tbl_body += "<img src=\"{{ 'log4all:static/images/32x32/stack.png'|static_url }}\" title=\"Stack Detail\" border=\"0\">";
+            } else {
+                tbl_body += "<img src=\"{{ 'log4all:static/images/32x32/info.png'|static_url }}\" title=\"Detail\"border=\"0\">";
             }
-            tbl_header += "</tr>";
-            /*Table body*/
-            for (var r = 0; r < row_datas.length; r++) {
-                tbl_body += "<tr>";
-                /*Additional column*/
-                tbl_body += "<td style=\"width:32px;\"><a href=\"{{ 'detail' | route_url }}?id=";
-                tbl_body += row_datas[r]['_id'];
-                tbl_body += "\"><img src=\"{{ 'log4all:static/images/32x32/info.png'|static_url }}\" border=\"0\"></a></td>";
-                for (var c = 0; c < col_names.length; c++) {
-                    var tdContent = ""
-                    if (row_datas[r][col_names[c]] != null) {
-                        var srcQry = "#" + col_names[c] + "=" + row_datas[r][col_names[c]];
-                        var tdLnk = "<a href=\"#\" onclick=\"searchTag('" + srcQry + "');\">";
-                        if (col_names[c][0] != "_") {
-                            tdContent = tdLnk + row_datas[r][col_names[c]] + "</a>";
-                        } else {
-                            tdContent = row_datas[r][col_names[c]];
-                        }
-                    }
-                    tbl_body += "<td>" + tdContent + "</td>";
+            tbl_body += "</a></td>";
+            /*Standard values*/
+            for (var c = 0; c < col_names.length; c++) {
+                var tdContent = ""
+                if (row_datas[r][col_names[c]] != null) {
+                    tdContent = row_datas[r][col_names[c]];
                 }
-                tbl_body += "</tr>";
+                tbl_body += "<td>" + tdContent + "</td>";
             }
-            $("#resultTbl thead").html(tbl_header);
-            $("#resultTbl tbody").html(tbl_body);
-            $("#resultPnl").show();
-            /**
-             * Click on result table column header
-             */
-            $('.colLnk').click(function (event) {
-                event.preventDefault();
-                var colname = $(this).attr('href');
-                if (order['column'] == null || order['column'] != colname) {
-                    order['column'] = colname;
+            /*Tag values */
+            for (var c = 0; c < tag_names.length; c++) {
+                var tdContent = ""
+                if (row_datas[r]['tags'][tag_names[c]] != null) {
+                    var srcQry = "#" + tag_names[c] + "=" + row_datas[r]['tags'][tag_names[c]];
+                    var tdLnk = "<a href=\"#\" onclick=\"searchTag('" + srcQry + "');\">";
+                    tdContent = tdLnk + row_datas[r]['tags'][tag_names[c]] + "</a>";
+                }
+                tbl_body += "<td>" + tdContent + "</td>";
+            }
+            tbl_body += "</tr>";
+        }
+        $("#resultTbl thead").html(tbl_header);
+        $("#resultTbl tbody").html(tbl_body);
+        $("#resultPnl").show();
+        /**
+         * Click on result table column header
+         */
+        $('.colLnk').click(function (event) {
+            event.preventDefault();
+            var colname = $(this).attr('href');
+            if (order['column'] == null || order['column'] != colname) {
+                order['column'] = colname;
+                order['ascending'] = true;
+            } else {
+                if (order['ascending'] == null) {
                     order['ascending'] = true;
                 } else {
-                    if (order['ascending'] == null) {
-                        order['ascending'] = true;
-                    } else {
-                        order['ascending'] = !order['ascending'];
-                    }
+                    order['ascending'] = !order['ascending'];
                 }
-                search();
-            });
+            }
+            search();
+        });
+    }
+
+    function cleanResult(){
+        $("#resultTbl thead").html("");
+        $("#resultTbl tbody").html("<div class=\"ui center active inline loader\"></div>");
+    }
+    /**
+     * main search function
+     */
+    function search() {
+        var startDt = new Date();
+        if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
+            currPage = 0;
+            lastQuery = $("#searchEdt").val()
+            toReset = false;
         }
+        var dtSince = $("#sinceEdt").datetimepicker('getDate');
+        var dtTo = $("#toEdt").datetimepicker('getDate');
+        if ($("#sinceEdt").val().trim() == "" || $("#toEdt").val().trim() == "") {
+            alert("The date range is mandatory");
+            return;
+        }
+        var sinceSeconds = (dtSince.getTime() / 1000);
+        var toSeconds = (dtTo.getTime() / 1000);
+        if (toSeconds == sinceSeconds) {
+            sinceSeconds -= 24 * 60 * 60;
+        }
+        var searchParam = {
+            query: $("#searchEdt").val(),
+            dtSince: Math.ceil(sinceSeconds),
+            dtTo: Math.ceil(toSeconds),
+            page: currPage,
+            result_per_page: $('#nPerPage').val(),
+            order: order
+        };
+        var url = "{{ 'api_logs_search' | route_url }}?" + $.param(searchParam);
+        cleanResult();
+        $.getJSON(url, function (data) {
+            var col_names = [];
+            var tags_names = [];
+            var row_datas = [];
 
-        /**
-         * main search function
-         */
-        function search() {
-            var startDt = new Date();
-            if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
-                currPage = 0;
-                lastQuery = $("#searchEdt").val()
-                toReset = false;
-            }
-            var dtSince = $("#sinceEdt").datetimepicker('getDate');
-            var dtTo = $("#toEdt").datetimepicker('getDate');
-            if ($("#sinceEdt").val().trim() == "" || $("#toEdt").val().trim() == "") {
-                alert("The date range is mandatory");
-                return;
-            }
-            var sinceSeconds = (dtSince.getTime() / 1000);
-            var toSeconds = (dtTo.getTime() / 1000);
-            if (toSeconds == sinceSeconds) {
-                sinceSeconds -= 24 * 60 * 60;
-            }
-            var searchParam = {
-                query: $("#searchEdt").val(),
-                dtSince: Math.ceil(sinceSeconds),
-                dtTo: Math.ceil(toSeconds),
-                page: currPage,
-                result_per_page: $('#nPerPage').val(),
-                order: order
-            };
-            var url = "{{ 'api_logs_search' | route_url }}?" + $.param(searchParam);
-            $.getJSON(url, function (data) {
-                var col_names = [];
-                var row_datas = [];
-
-                $.each(data['logs'], function () {
-                    var row_data = {};
-                    $.each(this, function (k, v) {
-                        if (k != "_id") {
-                            if (col_names.indexOf(k) == -1) {
-                                col_names.push(k);
-                            }
+            $.each(data['logs'], function () {
+                var row_data = {};
+                $.each(this, function (k, v) {
+                    if (k != "_id" && k != "_stack_id" && k != "tags") {
+                        if (col_names.indexOf(k) == -1) {
+                            col_names.push(k);
                         }
-                        row_data[k] = v;
-                    });
-                    row_datas.push(row_data);
-                });
-
-                /*Page Selection*/
-                $('#pageSel').empty();
-                for (var p = 0; p < data['pages']; p++) {
-                    if (p != currPage) {
-                        $('#pageSel').append($("<option></option>").attr("value", p).text(p));
-                    } else {
-                        $('#pageSel').append($("<option></option>").attr("value", p).attr("selected", "true").text(p));
                     }
-                }
-                $('#infoResult').html("Fetched " + data['n_rows'] + " records in " + data['elapsed_time'] + " msec");
-                renderResultTable(col_names, row_datas);
-
-
+                    if (k == "tags") {
+                        $.each(v, function (tagName, tagValue) {
+                            if (tags_names.indexOf(tagName) == -1) {
+                                tags_names.push(tagName);
+                            }
+                        });
+                    }
+                    row_data[k] = v;
+                });
+                row_datas.push(row_data);
             });
-            var endDt = new Date();
-            //alert(""+endDt.getTime()-startDt.getTime()+"msec");
-        }// end search function
 
-        $('#searchBtn').click(search);
-        $('#searchEdt').keypress(function (event) {
-            if (event.which == 13) {
-                search();
+            /*Page Selection*/
+            $('#pageSel').empty();
+            for (var p = 0; p < data['pages']; p++) {
+                if (p != currPage) {
+                    $('#pageSel').append($("<option></option>").attr("value", p).text(p));
+                } else {
+                    $('#pageSel').append($("<option></option>").attr("value", p).attr("selected", "true").text(p));
+                }
             }
+            $('#infoResult').html("Fetched " + data['n_rows'] + " records in " + data['elapsed_time'] + " msec");
+            renderResultTable(col_names, tags_names, row_datas);
+
+
         });
-        $('#searchFrm').submit(function (event) {
+        var endDt = new Date();
+        //alert(""+endDt.getTime()-startDt.getTime()+"msec");
+    }// end search function
+
+    $('#searchBtn').click(search);
+    $('#searchEdt').keypress(function (event) {
+        if (event.which == 13) {
             search();
-            event.preventDefault();
-        });
-        $('#nPerPage').change(function () {
-            search();
-        });
+        }
+    });
+    $('#searchFrm').submit(function (event) {
+        search();
+        event.preventDefault();
+    });
+    $('#nPerPage').change(function () {
+        search();
+    });
     </script>
 {% endblock %}

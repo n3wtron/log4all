@@ -17,7 +17,7 @@ def detail_view(request):
     try:
         log = request.mongodb.logs.find_one({'_id': ObjectId(request.GET['id'])})
         try:
-            stack = request.mongodb.stacks.find_one({'_id': log['stack_id']})
+            stack = request.mongodb.stacks.find_one({'_id': log['_stack_id']})
         except KeyError:
             stack = None
         logger.debug("Log:" + str(log))

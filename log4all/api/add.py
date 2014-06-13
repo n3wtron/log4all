@@ -1,7 +1,4 @@
 from log4all.api import hash_regexp, value_regexp
-from log4all.models.Log import Log
-from log4all.models.LogsTags import LogsTags
-from log4all.models.Tag import Tag
 import logging
 from pyramid.view import view_config
 import datetime
@@ -24,8 +21,8 @@ def parse_raw_log(raw_log):
             tag = raw_tag[0].replace("+", "")
             value = raw_tag[2]
             result['tags'][tag] = value
-        result['_message'] = re.sub('#\+', "", raw_log)
-        result['_message'] = re.sub(add_log_regexp, "", result['_message'])
+        result['message'] = re.sub('#\+', "", raw_log)
+        result['message'] = re.sub(add_log_regexp, "", result['message'])
         return result
     except Exception as e:
         logger.exception(e)
@@ -35,19 +32,23 @@ def db_insert(request, log, stack=None):
     # add stack if is present
     if stack is not None:
         stack_id = request.mongodb.stacks.insert({'stacktrace': stack})
-        log['stack_id'] = stack_id
-    if '_date' not in log.keys():
-        log['_date'] = datetime.datetime.now()
+        log['_stack_id'] = stack_id
+    if 'date' not in log.keys():
+        log['date'] = datetime.datetime.now()
     # insert log
     request.mongodb.logs.insert(log)
+    request.mongodb.logs.ensure_index('date')
+
     # update tags collections
     for tag in log['tags'].keys():
         logger.debug("insert tag:" + tag)
-        request.mongodb.tags.insert({'name': tag, '_date': datetime.datetime.now()})
-        request.mongodb.tags.create_index('name', unique=True)
+        request.mongodb.tags.insert({'name': tag, 'date': datetime.datetime.now()})
+        request.mongodb.tags.ensure_index('name', unique=True)
 
 
 def parse_raw_stack(raw_stack):
+    if raw_stack is None:
+        return None
     result = []
     if isinstance(raw_stack, list):
         for line in raw_stack:

@@ -1,8 +1,4 @@
 from log4all.api import hash_regexp, value_regexp
-from sqlalchemy import and_, or_
-from log4all.models.Log import Log
-from log4all.models.LogsTags import LogsTags
-from log4all.models.Tag import Tag
 import logging
 from pyramid.view import view_config
 import datetime
@@ -72,27 +68,23 @@ def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10
     """
     result = dict()
     search_filter = mongodb_parse_filter(query)
-    search_filter['_date'] = {'$gte': dt_since, '$lte': dt_to}
+    search_filter['date'] = {'$gte': dt_since, '$lte': dt_to}
     logger.debug("Search filter:" + str(search_filter))
     n_rows = request.mongodb.logs.find(search_filter).count()
-    sort_param = ()
-    if order['column'][0] != '_':
-        sort_param = ('tags.' + order['column'], -1 if order['ascending'] else 1)
-    else:
-        sort_param = (order['column'], -1 if order['ascending'] else 1)
+    sort_param = (order['column'], -1 if order['ascending'] else 1)
+
     logger.debug("sort_param:" + str(sort_param))
     qry_result = list(
-        request.mongodb.logs.find(search_filter, fields=['_date', '_message', 'tags'], skip=page * result_per_page,
+        request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', 'tags'],
+                                  skip=page * result_per_page,
                                   limit=result_per_page).sort([sort_param]))
     result['logs'] = list()
     for row in qry_result:
         try:
-            tags = row['tags']
-            del row['tags']
-            log = dict(row.items() + tags.items())
+            row['_stack_id'] = str(row['_stack_id'])
         except KeyError:
-            log = row
-        result['logs'].append(log)
+            pass
+        result['logs'].append(row)
 
     result['n_rows'] = n_rows
     result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0

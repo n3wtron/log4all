@@ -1,9 +1,6 @@
 import logging
 import pymongo
 from pyramid.config import Configurator
-from sqlalchemy import engine_from_config
-from sqlalchemy.orm import sessionmaker
-from log4all.models import initialize_sql
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 log4all_session_factory = UnencryptedCookieSessionFactoryConfig('log4allsession')
 

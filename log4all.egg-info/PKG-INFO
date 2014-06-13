@@ -6,7 +6,8 @@ Home-page: UNKNOWN
 Author: UNKNOWN
 Author-email: UNKNOWN
 License: UNKNOWN
-Description: Log4All
+Description: <img src="https://travis-ci.org/n3wtron/log4all.svg?branch=master"/>
+        Log4All
         =======
         
         Client/Server(RESTful) Logging system
