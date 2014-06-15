@@ -1,4 +1,4 @@
-<img src="https://travis-ci.org/n3wtron/log4all.svg?branch=master"/>
+[![Build Status](https://travis-ci.org/n3wtron/log4all.svg?branch=master)](https://travis-ci.org/n3wtron/log4all)
 Log4All
 =======
 
