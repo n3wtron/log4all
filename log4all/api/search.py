@@ -45,19 +45,19 @@ def mongodb_parse_filter(query):
         for op in expr_operators.keys():
             for src in expr_operators[op]:
                 if op == '=':
-                    mongo_src['tags.' + src['key']] = src['value']
+                    mongo_src['_tags.' + src['key']] = src['value']
                 if op == '~=':
-                    mongo_src['tags.' + src['key']] = {'$regex': src['value']}
+                    mongo_src['_tags.' + src['key']] = {'$regex': src['value']}
                 if op == '!=':
-                    mongo_src['tags.' + src['key']] = {"$ne": src['value']}
+                    mongo_src['_tags.' + src['key']] = {"$ne": src['value']}
                 if op == '>':
-                    mongo_src['tags.' + src['key']] = {"$gt": src['value']}
+                    mongo_src['_tags.' + src['key']] = {"$gt": src['value']}
                 if op == '<':
-                    mongo_src['tags.' + src['key']] = {"$lt": src['value']}
+                    mongo_src['_tags.' + src['key']] = {"$lt": src['value']}
                 if op == '>=':
-                    mongo_src['tags.' + src['key']] = {"$gte": src['value']}
+                    mongo_src['_tags.' + src['key']] = {"$gte": src['value']}
                 if op == '<=':
-                    mongo_src['tags.' + src['key']] = {"$lte": src['value']}
+                    mongo_src['_tags.' + src['key']] = {"$lte": src['value']}
         logger.debug("mongo_src" + str(mongo_src))
     return mongo_src
 
@@ -75,7 +75,7 @@ def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10
 
     logger.debug("sort_param:" + str(sort_param))
     qry_result = list(
-        request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', 'tags'],
+        request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'],
                                   skip=page * result_per_page,
                                   limit=result_per_page).sort([sort_param]))
     result['logs'] = list()

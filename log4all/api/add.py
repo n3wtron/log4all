@@ -13,19 +13,16 @@ add_log_regexp = hash_regexp + "(:)" + value_regexp
 def parse_raw_log(raw_log):
     assert isinstance(raw_log, unicode)
     result = dict()
-    result['tags'] = dict()
-    try:
-        matcher = re.compile(add_log_regexp)
-        raw_tags = matcher.findall(raw_log)
-        for raw_tag in raw_tags:
-            tag = raw_tag[0].replace("+", "")
-            value = raw_tag[2]
-            result['tags'][tag] = value
-        result['message'] = re.sub('#\+', "", raw_log)
-        result['message'] = re.sub(add_log_regexp, "", result['message'])
-        return result
-    except Exception as e:
-        logger.exception(e)
+    result['_tags'] = dict()
+    matcher = re.compile(add_log_regexp)
+    raw_tags = matcher.findall(raw_log)
+    for raw_tag in raw_tags:
+        tag = raw_tag[0].replace("+", "")
+        value = raw_tag[2]
+        result['_tags'][tag] = value
+    result['message'] = re.sub('#\+', "", raw_log)
+    result['message'] = re.sub(add_log_regexp, "", result['message'])
+    return result
 
 
 def db_insert(request, log, stack=None):
@@ -40,7 +37,7 @@ def db_insert(request, log, stack=None):
     request.mongodb.logs.ensure_index('date')
 
     # update tags collections
-    for tag in log['tags'].keys():
+    for tag in log['_tags'].keys():
         logger.debug("insert tag:" + tag)
         request.mongodb.tags.insert({'name': tag, 'date': datetime.datetime.now()})
         request.mongodb.tags.ensure_index('name', unique=True)

@@ -1,5 +1,5 @@
 <div class="nav">
-    <div style="float:left;">Fetched <b>{{ n_rows }}</b> in <b>{{ elapsed_time }}</b> msec</div>
+    <div style="float:left;">Fetched <b>{{ n_rows }}</b> in <b>{{ elapsed_time }}</b> sec</div>
     <form>
         Results per page
         <select id="nPerPage">
@@ -10,20 +10,18 @@
             <option {% if result_per_page==50 %} selected {% endif %}>50</option>
             <option {% if result_per_page==100 %} selected {% endif %}>100</option>
         </select>
-        Page:<select id="pageSel">
-        {% for page in pages %}
-            <option value="{{ page }}" {% if page == curr_page %} selected {% endif %}>{{ (page+1) }}</option>
-        {% endfor %}
-    </select>
+        Page:<input id="pageSel" type="number" placeholder="page" value="{{ curr_page + 1}}" max="{{ max_pages }}" style="width:70px;"/>
+        </select> of {{ max_pages }}
     </form>
 </div>
 <script>
-    $('#pageSel').change(function () {
-        currPage = $(this).val();
+    $('#pageSel').change(function() {
+        currPage = $(this).val()-1;
         search();
     });
 
     $('#nPerPage').change(function () {
+        currPage=0;
         result_per_page = $(this).val();
         search();
     });
@@ -46,9 +44,9 @@
         {% endfor %}
         {% for col in tag_columns %}
             <th style="white-space: nowrap;">
-                <a class="colLnk" href="tags.{{ col }}">
+                <a class="colLnk" href="_tags.{{ col }}">
                     {{ col }}</a>
-                {% if order['column'] == 'tags.'+col %}
+                {% if order['column'] == '_tags.'+col %}
                     {% if order['ascending'] %}
                         <i class="sort ascending icon"></i>
                     {% else %}
@@ -78,8 +76,8 @@
             {% endfor %}
             {% for col in tag_columns %}
                 <td>
-                    <a href="#" onclick="searchTag('#{{ col }}={{ log['tags'][col] }}');">
-                        {{ log['tags'][col] }}
+                    <a href="#" onclick="searchTag('#{{ col }}={{ log['_tags'][col] }}');">
+                        {{ log['_tags'][col] }}
                     </a>
                 </td>
             {% endfor %}

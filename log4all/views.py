@@ -70,17 +70,18 @@ def result_table(request):
     tag_columns = set()
     for log in result['logs']:
         for nc in log.keys():
-            if nc[0] != '_' and nc != 'tags':
+            if nc[0] != '_':
                 normal_columns.add(nc)
-            if nc == 'tags':
-                tag_columns.update(log['tags'].keys())
+            if nc == '_tags':
+                tag_columns.update(log['_tags'].keys())
+    max_pages = int(result['pages'])
 
     return {'normal_columns': normal_columns,
             'tag_columns': tag_columns,
             'order': result['order'],
             'curr_page': int(request.GET['page']),
             'result_per_page': int(request.GET['result_per_page']),
-            'pages': range(0, result['pages']),
+            'max_pages': max_pages,
             'n_rows': result['n_rows'],
             'elapsed_time': result['elapsed_time'],
             'logs': result['logs']}
