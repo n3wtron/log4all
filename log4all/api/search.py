@@ -8,7 +8,8 @@ import re
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 logger = logging.getLogger('log4all')
-hashtag_search_regexp = hash_regexp + "([=|>|<]|>=|<=|!=|~=)" + value_regexp
+operator_regexp = "([=|>|<]|>=|<=|!=|~=)"
+hashtag_search_regexp = hash_regexp + '(' + operator_regexp + value_regexp + '){0,1}'
 
 
 def parse_hash_expression(raw):
@@ -21,14 +22,23 @@ def parse_hash_expression(raw):
         matcher = re.compile(hashtag_search_regexp)
         raw_tags = matcher.findall(raw)
         for raw_tag in raw_tags:
-            operator = raw_tag[1]
+            tag = raw_tag[0]
+            if len(raw_tag[1]) == 0:
+                #check if tag exist
+                operator = '#'
+                value = None
+            else:
+                #tag with value
+                operator = raw_tag[2]
+                value = raw_tag[3]
+
             if not operator in result:
-                result[operator] = []
-            val = {}
+                result[operator] = list()
+            val = dict()
             result[operator].append(val)
-            val['key'] = raw_tag[0]
+            val['key'] = tag
             val['operator'] = operator
-            val['value'] = raw_tag[2]
+            val['value'] = value
         return result, matcher.sub("", raw)
     except Exception as e:
         logger.exception(e)
@@ -58,6 +68,8 @@ def mongodb_parse_filter(query):
                     mongo_src['_tags.' + src['key']] = {"$gte": src['value']}
                 if op == '<=':
                     mongo_src['_tags.' + src['key']] = {"$lte": src['value']}
+                if op == '#':
+                    mongo_src['_tags.' + src['key']] = {"$exists": True}
         logger.debug("mongo_src" + str(mongo_src))
     return mongo_src
 

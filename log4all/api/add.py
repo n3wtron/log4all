@@ -7,7 +7,7 @@ import re
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 logger = logging.getLogger('log4all')
-add_log_regexp = hash_regexp + "(:)" + value_regexp
+add_log_regexp = hash_regexp + "((:)" + value_regexp + "){0,1}"
 
 
 def parse_raw_log(raw_log):
@@ -18,7 +18,10 @@ def parse_raw_log(raw_log):
     raw_tags = matcher.findall(raw_log)
     for raw_tag in raw_tags:
         tag = raw_tag[0].replace("+", "")
-        value = raw_tag[2]
+        if len(raw_tag[1]) == 0:
+            value = True
+        else:
+            value = raw_tag[3]
         result['_tags'][tag] = value
     result['message'] = re.sub('#\+', "", raw_log)
     result['message'] = re.sub(add_log_regexp, "", result['message'])
@@ -30,8 +33,7 @@ def db_insert(request, log, stack=None):
     if stack is not None:
         stack_id = request.mongodb.stacks.insert({'stacktrace': stack})
         log['_stack_id'] = stack_id
-    if 'date' not in log.keys():
-        log['date'] = datetime.datetime.now()
+
     # insert log
     request.mongodb.logs.insert(log)
     request.mongodb.logs.ensure_index('date')
@@ -59,14 +61,20 @@ def api_logs_add(request):
     try:
         logger.debug(request.body)
         raw_log = request.json_body['log']
+
         try:
             raw_stack = request.json_body['stack']
         except KeyError:
             raw_stack = None
+        stack = parse_raw_stack(raw_stack)
 
         logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
         log = parse_raw_log(raw_log)
-        stack = parse_raw_stack(raw_stack)
+        try:
+            log['date'] = datetime.datetime.fromtimestamp(long(request.json_body['date'])/1000)
+        except KeyError:
+            log['date'] = datetime.datetime.now()
+
         db_insert(request, log, stack)
         return {'result': True}
     except Exception as e:

@@ -26,6 +26,6 @@ def main(global_config, **settings):
     config.add_route('detail_send_notification', '/detail_send_notification')
     config.add_route('api_logs_add', '/api/logs/add')
     config.add_route('api_logs_search', '/api/logs/search')
-    config.add_route('api_tags_search', '/api/tags/search')
+    config.add_route('helper_tags_search', '/helper/tags/search')
     config.scan()
     return config.make_wsgi_app()

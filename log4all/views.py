@@ -87,14 +87,14 @@ def result_table(request):
             'logs': result['logs']}
 
 
-@view_config(route_name='api_tags_search', renderer='json', request_method='GET', request_param=['term'])
+@view_config(route_name='helper_tags_search', renderer='json', request_method='GET', request_param=['term'])
 def api_tags_search(request):
     result = list()
     logger.debug("term:" + request.GET['term'])
     current_tags = request.GET['term'].split(' ')
     partial_tag = current_tags[-1]
     logger.debug("partial_tag:" + partial_tag)
-    if partial_tag[0] == '#':
+    if len(partial_tag) > 0 and partial_tag[0] == '#':
         tags = list(
             request.mongodb.tags.find({'name': {'$regex': partial_tag[1:]}}, fields={'_id': False, '_date': False}))
         str_tags = ""
