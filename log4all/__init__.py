@@ -2,24 +2,34 @@ import logging
 import pymongo
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+
 log4all_session_factory = UnencryptedCookieSessionFactoryConfig('log4allsession')
+
+
+def init_db(db):
+    db.tags.ensure_index('name', unique=True)
+    db.logs.ensure_index('date')
+    db.stacks.ensure_index('hash_stacktrace', unique=True)
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    config = Configurator(settings=settings,session_factory=log4all_session_factory)
+    config = Configurator(settings=settings, session_factory=log4all_session_factory)
     logging.getLogger('log4all').debug(str(settings))
     config.include('pyramid_chameleon')
     config.include('pyramid_jinja2')
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.registry.mongo_conn = pymongo.Connection(host=settings['mongodb.hostname'])
+    init_db(config.registry.mongo_conn['log4all'])
 
     def mongo_db(request):
         db = config.registry.mongo_conn['log4all']
         return db
+
     config.add_request_method(mongo_db, 'mongodb', reify=True)
 
-    #Routing
+    # Routing
     config.add_route('home', '/')
     config.add_route('result_table', '/result')
     config.add_route('detail', '/detail')

@@ -53,12 +53,17 @@ input, textarea, select {
 }
 
 #bottom {
-    position: fixed;
+    position: relative;
     bottom: 0;
     width: 100%;
-    text-align: right;
-    font-size: 0.7em;
+    height: 32px;
     color: #ffffff;
+    text-align: center;
+}
+
+#bottom a,a:visited,a:hover{
+    color: #ffffff;
+    text-decoration: none;
 }
 
 a, a:visited, a:hover {
@@ -86,6 +91,10 @@ a, a:visited, a:hover {
     -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
     margin: 20px;
+}
+
+.middle{
+    padding-right: 20px;
 }
 
 .panel .title {

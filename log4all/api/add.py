@@ -1,3 +1,4 @@
+import hashlib
 from log4all.api import hash_regexp, value_regexp
 import logging
 from pyramid.view import view_config
@@ -31,18 +32,21 @@ def parse_raw_log(raw_log):
 def db_insert(request, log, stack=None):
     # add stack if is present
     if stack is not None:
-        stack_id = request.mongodb.stacks.insert({'stacktrace': stack})
-        log['_stack_id'] = stack_id
+        #prevent multiple stacktrace documents
+        hash_stack = hashlib.sha1(''.join(stack)).hexdigest()
+        db_stack = request.mongodb.stacks.find_one({'hash_stacktrace': hash_stack})
+        if db_stack:
+            log['_stack_id'] = db_stack['_id']
+        else:
+            stack_id = request.mongodb.stacks.insert({'hash_stacktrace': hash_stack, 'stacktrace': stack})
+            log['_stack_id'] = stack_id
 
     # insert log
     request.mongodb.logs.insert(log)
-    request.mongodb.logs.ensure_index('date')
 
     # update tags collections
     for tag in log['_tags'].keys():
-        logger.debug("insert tag:" + tag)
         request.mongodb.tags.insert({'name': tag, 'date': datetime.datetime.now()})
-        request.mongodb.tags.ensure_index('name', unique=True)
 
 
 def parse_raw_stack(raw_stack):
@@ -55,28 +59,39 @@ def parse_raw_stack(raw_stack):
     return result
 
 
+def add_log(request, json_log):
+    raw_log = json_log['log']
+    try:
+        log_date = datetime.datetime.fromtimestamp(long(json_log['date']) / 1000)
+    except KeyError:
+        log_date = datetime.datetime.now()
+    try:
+        raw_stack = json_log['stack']
+    except KeyError:
+        raw_stack = None
+
+    stack = parse_raw_stack(raw_stack)
+    logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
+    log = parse_raw_log(raw_log)
+    log['date'] = log_date
+
+    db_insert(request, log, stack)
+    return True
+
+
 @view_config(route_name='api_logs_add', renderer='json',
              request_method='POST', accept='application/json')
 def api_logs_add(request):
+    success = True
     try:
         logger.debug(request.body)
-        raw_log = request.json_body['log']
-
-        try:
-            raw_stack = request.json_body['stack']
-        except KeyError:
-            raw_stack = None
-        stack = parse_raw_stack(raw_stack)
-
-        logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
-        log = parse_raw_log(raw_log)
-        try:
-            log['date'] = datetime.datetime.fromtimestamp(long(request.json_body['date'])/1000)
-        except KeyError:
-            log['date'] = datetime.datetime.now()
-
-        db_insert(request, log, stack)
-        return {'result': True}
+        if 'logs' in request.json_body:
+            logger.info(str(len(request.json_body['logs']))+" to add")
+            for json_log in request.json_body['logs']:
+                success = success and add_log(request, json_log)
+        else:
+            success = add_log(request, request.json_body)
+        return {'result': success}
     except Exception as e:
         logger.error(e.message)
         return {'result': False, 'message': str(e)}
