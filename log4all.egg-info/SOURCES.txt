@@ -4,6 +4,7 @@ production.ini
 setup.py
 log4all/__init__.py
 log4all/views.py
+log4all/websocket.py
 log4all.egg-info/PKG-INFO
 log4all.egg-info/SOURCES.txt
 log4all.egg-info/dependency_links.txt
@@ -459,6 +460,7 @@ log4all/static/css/themes/vader/images/ui-icons_cd0a0a_256x240.png
 log4all/static/css/themes/vader/images/ui-icons_f29a00_256x240.png
 log4all/static/images/32x32/home.png
 log4all/static/images/32x32/info.png
+log4all/static/images/32x32/logo.png
 log4all/static/images/32x32/search.png
 log4all/static/images/32x32/stack.png
 log4all/static/images/64x64/logo.png
@@ -467,6 +469,7 @@ log4all/static/js/jquery-2.1.1.min.js
 log4all/static/js/jquery-ui-1.10.4.min.js
 log4all/static/js/jquery-ui-timepicker-addon.js
 log4all/static/js/jquery.datepair.min.js
+log4all/static/js/socket.io-1.0.4.js
 log4all/static/semantic/css/semantic.css
 log4all/static/semantic/css/semantic.min.css
 log4all/static/semantic/images/loader-large-inverted.gif
@@ -484,3 +487,4 @@ log4all/templates/home.jinja2
 log4all/templates/layout.jinja2
 log4all/templates/left_layout.jinja2
 log4all/templates/result_table.jinja2
+log4all/templates/test.jinja2

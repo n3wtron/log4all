@@ -24,11 +24,11 @@ def parse_hash_expression(raw):
         for raw_tag in raw_tags:
             tag = raw_tag[0]
             if len(raw_tag[1]) == 0:
-                #check if tag exist
+                # check if tag exist
                 operator = '#'
                 value = None
             else:
-                #tag with value
+                # tag with value
                 operator = raw_tag[2]
                 value = raw_tag[3]
 
@@ -74,7 +74,7 @@ def mongodb_parse_filter(query):
     return mongo_src
 
 
-def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10):
+def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page=None):
     """
         Search method
     """
@@ -86,10 +86,14 @@ def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10
     sort_param = (order['column'], -1 if order['ascending'] else 1)
 
     logger.debug("sort_param:" + str(sort_param))
-    qry_result = list(
-        request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'],
-                                  skip=page * result_per_page,
-                                  limit=result_per_page).sort([sort_param]))
+
+    if page is not None and result_per_page is not None:
+        cursor = request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'],
+                                           skip=page * result_per_page,
+                                           limit=result_per_page).sort([sort_param])
+    else:
+        cursor = request.mongodb.tail_logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'])
+    qry_result = list(cursor)
     result['logs'] = list()
     for row in qry_result:
         try:
@@ -99,8 +103,19 @@ def db_search(request, query, dt_since, dt_to, order, page=0, result_per_page=10
         result['logs'].append(row)
 
     result['n_rows'] = n_rows
-    result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
+    if page is not None and result_per_page is not None:
+        result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
     return result
+
+
+def adjust_result(result):
+    # Converting result to json compatible
+    for res in result['logs']:
+        for key in res.keys():
+            if key == '_id':
+                res['_id'] = str(res['_id'])
+            if isinstance(res[key], datetime.datetime):
+                res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
@@ -128,13 +143,24 @@ def api_logs_search(request):
 
     # Search
     result = db_search(request, query, dt_since, dt_to, order, int(page), int(result_per_page))
-    # Converting result to json compatible
-    for res in result['logs']:
-        for key in res.keys():
-            if key == '_id':
-                res['_id'] = str(res['_id'])
-            if isinstance(res[key], datetime.datetime):
-                res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
+    adjust_result(result)
     result['elapsed_time'] = time.time() - start
     result['order'] = order
+    return result
+
+
+@view_config(route_name='api_logs_tail', renderer='json', request_method='GET',
+             request_param=['query', 'dtSince'])
+def api_logs_tail(request):
+    logger.debug("api_logs_tail")
+    query = request.GET['query']
+    dt_since_str = request.GET['dtSince']
+    dt_since = datetime.datetime.fromtimestamp(int(dt_since_str))
+
+    # Order
+    order = {'column': 'date', 'ascending': True}
+
+    result = db_search(request, query, dt_since, datetime.datetime.now(), order)
+    adjust_result(result)
+    logger.debug("tail n_result:"+str(result['n_rows']))
     return result

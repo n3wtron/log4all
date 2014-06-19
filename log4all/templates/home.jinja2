@@ -51,7 +51,13 @@
                 <div class="ui fluid input" style="margin-top: 5px;">
                     <input id="searchEdt" name="query" type="text" placeholder="Query...">
                 </div>
-                <div style="margin-top:5px;display: block;" id="searchBtn" class="ui green button">Search</div>
+                <div style="text-align: center">
+                    <div class="ui buttons" style="margin-top: 5px; display: inline-block; width: 450px;">
+                        <div style="width: 200px;" id="searchBtn" class="ui green button">Search</div>
+                        <div class="or" style="z-index: 1;"></div>
+                        <div style="width: 200px;" id="tailBtn" class="ui red button">Tail</div>
+                    </div>
+                </div>
                 <input type="submit" style="display: none;">
             </form>
         </div>
@@ -81,6 +87,8 @@
         var result_per_page = 10;
         order['column'] = 'date';
         order['ascending'] = true;
+        var tail_timer = null;
+
 
         function searchTag(srcQuery) {
             if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
@@ -92,6 +100,9 @@
         }
 
         function cleanResult() {
+            if (tail_timer != null) {
+                clearTimeout(tail_timer);
+            }
             $("#resultDiv").html("<div class=\"ui active inverted dimmer\"><div class=\"ui text loader\">Searching...</div></div>");
         }
         /**
@@ -131,6 +142,28 @@
                 $('#resultDiv').html(data);
             });
         }// end search function
+
+        function tail() {
+            if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
+                currPage = 0;
+                lastQuery = $("#searchEdt").val()
+                toReset = false;
+            }
+            var searchParam = {
+                query: $("#searchEdt").val()
+            };
+            var url = "{{ 'tail_table' | route_url }}?" + $.param(searchParam);
+            cleanResult();
+            $.ajax({
+                type: "GET",
+                url: url
+            }).done(function (data) {
+                $('#resultDiv').html(data);
+                tail_timer = setInterval(tail_search, 1000);
+            });
+        }
+
+        $('#tailBtn').click(tail);
 
         $('#searchBtn').click(search);
         $('#searchEdt').keypress(function (event) {

@@ -68,6 +68,7 @@ def result_table(request):
     result = api_logs_search(request)
     normal_columns = set()
     tag_columns = set()
+
     for log in result['logs']:
         for nc in log.keys():
             if nc[0] != '_':
@@ -105,3 +106,10 @@ def api_tags_search(request):
                 choice = str_tags + '#' + tag['name']
                 result.append({'label': choice, 'value': choice})
     return result
+
+@view_config(route_name='tail_table', renderer='templates/tail_table.jinja2', request_method='GET',
+             request_param=['query'])
+def tail_table(request):
+    return {
+        'query':request.GET['query']
+    }

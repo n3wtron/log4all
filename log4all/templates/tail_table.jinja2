@@ -1,0 +1,25 @@
+<script>
+    var sinceSeconds = null;
+    function tail_search() {
+        sinceSeconds = Math.ceil(new Date().getTime() / 1000)-1;
+        var tailParam = {
+            query: "{{ query }}",
+            dtSince: sinceSeconds
+        };
+
+        var tail_url = "{{ 'api_logs_tail' | route_url }}?" + $.param(tailParam);
+        $.ajax({
+            url: tail_url
+        }).done(function (data) {
+                    if (data['n_rows'] > 0) {
+                        for (var i = 0; i < data['n_rows']; i++) {
+                            $('#tailResult').append(data['logs'][i]['date'] + ":" + data['logs'][i]['message'] + "<br/>");
+                        }
+                    }
+                }
+        );
+    }
+
+</script>
+<div id="tailResult"></div>
+<div class="ui active inline loader"></div>

@@ -42,7 +42,10 @@ def db_insert(request, log, stack=None):
             log['_stack_id'] = stack_id
 
     # insert log
-    request.mongodb.logs.insert(log)
+    log_id = request.mongodb.logs.insert(log)
+    tail_log = log
+    tail_log['_id']=log_id
+    request.mongodb.tail_logs.insert(tail_log)
 
     # update tags collections
     for tag in log['_tags'].keys():

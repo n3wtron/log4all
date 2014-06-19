@@ -6,7 +6,7 @@ Home-page: UNKNOWN
 Author: UNKNOWN
 Author-email: UNKNOWN
 License: UNKNOWN
-Description: <img src="https://travis-ci.org/n3wtron/log4all.svg?branch=master"/>
+Description: [![Build Status](https://travis-ci.org/n3wtron/log4all.svg?branch=master)](https://travis-ci.org/n3wtron/log4all)
         Log4All
         =======
         
@@ -25,7 +25,7 @@ Description: <img src="https://travis-ci.org/n3wtron/log4all.svg?branch=master"/
         
         
         
-Keywords: web pyramid pylons
+Keywords: web pyramid
 Platform: UNKNOWN
 Classifier: Programming Language :: Python
 Classifier: Framework :: Pyramid
