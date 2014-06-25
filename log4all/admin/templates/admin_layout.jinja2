@@ -1,0 +1,13 @@
+{% extends 'log4all:templates/left_layout.jinja2' %}
+{% block leftMenu %}
+    <div class="ui vertical inverted labeled icon menu">
+        <a class="red item" href="{{ 'admin_applications' | route_url }}">
+            <i class="terminal icon"></i>
+            Applications
+        </a>
+        <a class="red item">
+            <i class="signal icon"></i>
+            Stats
+        </a>
+    </div>
+{% endblock %}

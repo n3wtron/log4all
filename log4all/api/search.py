@@ -1,9 +1,13 @@
-from log4all.api import hash_regexp, value_regexp
 import logging
-from pyramid.view import view_config
 import datetime
 import time
 import re
+
+from bson.dbref import DBRef
+from pyramid.view import view_config
+
+from log4all.api import hash_regexp, value_regexp
+
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
@@ -83,39 +87,37 @@ def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page
     search_filter['date'] = {'$gte': dt_since, '$lte': dt_to}
     logger.debug("Search filter:" + str(search_filter))
     n_rows = request.mongodb.logs.find(search_filter).count()
-    sort_param = (order['column'], -1 if order['ascending'] else 1)
+    sort_param = (order['column'], 1 if order['ascending'] else -1)
 
     logger.debug("sort_param:" + str(sort_param))
 
     if page is not None and result_per_page is not None:
-        cursor = request.mongodb.logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'],
+        cursor = request.mongodb.logs.find(search_filter,
+                                           fields=['date', 'level', 'application', 'message', '_stack_id', '_tags'],
                                            skip=page * result_per_page,
                                            limit=result_per_page).sort([sort_param])
     else:
-        cursor = request.mongodb.tail_logs.find(search_filter, fields=['date', 'message', '_stack_id', '_tags'])
-    qry_result = list(cursor)
-    result['logs'] = list()
-    for row in qry_result:
-        try:
-            row['_stack_id'] = str(row['_stack_id'])
-        except KeyError:
-            pass
-        result['logs'].append(row)
-
+        cursor = request.mongodb.tail_logs.find(search_filter,
+                                                fields=['date', 'level', 'application', 'message', '_stack_id',
+                                                        '_tags'])
+        cursor.sort([sort_param])
+    result['logs'] = list(cursor)
     result['n_rows'] = n_rows
     if page is not None and result_per_page is not None:
         result['pages'] = (n_rows / result_per_page) + (n_rows % result_per_page != 0) if 1 else 0
     return result
 
 
-def adjust_result(result):
+def adjust_result(db, result):
     # Converting result to json compatible
     for res in result['logs']:
         for key in res.keys():
-            if key == '_id':
-                res['_id'] = str(res['_id'])
+            if key == '_id' or key == '_stack_id':
+                res[key] = str(res[key])
             if isinstance(res[key], datetime.datetime):
-                res[key] = res[key].strftime("%Y-%m-%d %H:%M:%S")
+                res[key] = time.mktime(res[key].timetuple())
+            if key == 'application' and isinstance(res[key], DBRef):
+                res[key] = db.dereference(res[key])['name']
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
@@ -143,7 +145,7 @@ def api_logs_search(request):
 
     # Search
     result = db_search(request, query, dt_since, dt_to, order, int(page), int(result_per_page))
-    adjust_result(result)
+    adjust_result(request.mongodb, result)
     result['elapsed_time'] = time.time() - start
     result['order'] = order
     return result
@@ -161,6 +163,6 @@ def api_logs_tail(request):
     order = {'column': 'date', 'ascending': True}
 
     result = db_search(request, query, dt_since, datetime.datetime.now(), order)
-    adjust_result(result)
-    logger.debug("tail n_result:"+str(result['n_rows']))
+    adjust_result(request.mongodb, result)
+    logger.debug("tail n_result:" + str(result['n_rows']))
     return result

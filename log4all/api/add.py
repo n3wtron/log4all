@@ -1,9 +1,13 @@
 import hashlib
-from log4all.api import hash_regexp, value_regexp
 import logging
-from pyramid.view import view_config
 import datetime
 import re
+
+from bson import ObjectId, DBRef
+from pyramid.view import view_config
+
+from log4all.api import hash_regexp, value_regexp
+
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
@@ -32,7 +36,7 @@ def parse_raw_log(raw_log):
 def db_insert(request, log, stack=None):
     # add stack if is present
     if stack is not None:
-        #prevent multiple stacktrace documents
+        # prevent multiple stacktrace documents
         hash_stack = hashlib.sha1(''.join(stack)).hexdigest()
         db_stack = request.mongodb.stacks.find_one({'hash_stacktrace': hash_stack})
         if db_stack:
@@ -44,7 +48,7 @@ def db_insert(request, log, stack=None):
     # insert log
     log_id = request.mongodb.logs.insert(log)
     tail_log = log
-    tail_log['_id']=log_id
+    tail_log['_id'] = log_id
     request.mongodb.tail_logs.insert(tail_log)
 
     # update tags collections
@@ -62,7 +66,17 @@ def parse_raw_stack(raw_stack):
     return result
 
 
-def add_log(request, json_log):
+def add_log(request, json_log, application):
+    app = request.mongodb.applications.find_one({'name': application})
+    if app is None:
+        logger.error('Application ' + application + ' not found')
+        return False, 'Application ' + application + ' not found'
+
+    if 'level' in json_log:
+        level = json_log['level']
+    else:
+        level = 'INFO'
+
     raw_log = json_log['log']
     try:
         log_date = datetime.datetime.fromtimestamp(long(json_log['date']) / 1000)
@@ -77,9 +91,10 @@ def add_log(request, json_log):
     logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
     log = parse_raw_log(raw_log)
     log['date'] = log_date
-
+    log['application'] = DBRef('applications', ObjectId(app['_id']))
+    log['level'] = level
     db_insert(request, log, stack)
-    return True
+    return True, None
 
 
 @view_config(route_name='api_logs_add', renderer='json',
@@ -88,13 +103,19 @@ def api_logs_add(request):
     success = True
     try:
         logger.debug(request.body)
+        err_msg = None
         if 'logs' in request.json_body:
-            logger.info(str(len(request.json_body['logs']))+" to add")
+            application = request.json_body['application']
+            logger.info(str(len(request.json_body['logs'])) + " to add")
             for json_log in request.json_body['logs']:
-                success = success and add_log(request, json_log)
+                add_success, add_err_msg = add_log(request, json_log, application)
+                if not add_success:
+                    err_msg = add_err_msg
+                success = success and add_success
         else:
-            success = add_log(request, request.json_body)
-        return {'result': success}
+            application = request.json_body['application']
+            success, err_msg = add_log(request, request.json_body, application)
+        return {'result': success, 'message': err_msg}
     except Exception as e:
         logger.error(e.message)
         return {'result': False, 'message': str(e)}

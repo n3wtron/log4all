@@ -4,7 +4,6 @@ production.ini
 setup.py
 log4all/__init__.py
 log4all/views.py
-log4all/websocket.py
 log4all.egg-info/PKG-INFO
 log4all.egg-info/SOURCES.txt
 log4all.egg-info/dependency_links.txt
@@ -12,6 +11,8 @@ log4all.egg-info/entry_points.txt
 log4all.egg-info/not-zip-safe
 log4all.egg-info/requires.txt
 log4all.egg-info/top_level.txt
+log4all/admin/__init__.py
+log4all/admin/views.py
 log4all/api/__init__.py
 log4all/api/add.py
 log4all/api/search.py
@@ -487,4 +488,6 @@ log4all/templates/home.jinja2
 log4all/templates/layout.jinja2
 log4all/templates/left_layout.jinja2
 log4all/templates/result_table.jinja2
-log4all/templates/test.jinja2
+log4all/templates/tail_table.jinja2
+log4all/templates/admin/admin_layout.jinja2
+log4all/templates/admin/home.jinja2

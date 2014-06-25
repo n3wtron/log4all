@@ -1,6 +1,7 @@
 import logging
 import smtplib
 from bson import ObjectId
+import datetime
 from pyramid.url import route_url
 from pyramid.view import view_config
 from log4all.api.search import api_logs_search
@@ -75,6 +76,8 @@ def result_table(request):
                 normal_columns.add(nc)
             if nc == '_tags':
                 tag_columns.update(log['_tags'].keys())
+            if nc == 'date':
+                log[nc] = datetime.datetime.fromtimestamp(log[nc]).strftime("%Y-%m-%d %H:%M:%S")
     max_pages = int(result['pages'])
 
     return {'normal_columns': normal_columns,
@@ -110,6 +113,7 @@ def api_tags_search(request):
 @view_config(route_name='tail_table', renderer='templates/tail_table.jinja2', request_method='GET',
              request_param=['query'])
 def tail_table(request):
+    logger.debug("query:"+str(request.GET['query']))
     return {
-        'query':request.GET['query']
+        'query':str(request.GET['query'])
     }

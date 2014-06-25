@@ -1,0 +1,67 @@
+{% extends 'admin_layout.jinja2' %}
+{% block head %}
+    <script src="{{ 'log4all:static/js/chart.min.js'|static_url }}"></script>
+{% endblock %}
+{% block center %}
+
+    <div class="panel" style="float: left;width: 800px;">
+        <div class="title">Edit Application</div>
+        <div class="contentPanel">
+            <form id="saveFrm" method="POST">
+                <input type="hidden" name="idApp" value="{{ app['_id'] }}">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+
+                <div class="ui form segment">
+                    <div class="field">
+                        <label><b>Name</b></label>
+
+                        <div class="ui left labeled input">
+                            <input type="text" placeholder="Name" name='name' value="{{ app['name'] }}">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label><b>Description</b></label>
+                        <textarea name="description">{{ app['description'] }}</textarea>
+                    </div>
+                    <div id="saveBtn" class="ui blue submit button">Save</div>
+                    <script>
+                        $('#saveBtn').click(function () {
+                            $('#saveFrm').submit();
+                        });
+                    </script>
+
+                    <!-- Error panel-->
+                    {% if error %}
+                        <div class="ui red ui label">{{ error }}</div>
+                    {% endif %}
+                    {% if saved %}
+                        <div class="ui green ui label"><i class="save big icon"></i>Saved</div>
+                    {% endif %}
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+     <div class="panel" style="float: left;">
+        <div class="title">Levels Stat</div>
+        <div class="contentPanel">
+            <div style="float: right;">
+                {%for stat in level_stat %}
+                    <span style="color:{{ stat['color'] }} ;">{{ stat['level'] }} :{{ stat['value'] }}<br/></span>
+                {% endfor %}
+            </div>
+            <canvas id="levelChart" width="400" height="400"></canvas>
+            <script>
+                var chartData = [
+                    {%- for stat in level_stat %}
+                        {value:{{  stat['value'] }},color: '{{ stat['color']  }}'},
+                    {% endfor -%}
+                ];
+                var ctx = document.getElementById("levelChart").getContext("2d");
+                new Chart(ctx).Doughnut(chartData);
+            </script>
+        </div>
+    </div>
+
+{% endblock %}

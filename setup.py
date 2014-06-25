@@ -12,7 +12,7 @@ requires = [
     'pyramid_jinja2',
     'pyramid_debugtoolbar',
     'waitress',
-    'pymongo',
+    'pymongo', 'celery', 'bson'
     ]
 
 setup(name='log4all',

@@ -1,4 +1,5 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 
 html {
     margin: 0px;
@@ -46,6 +47,7 @@ input, textarea, select {
     font-size: 2em;
     font-weight: bold;
     height: 50px;
+
 }
 
 #top img {
@@ -71,19 +73,20 @@ a, a:visited, a:hover {
 }
 
 #leftMenu {
-    text-align: center;
     float: left;
-    width: 50px;
+    width: 110px;
     color: #ffffff;
     background: #282828;
-    top: 0px;
+    top: 50px;
     bottom: 0px;
     display: block;
     position: absolute;
+    padding-top: 10px;
+
 }
 
 #leftCenter {
-    margin-left: 80px;
+    margin-left: 120px;
 }
 
 .panel {
@@ -143,4 +146,8 @@ a, a:visited, a:hover {
 #pageLinks a {
     color: black;
     margin: 2px;
+}
+
+.monospace{
+    font-family: 'Droid Sans Mono', ;
 }

@@ -1,9 +1,12 @@
 <script>
     var sinceSeconds = null;
+    var followLog = true;
     function tail_search() {
-        sinceSeconds = Math.ceil(new Date().getTime() / 1000)-1;
+        if (sinceSeconds == null) {
+            sinceSeconds = Math.ceil(new Date().getTime() / 1000) - 1;
+        }
         var tailParam = {
-            query: "{{ query }}",
+            query: "{{ query |safe}}",
             dtSince: sinceSeconds
         };
 
@@ -12,8 +15,26 @@
             url: tail_url
         }).done(function (data) {
                     if (data['n_rows'] > 0) {
+                        var dt_log;
+                        var row;
                         for (var i = 0; i < data['n_rows']; i++) {
-                            $('#tailResult').append(data['logs'][i]['date'] + ":" + data['logs'][i]['message'] + "<br/>");
+                            sinceSeconds = data['logs'][i]['date'];
+                            dt_log = new Date(sinceSeconds * 1000);
+                            //$('#tailResult').append("<a href=\"{{ 'detail' | route_url }}?id="+data['logs'][i]['_id']>"+\">");
+                            row = "<a href=\"{{ 'detail' | route_url }}?id=" + data['logs'][i]['_id'] + "\">";
+                            row += dt_log.toLocaleString() ;
+                            row+="&nbsp;&nbsp;" + data['logs'][i]['level'];
+                            row+="&nbsp;&nbsp;" + data['logs'][i]['application'];
+                            row+="&nbsp;&nbsp;" + data['logs'][i]['message'];
+                            $.each(data['logs'][i]['_tags'], function (t, v) {
+                                row += " #" + t + ":" + v;
+                            });
+                            row += "</a/><br/>";
+                            $('#tailResult').append(row);
+                        }
+                        sinceSeconds += 1;
+                        if (followLog) {
+                            window.scrollTo(0, document.body.scrollHeight);
                         }
                     }
                 }
@@ -21,5 +42,23 @@
     }
 
 </script>
-<div id="tailResult"></div>
-<div class="ui active inline loader"></div>
+<div style="text-align: right;">
+    <input type="checkbox" id="followLog1" checked="checked">
+    <label>Scroll to bottom</label>
+</div>
+<div id="tailResult" class="monospace"></div>
+<i class="ui loading big icon "></i>
+<div style="text-align: right;">
+    <input type="checkbox" id="followLog2" checked="checked">
+    <label>Scroll to bottom</label>
+</div>
+<script>
+    $('#followLog1').click(function () {
+        followLog = $(this).is(':checked');
+        $('#followLog2').prop('checked', followLog);
+    });
+    $('#followLog2').click(function () {
+        followLog = $(this).is(':checked');
+        $('#followLog1').prop('checked', followLog);
+    });
+</script>

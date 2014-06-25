@@ -2,7 +2,5 @@ pyramid
 pyramid_chameleon
 pyramid_jinja2
 pyramid_debugtoolbar
-gunicorn
+waitress
 pymongo
-gevent-socketio
-gevent-websocket

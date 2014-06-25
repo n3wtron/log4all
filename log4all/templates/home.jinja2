@@ -15,6 +15,16 @@
                 <input type="submit" style="display: none;">
             </form>
         </div>
+        <div id="addedLogDimmer" class="ui dimmer" style="">
+            <div class="content">
+                <div class="center">
+                    <h2 class="ui inverted icon header">
+                        <i class="icon circular inverted emphasized green add"></i>
+                        Log Added
+                    </h2>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script language="JavaScript">
@@ -26,11 +36,10 @@
                 dataType: 'json',
                 data: "{\"log\":\"" + $('#logEdt').val() + "\"}",
                 success: function (data, textStatus, jqXHR) {
-                    alert("Log added");
+                    $('#addedLogDimmer').dimmer('show');
                 }
             });
         }
-        ;
         $('#addBtn').click(addLog);
         $('#addLogFrm').submit(addLog);
     </script>
