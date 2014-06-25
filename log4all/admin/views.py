@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 
 from bson import ObjectId
+from bson.dbref import DBRef
 from pymongo.errors import DuplicateKeyError
 from pyramid.view import view_config
 
@@ -52,7 +53,10 @@ def get_applications(request):
 
 
 def get_level_count(db, application):
-    return db.logs.aggregate({'$group': {'_id': "$level", 'count': {'$sum': 1}}})['result']
+    return db.logs.aggregate([
+                        {'$match': {'application': DBRef('applications', application)}},
+                        {'$group': {'_id': "$level", 'count': {'$sum': 1}}},
+                        ])['result']
 
 
 colors = {'DEBUG': "#99CCCC", 'INFO': '#00CCFF', 'WARN': '#FF9900', 'ERROR': '#FF0000'}
@@ -78,5 +82,6 @@ def edit_application(request):
     result['level_stat'] = list()
 
     for level_stat in get_level_count(request.mongodb, app['_id']):
-        result['level_stat'].append({'level': level_stat['_id'], 'value': level_stat['count'], 'color': colors[level_stat['_id']]})
+        result['level_stat'].append(
+            {'level': level_stat['_id'], 'value': level_stat['count'], 'color': colors[level_stat['_id']]})
     return result
