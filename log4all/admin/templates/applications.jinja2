@@ -40,7 +40,7 @@
                 var dt = null;
                 $.each(data, function (i, app) {
                     tblBody += "<tr><td>";
-                    tblBody += '<i class="large edit icon" onclick="editApp(\''+app['_id']+'\');"></i>';
+                    tblBody += '<i class="large edit icon" style="cursor:pointer;" onclick="editApp(\''+app['_id']+'\');"></i>';
                     tblBody += app['name'] + "</td>";
                     tblBody += "<td>" + app['description'] + "</td>";
                     if (app['date'] != null) {

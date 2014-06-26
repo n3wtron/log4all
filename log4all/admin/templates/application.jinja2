@@ -23,7 +23,56 @@
                         <label><b>Description</b></label>
                         <textarea name="description">{{ app['description'] }}</textarea>
                     </div>
-                    <div id="saveBtn" class="ui blue submit button">Save</div>
+
+                    <div class="ui blue segment">
+                        <h3 class="ui black header">
+                            Level Policies
+                            <div class="sub header">Archive/Delete policies</div>
+                        </h3>
+                        <div class="ui labeled menu">
+                            {% for level in levels %}
+                                <a class="item" onclick="showLevelDiv(this,'{{ level }}');">{{ level }}</a>
+                            {% endfor %}
+                        </div>
+                        {% for level in levels %}
+                            <div id="{{ level }}_div" style="display: none;">
+                                <div class="field">
+                                    <label>Archive after (days)</label>
+                                    <input type="number" placeholder="days" name="{{ level }}_archive"
+                                           value="{{ app['levels'][level]['archive'] }}">
+                                </div>
+                                <div class="field">
+                                    <label>Delete after (days)</label>
+                                    <input type="number" placeholder="days" name="{{ level }}_delete"
+                                           value="{{ app['levels'][level]['delete'] }}">
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <script>
+                            var currLevel = null;
+                            var currLnk = null;
+                            function showLevelDiv(lnk, level) {
+                                if (currLevel != null) {
+                                    $('#' + currLevel + "_div").hide();
+                                }
+                                if (currLnk != null) {
+                                    $(currLnk).attr('class', 'item');
+                                }
+                                if (currLevel != level) {
+                                    $(lnk).attr('class', 'item orange active');
+                                    currLevel = level;
+                                    currLnk = lnk;
+                                    $('#' + level + "_div").show();
+                                } else {
+                                    currLevel = null;
+                                    currLnk = null;
+                                }
+                            }
+                        </script>
+                    </div>
+
+
+                    <div id="saveBtn" class="ui blue submit button segment">Save</div>
                     <script>
                         $('#saveBtn').click(function () {
                             $('#saveFrm').submit();
@@ -35,19 +84,45 @@
                         <div class="ui red ui label">{{ error }}</div>
                     {% endif %}
                     {% if saved %}
-                        <div class="ui green ui label"><i class="save big icon"></i>Saved</div>
+                        <div id="savedDimmer" class="ui dimmer">
+                            <div class="content">
+                                <div class="center">
+                                    <h2 class="ui inverted icon header">
+                                        <i class="icon circular inverted emphasized green save"></i>
+                                        Saved
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            $('#savedDimmer').dimmer('show');
+                        </script>
                     {% endif %}
-
                 </div>
-
             </form>
+            <script>
+                $('#saveFrm').form({
+                    name: {
+                        identifier: 'name',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Please enter a non empty application name'
+                            }
+                        ]
+                    }
+                }, {
+                    inline: true,
+                    on: 'blur'
+                });
+            </script>
         </div>
     </div>
-     <div class="panel" style="float: left;">
+    <div class="panel" style="float: left;">
         <div class="title">Levels Stat</div>
         <div class="contentPanel">
             <div style="float: right;">
-                {%for stat in level_stat %}
+                {% for stat in level_stat %}
                     <span style="color:{{ stat['color'] }} ;">{{ stat['level'] }} :{{ stat['value'] }}<br/></span>
                 {% endfor %}
             </div>
@@ -55,7 +130,7 @@
             <script>
                 var chartData = [
                     {%- for stat in level_stat %}
-                        {value:{{  stat['value'] }},color: '{{ stat['color']  }}'},
+                        {value:{{  stat['value'] }}, color: '{{ stat['color']  }}'},
                     {% endfor -%}
                 ];
                 var ctx = document.getElementById("levelChart").getContext("2d");

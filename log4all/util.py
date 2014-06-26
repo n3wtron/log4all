@@ -2,7 +2,12 @@ import datetime
 import time
 
 from bson.objectid import ObjectId
+
+
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
+
+LEVELS = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL']
+LEVEL_COLORS = {'DEBUG': "#99CCCC", 'INFO': '#00CCFF', 'WARN': '#FF9900', 'ERROR': '#FF0000', 'FATAL': '#000000'}
 
 
 def adjust_record(data):
