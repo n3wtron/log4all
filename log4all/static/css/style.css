@@ -153,4 +153,13 @@ a, a:visited, a:hover {
 
 .monospace{
     font-family: 'Droid Sans Mono', ;
+    line-height:150%;
+}
+
+.monospace a, a:visited{
+    text-decoration:none;
+}
+
+.monospace a:hover{
+    text-decoration:underline;
 }

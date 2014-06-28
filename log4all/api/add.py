@@ -100,6 +100,7 @@ def add_log(request, json_log, application):
 @view_config(route_name='api_logs_add', renderer='json',
              request_method='POST', accept='application/json')
 def api_logs_add(request):
+    logger.debug('Add Log request:'+str(request.json_body))
     success = True
     try:
         logger.debug(request.body)

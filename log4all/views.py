@@ -1,10 +1,14 @@
 import logging
 import smtplib
-from bson import ObjectId
 import datetime
+
+from bson import ObjectId
 from pyramid.url import route_url
 from pyramid.view import view_config
+
 from log4all.api.search import api_logs_search
+from log4all.util import LEVEL_COLORS
+
 
 logger = logging.getLogger('log4all')
 
@@ -18,6 +22,7 @@ def home_view(request):
 def detail_view(request):
     try:
         log = request.mongodb.logs.find_one({'_id': ObjectId(request.GET['id'])})
+        log['application'] = request.mongodb.dereference(log['application'])
         try:
             stack = request.mongodb.stacks.find_one({'_id': log['_stack_id']})
         except KeyError:
@@ -92,7 +97,7 @@ def result_table(request):
 
 
 @view_config(route_name='helper_tags_search', renderer='json', request_method='GET', request_param=['term'])
-def api_tags_search(request):
+def helper_tags_search(request):
     result = list()
     logger.debug("term:" + request.GET['term'])
     current_tags = request.GET['term'].split(' ')
@@ -110,10 +115,22 @@ def api_tags_search(request):
                 result.append({'label': choice, 'value': choice})
     return result
 
+
+@view_config(route_name='helper_application_search', renderer='json', request_method='GET', request_param=['term'])
+def helper_application_search(request):
+    result = list()
+    logger.debug("term:" + request.GET['term'])
+    apps = list(request.mongodb.applications.find({'name': {'$regex': request.GET['term']}}, fields={'name': True}))
+    for app in apps:
+        result.append({'label': app['name'], 'value': app['name']})
+    return result
+
+
 @view_config(route_name='tail_table', renderer='templates/tail_table.jinja2', request_method='GET',
              request_param=['query'])
 def tail_table(request):
-    logger.debug("query:"+str(request.GET['query']))
+    logger.debug("query:" + str(request.GET['query']))
     return {
-        'query':str(request.GET['query'])
+        'level_colors': LEVEL_COLORS,
+        'query': str(request.GET['query'])
     }

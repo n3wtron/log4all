@@ -6,12 +6,29 @@
     <div class="panel" style="float:left;display: inline-block;">
         <div class="title">Add Log</div>
         <div class="contentPanel">
-            <form id="addLogFrm">
-                <div class="ui fluid input" style="margin-top: 5px;">
-                    <textarea id="logEdt" name="log" type="text" placeholder="Log..." cols="50"
-                              rows="3"></textarea>
+            <form id="addLogFrm" class="ui form">
+                <div class="ui left fluid icon input">
+                    <input id="applicationFld" type="text" placeholder="Application">
+                    <i class="desktop icon"></i>
                 </div>
-                <div style="margin-top:5px;display: block;" id="addBtn" class="ui green button">Add</div>
+                <div class="field" style="margin-top: 5px; " >
+                    <textarea style="height: 30px;" id="logEdt" name="log" placeholder="Message..." cols="50" rows="3"></textarea>
+                </div>
+                <div class="ui buttons">
+                    <div style="margin-top:5px;display: block;" class="ui green button" onclick="addLog('DEBUG');">
+                        Debug
+                    </div>
+                    <div style="margin-top:5px;display: block;" class="ui blue button" onclick="addLog('INFO');">Info
+                    </div>
+                    <div style="margin-top:5px;display: block;" class="ui orange button" onclick="addLog('WARN');">
+                        Warn
+                    </div>
+                    <div style="margin-top:5px;display: block;" class="ui red button" onclick="addLog('ERROR');">Error
+                    </div>
+                    <div style="margin-top:5px;display: block;" class="ui black button" onclick="addLog('FATAL');">
+                        Fatal
+                    </div>
+                </div>
                 <input type="submit" style="display: none;">
             </form>
         </div>
@@ -25,23 +42,45 @@
                 </div>
             </div>
         </div>
+        <div id="errorLogDimmer" class="ui dimmer" style="">
+            <div class="content">
+                <div class="center">
+                    <h2 class="ui inverted icon header">
+                        <i class="icon circular inverted emphasized red add"></i>
+                        <span id="addErrorMsg">Error adding log</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script language="JavaScript">
-        function addLog() {
+        $('#applicationFld').autocomplete({
+            minLength: 2,
+            source: "{{ 'helper_application_search' | route_url }}"
+        });
+        function addLog(level) {
+            var log = {
+                'application': $('#applicationFld').val(),
+                'level': level,
+                'log': $('#logEdt').val()
+            }
             $.ajax({
                 type: "POST",
                 url: "{{ 'api_logs_add'|route_url }}",
                 contentType: "application/json",
                 dataType: 'json',
-                data: "{\"log\":\"" + $('#logEdt').val() + "\"}",
+                data: JSON.stringify(log),
                 success: function (data, textStatus, jqXHR) {
-                    $('#addedLogDimmer').dimmer('show');
+                    if (data['result']) {
+                        $('#addedLogDimmer').dimmer('show');
+                    }else{
+                        $('#addErrorMsg').html('Error:'+data['message']);
+                        $('#errorLogDimmer').dimmer('show');
+                    }
                 }
             });
         }
-        $('#addBtn').click(addLog);
-        $('#addLogFrm').submit(addLog);
     </script>
     <div class="panel" style="float:left;width: 50%;">
         <div class="title">Search</div>

@@ -1,6 +1,11 @@
 <script>
     var sinceSeconds = null;
     var followLog = true;
+    var level_colors = {
+        {%- for lc in level_colors %}
+            '{{ lc }}': '{{ level_colors[lc] }}',
+        {% endfor %}
+    };
     function tail_search() {
         if (sinceSeconds == null) {
             sinceSeconds = Math.ceil(new Date().getTime() / 1000) - 1;
@@ -17,19 +22,21 @@
                     if (data['n_rows'] > 0) {
                         var dt_log;
                         var row;
+                        var level;
                         for (var i = 0; i < data['n_rows']; i++) {
                             sinceSeconds = data['logs'][i]['date'];
                             dt_log = new Date(sinceSeconds * 1000);
-                            //$('#tailResult').append("<a href=\"{{ 'detail' | route_url }}?id="+data['logs'][i]['_id']>"+\">");
-                            row = "<a href=\"{{ 'detail' | route_url }}?id=" + data['logs'][i]['_id'] + "\">";
-                            row += dt_log.toLocaleString() ;
-                            row+="&nbsp;&nbsp;" + data['logs'][i]['level'];
-                            row+="&nbsp;&nbsp;" + data['logs'][i]['application'];
-                            row+="&nbsp;&nbsp;" + data['logs'][i]['message'];
+                            level = data['logs'][i]['level'];
+                            row = "<span class='log'>";
+                            row += "<a style=\"color:" + level_colors[level] + ";\" href=\"{{ 'detail' | route_url }}?id=" + data['logs'][i]['_id'] + "\">";
+                            row += dt_log.toLocaleString();
+                            row += "&nbsp;&nbsp;" + level;
+                            row += "&nbsp;&nbsp;" + data['logs'][i]['application'];
+                            row += "&nbsp;&nbsp;" + data['logs'][i]['message'];
                             $.each(data['logs'][i]['_tags'], function (t, v) {
                                 row += " #" + t + ":" + v;
                             });
-                            row += "</a/><br/>";
+                            row += "</span></a/><br/>";
                             $('#tailResult').append(row);
                         }
                         sinceSeconds += 1;

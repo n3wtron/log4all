@@ -164,5 +164,6 @@ def api_logs_tail(request):
 
     result = db_search(request, query, dt_since, datetime.datetime.now(), order)
     adjust_result(request.mongodb, result)
+
     logger.debug("tail n_result:" + str(result['n_rows']))
     return result

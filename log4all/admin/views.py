@@ -23,6 +23,16 @@ def admin_applications(request):
     return {}
 
 
+def _init_applications_levels(app):
+    application_levels = dict()
+    app['levels'] = application_levels
+    application_levels['DEBUG'] = dict()
+    application_levels['INFO'] = dict()
+    application_levels['WARN'] = dict()
+    application_levels['ERROR'] = dict()
+    application_levels['FATAL'] = dict()
+
+
 @view_config(route_name="admin_add_application", renderer='json', request_method='POST')
 def add_application(request):
     try:
@@ -32,13 +42,12 @@ def add_application(request):
         application['name'] = application_name
         application['description'] = application_description
         application['date'] = datetime.now()
-        application_levels = dict()
-        application['levels'] = application_levels
-        application_levels['DEBUG'] = dict(archive=0, delete=5)
-        application_levels['INFO'] = dict(archive=15, delete=30)
-        application_levels['WARN'] = dict(archive=30, delete=60)
-        application_levels['ERROR'] = dict(archive=90, delete=180)
-        application_levels['FATAL'] = dict(archive=180, delete=365)
+        _init_applications_levels(application)
+        application['levels']['DEBUG']['delete'] = 5
+        application['levels']['INFO']['delete'] = 30
+        application['levels']['WARN']['delete'] = 60
+        application['levels']['ERROR']['archive'] = 90
+        application['levels']['FATAL']['archive'] = 180
 
         request.mongodb.applications.insert(application, w=1, continue_on_error=False)
         return {'result': True}
@@ -74,17 +83,22 @@ def edit_application(request):
         app = request.mongodb.applications.find_one({'_id': ObjectId(request.POST['idApp'])})
         app['name'] = request.POST['name']
         app['description'] = request.POST['description']
-
+        _init_applications_levels(app)
         try:
+            logger.debug(str(request.POST))
             for post_param in request.POST.keys():
-                if post_param.endswith('_delete') or post_param.endswith('_archive'):
+                if post_param.endswith('_delete_days') or post_param.endswith('_archive_days'):
                     part = post_param.split('_')
                     level = part[0]
                     param_type = part[1]
-                    if request.POST[post_param].strip() != '':
-                        app['levels'][level][param_type] = int(request.POST[post_param])
+                    if level + '_to_archive' in request.POST:
+                        if param_type == 'archive':
+                            app['levels'][level][param_type] = int(request.POST[post_param])
+                    else:
+                        if param_type == 'delete':
+                            app['levels'][level][param_type] = int(request.POST[post_param])
 
-            request.mongodb.applications.update({'_id': ObjectId(request.POST['idApp'])}, app, w=1)
+            request.mongodb.applications.save(app, w=1)
             result['saved'] = True
         except DuplicateKeyError as e:
             result['error'] = e.message

@@ -29,31 +29,55 @@
                             Level Policies
                             <div class="sub header">Archive/Delete policies</div>
                         </h3>
-                        <div class="ui labeled menu">
+                        <div class="ui tiered labeled menu">
                             {% for level in levels %}
                                 <a class="item" onclick="showLevelDiv(this,'{{ level }}');">{{ level }}</a>
                             {% endfor %}
                         </div>
                         {% for level in levels %}
                             <div id="{{ level }}_div" style="display: none;">
-                                <div class="field">
-                                    <label>Archive after (days)</label>
-                                    <input type="number" placeholder="days" name="{{ level }}_archive"
-                                           value="{{ app['levels'][level]['archive'] }}">
+
+                                <div class="inline field">
+                                    Delete
+                                    <div class="ui slider checkbox">
+                                        <input id="{{ level }}_to_archive_chk" name="{{ level }}_to_archive"
+                                               type="checkbox" onclick="showArchiveDeletePanel('{{ level }}');"
+                                               {%- if app['levels'][level]['archive'] %}checked="checked"{% endif -%}
+                                                >
+                                        <label for="{{ level }}_to_archive_chk"></label>
+                                    </div>
+                                    Archive
                                 </div>
-                                <div class="field">
+                                <div class="field" id="{{ level }}_archive_div" style="{%- if not app['levels'][level]['archive'] %}display:none;{% endif -%}">
+                                    <label>Archive after (days)</label>
+                                    <input type="number" placeholder="days" name="{{ level }}_archive_days"
+                                           min="1"
+                                           value="{{ app['levels'][level]['archive'] | default('1') }}">
+                                </div>
+                                <div class="field" id="{{ level }}_delete_div"  style="{%- if not app['levels'][level]['delete'] %}display:none;{% endif -%}">
                                     <label>Delete after (days)</label>
-                                    <input type="number" placeholder="days" name="{{ level }}_delete"
-                                           value="{{ app['levels'][level]['delete'] }}">
+                                    <input type="number" placeholder="days" name="{{ level }}_delete_days"
+                                           min="1"
+                                           value="{{ app['levels'][level]['delete'] | default('1') }}">
                                 </div>
                             </div>
                         {% endfor %}
                         <script>
+
+                            function showArchiveDeletePanel(level){
+                                if ($('#'+level+'_to_archive_chk').is(':checked')){
+                                    $('#'+level+'_archive_div').show();
+                                    $('#'+level+'_delete_div').hide();
+                                }else{
+                                    $('#'+level+'_archive_div').hide();
+                                    $('#'+level+'_delete_div').show();
+                                }
+                            }
                             var currLevel = null;
                             var currLnk = null;
                             function showLevelDiv(lnk, level) {
                                 if (currLevel != null) {
-                                    $('#' + currLevel + "_div").hide();
+                                    $('#' + currLevel + "_div").hide("slideUp");
                                 }
                                 if (currLnk != null) {
                                     $(currLnk).attr('class', 'item');
@@ -62,7 +86,7 @@
                                     $(lnk).attr('class', 'item orange active');
                                     currLevel = level;
                                     currLnk = lnk;
-                                    $('#' + level + "_div").show();
+                                    $('#' + level + "_div").show("slideDown");
                                 } else {
                                     currLevel = null;
                                     currLnk = null;
@@ -70,7 +94,6 @@
                             }
                         </script>
                     </div>
-
 
                     <div id="saveBtn" class="ui blue submit button segment">Save</div>
                     <script>

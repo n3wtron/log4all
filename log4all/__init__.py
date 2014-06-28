@@ -54,6 +54,8 @@ def main(global_config, **settings):
     config.add_route('api_logs_search', '/api/logs/search')
     config.add_route('api_logs_tail', '/api/logs/tail')
     config.add_route('helper_tags_search', '/helper/tags/search')
+    config.add_route('helper_application_search', '/helper/applications/search')
+
     admin.add_route(config)
 
     config.scan()
