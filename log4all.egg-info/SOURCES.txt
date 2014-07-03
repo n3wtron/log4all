@@ -3,6 +3,7 @@ development.ini
 production.ini
 setup.py
 log4all/__init__.py
+log4all/util.py
 log4all/views.py
 log4all.egg-info/PKG-INFO
 log4all.egg-info/SOURCES.txt
@@ -13,9 +14,16 @@ log4all.egg-info/requires.txt
 log4all.egg-info/top_level.txt
 log4all/admin/__init__.py
 log4all/admin/views.py
+log4all/admin/templates/admin_layout.jinja2
+log4all/admin/templates/application.jinja2
+log4all/admin/templates/applications.jinja2
+log4all/admin/templates/home.jinja2
 log4all/api/__init__.py
 log4all/api/add.py
 log4all/api/search.py
+log4all/background/__init__.py
+log4all/background/archive.py
+log4all/background/bg.py
 log4all/static/pyramid-16x16.png
 log4all/static/pyramid.png
 log4all/static/theme.css
@@ -466,6 +474,7 @@ log4all/static/images/32x32/search.png
 log4all/static/images/32x32/stack.png
 log4all/static/images/64x64/logo.png
 log4all/static/js/bootstrap-datepicker.js
+log4all/static/js/chart.min.js
 log4all/static/js/jquery-2.1.1.min.js
 log4all/static/js/jquery-ui-1.10.4.min.js
 log4all/static/js/jquery-ui-timepicker-addon.js
@@ -489,5 +498,3 @@ log4all/templates/layout.jinja2
 log4all/templates/left_layout.jinja2
 log4all/templates/result_table.jinja2
 log4all/templates/tail_table.jinja2
-log4all/templates/admin/admin_layout.jinja2
-log4all/templates/admin/home.jinja2

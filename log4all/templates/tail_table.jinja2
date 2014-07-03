@@ -49,15 +49,19 @@
     }
 
 </script>
-<div style="text-align: right;">
-    <input type="checkbox" id="followLog1" checked="checked">
-    <label>Scroll to bottom</label>
+<div class="field" style="text-align: right;">
+    <div class="ui toggle  checkbox">
+        <input type="checkbox" id="followLog1" checked="checked">
+        <label for="followLog1">Scroll to bottom</label>
+    </div>
 </div>
 <div id="tailResult" class="monospace"></div>
 <i class="ui loading big icon "></i>
-<div style="text-align: right;">
-    <input type="checkbox" id="followLog2" checked="checked">
-    <label>Scroll to bottom</label>
+<div class="field " style="text-align: right;">
+    <div class="ui toggle  checkbox">
+        <input type="checkbox" id="followLog2" checked="checked">
+        <label for="followLog2">Scroll to bottom</label>
+    </div>
 </div>
 <script>
     $('#followLog1').click(function () {
