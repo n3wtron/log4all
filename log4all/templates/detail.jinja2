@@ -52,7 +52,7 @@
 
             <div class="contentPanel" style="padding: 15px;">
                 <div class="ui ribbon label orange">Application</div><br/>
-                <div style="margin-left: 10px;margin-bottom: 10px;  ">{{ log['application']['name'] }}</div>
+                <div style="margin-left: 10px;margin-bottom: 10px;  ">{{ log['application'] }}</div>
                 <div class="ui ribbon label orange">Level</div><br/>
                 <div style="margin-left: 10px;margin-bottom: 10px; ">{{ log['level'] }}</div>
                 <br/>
@@ -67,8 +67,7 @@
                 <br/>
                 {% if stack %}
                     <div class="ui ribbon label red">Stack</div>
-                    <div style="margin-left: 10px;"><pre><code>{% for stacktrace in stack['stacktrace'] %}{{ stacktrace }}
-{% endfor %}</code></pre>
+                    <div style="margin-left: 10px;"><pre><code>{{ stack['stacktrace'] }}</code></pre>
                     </div>
                 {% endif %}
             </div>

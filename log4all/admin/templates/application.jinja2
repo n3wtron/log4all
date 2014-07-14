@@ -12,11 +12,11 @@
                 <input type="hidden" name="csrf" value="{{ csrf }}">
 
                 <div class="ui form segment">
-                    <div class="field">
+                    <div class="field ">
                         <label><b>Name</b></label>
 
                         <div class="ui left labeled input">
-                            <input type="text" placeholder="Name" name='name' value="{{ app['name'] }}">
+                            <input type="text" placeholder="Name" name='name' disabled value="{{ app['name'] }}">
                         </div>
                     </div>
                     <div class="field">

@@ -3,7 +3,6 @@ import logging
 import datetime
 import re
 
-from bson import ObjectId, DBRef
 from pyramid.view import view_config
 
 from log4all.api import hash_regexp, value_regexp
@@ -59,10 +58,10 @@ def db_insert(request, log, stack=None):
 def parse_raw_stack(raw_stack):
     if raw_stack is None:
         return None
-    result = []
+    result = ""
     if isinstance(raw_stack, list):
         for line in raw_stack:
-            result.append(line)
+            result += line + '\n'
     return result
 
 
@@ -91,7 +90,7 @@ def add_log(request, json_log, application):
     logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
     log = parse_raw_log(raw_log)
     log['date'] = log_date
-    log['application'] = DBRef('applications', ObjectId(app['_id']))
+    log['application'] = app['name']
     log['level'] = level
     db_insert(request, log, stack)
     return True, None
@@ -100,7 +99,7 @@ def add_log(request, json_log, application):
 @view_config(route_name='api_logs_add', renderer='json',
              request_method='POST', accept='application/json')
 def api_logs_add(request):
-    logger.debug('Add Log request:'+str(request.json_body))
+    logger.debug('Add Log request:' + str(request.json_body))
     success = True
     try:
         logger.debug(request.body)

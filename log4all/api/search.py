@@ -4,6 +4,7 @@ import time
 import re
 
 from bson.dbref import DBRef
+from bson.objectid import ObjectId
 from pyramid.view import view_config
 
 from log4all.api import hash_regexp, value_regexp
@@ -116,8 +117,6 @@ def adjust_result(db, result):
                 res[key] = str(res[key])
             if isinstance(res[key], datetime.datetime):
                 res[key] = time.mktime(res[key].timetuple())
-            if key == 'application' and isinstance(res[key], DBRef):
-                res[key] = db.dereference(res[key])['name']
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',

@@ -70,7 +70,7 @@ def get_applications(request):
 
 def get_level_count(db, application):
     return db.logs.aggregate([
-        {'$match': {'application': DBRef('applications', application)}},
+        {'$match': {'application': application}},
         {'$group': {'_id': "$level", 'count': {'$sum': 1}}},
     ])['result']
 
@@ -110,7 +110,7 @@ def edit_application(request):
     result['app'] = app
     result['level_stat'] = list()
     result['levels'] = LEVELS
-    for level_stat in get_level_count(request.mongodb, app['_id']):
+    for level_stat in get_level_count(request.mongodb, app['name']):
         result['level_stat'].append(
             {'level': level_stat['_id'],
              'value': level_stat['count'],
