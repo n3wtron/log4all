@@ -31,17 +31,13 @@
         <th style="width:32px;">Detail</th>
         {% for col in normal_columns %}
             <th style="white-space: nowrap;">
-                {% if col != 'application' %}
-                    <a class="colLnk" href="{{ col }}"> {{ col }}</a>
-                    {% if order['column'] == col %}
-                        {% if order['ascending'] %}
-                            <i class="sort ascending icon"></i>
-                        {% else %}
-                            <i class="sort descending icon"></i>
-                        {% endif %}
+                <a class="colLnk" href="{{ col }}"> {{ col }}</a>
+                {% if order['column'] == col %}
+                    {% if order['ascending'] %}
+                        <i class="sort ascending icon"></i>
+                    {% else %}
+                        <i class="sort descending icon"></i>
                     {% endif %}
-                {%  else %}
-                    {{ col }}
                 {% endif %}
             </th>
         {% endfor %}
@@ -75,7 +71,11 @@
                 </a>
             </td>
             {% for col in normal_columns %}
-                <td>{{ log[col] }}</td>
+                <td>
+                    <a href="#" onclick="searchTag('{{ col }}={{ log[col] }}');">
+                        {{ log[col] }}
+                    </a>
+                </td>
             {% endfor %}
             {% for col in tag_columns %}
                 <td>

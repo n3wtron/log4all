@@ -3,45 +3,47 @@ import datetime
 import time
 import re
 
-from bson.dbref import DBRef
-from bson.objectid import ObjectId
 from pyramid.view import view_config
 
-from log4all.api import hash_regexp, value_regexp
+from log4all.api import value_regexp, src_key_regexp
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 logger = logging.getLogger('log4all')
-operator_regexp = "([=|>|<]|>=|<=|!=|~=)"
-hashtag_search_regexp = hash_regexp + '(' + operator_regexp + value_regexp + '){0,1}'
+operator_regexp = "([=|>|<|>=|<=|!=|\?=|<<|!<])"
+search_regexp = src_key_regexp + '(' + operator_regexp + value_regexp + '){0,1}'
 
 
-def parse_hash_expression(raw):
+def parse_src_expression(raw):
     """
         Parse a string to return a dict[operand] that contain a dict[key|operator|value]
     """
     assert isinstance(raw, unicode)
     result = {}
     try:
-        matcher = re.compile(hashtag_search_regexp)
-        raw_tags = matcher.findall(raw)
-        for raw_tag in raw_tags:
-            tag = raw_tag[0]
-            if len(raw_tag[1]) == 0:
-                # check if tag exist
-                operator = '#'
-                value = None
+        matcher = re.compile(search_regexp)
+        raw_exprs = matcher.findall(raw)
+        for raw_expr in raw_exprs:
+            key = raw_expr[0]
+            if len(raw_expr[1]) == 0:
+                if key[0] == '#':
+                    # check if tag exist
+                    operator = '#'
+                    value = None
             else:
                 # tag with value
-                operator = raw_tag[2]
-                value = raw_tag[3]
+                operator = raw_expr[2]
+                value = raw_expr[3]
 
             if not operator in result:
                 result[operator] = list()
             val = dict()
             result[operator].append(val)
-            val['key'] = tag
+            if key[0] == '#':
+                val['key'] = '_tags.' + key[1:]
+            else:
+                val['key'] = key
             val['operator'] = operator
             val['value'] = value
         return result, matcher.sub("", raw)
@@ -53,28 +55,32 @@ def mongodb_parse_filter(query):
     """
         Query parser for mongodb
     """
-    expr_operators, text = parse_hash_expression(query)
+    expr_operators, text = parse_src_expression(query)
     logger.debug("expr_operators:" + str(expr_operators))
     mongo_src = dict()
     if len(expr_operators) > 0:
         for op in expr_operators.keys():
             for src in expr_operators[op]:
                 if op == '=':
-                    mongo_src['_tags.' + src['key']] = src['value']
-                if op == '~=':
-                    mongo_src['_tags.' + src['key']] = {'$regex': src['value']}
+                    mongo_src[src['key']] = src['value']
+                if op == '?=':
+                    mongo_src[src['key']] = {'$regex': src['value']}
                 if op == '!=':
-                    mongo_src['_tags.' + src['key']] = {"$ne": src['value']}
+                    mongo_src[src['key']] = {"$ne": src['value']}
+                if op == '<<':
+                    mongo_src[src['key']] = {"$in": src['value'].split(',')}
+                if op == '!<':
+                    mongo_src[src['key']] = {"$not": {"$in": src['value'].split(',')}}
                 if op == '>':
-                    mongo_src['_tags.' + src['key']] = {"$gt": src['value']}
+                    mongo_src[src['key']] = {"$gt": src['value']}
                 if op == '<':
-                    mongo_src['_tags.' + src['key']] = {"$lt": src['value']}
+                    mongo_src[src['key']] = {"$lt": src['value']}
                 if op == '>=':
-                    mongo_src['_tags.' + src['key']] = {"$gte": src['value']}
+                    mongo_src[src['key']] = {"$gte": src['value']}
                 if op == '<=':
-                    mongo_src['_tags.' + src['key']] = {"$lte": src['value']}
+                    mongo_src[src['key']] = {"$lte": src['value']}
                 if op == '#':
-                    mongo_src['_tags.' + src['key']] = {"$exists": True}
+                    mongo_src[src['key']] = {"$exists": True}
         logger.debug("mongo_src" + str(mongo_src))
     return mongo_src
 
