@@ -1,3 +1,4 @@
+{% include 'panels/columns_selector_panel.jinja2' %}
 <div class="nav">
     <div style="float:left;">Fetched <b>{{ n_rows }}</b> in <b>{{ elapsed_time }}</b> sec</div>
     <form>
@@ -39,12 +40,12 @@
                         <i class="sort descending icon"></i>
                     {% endif %}
                 {% endif %}
+                <i class="choiceColumnLnk add icon"></i>
             </th>
         {% endfor %}
         {% for col in tag_columns %}
             <th style="white-space: nowrap;">
-                <a class="colLnk" href="_tags.{{ col }}">
-                    #{{ col }}</a>
+                <a class="colLnk" href="_tags.{{ col }}">#{{ col }}</a>
                 {% if order['column'] == '_tags.'+col %}
                     {% if order['ascending'] %}
                         <i class="sort ascending icon"></i>
@@ -52,16 +53,31 @@
                         <i class="sort descending icon"></i>
                     {% endif %}
                 {% endif %}
+                <i class="choiceColumnLnk add icon"></i>
             </th>
         {% endfor %}
     </tr>
-
+    <script>
+        $('.choiceColumnLnk').click(function(){
+            if (!$("#columSelectorPanel").is(":visible")) {
+                var pos = $(this).position();
+                var width = $(this).outerWidth();
+                $("#columSelectorPanel").css({
+                    position: "absolute",
+                    top: pos.top + "px",
+                    left: (pos.left + 40) + "px"
+                }).show("slide", {direction: "up"}, 300);
+            }else{
+                $("#columSelectorPanel").hide("slide", {direction: "down"}, 300);
+            }
+        });
+    </script>
     <tbody>
     {% for log in logs %}
         <tr>
             <td style="width:32px;">
                 <a href="{{ 'detail' | route_url }}?id={{ log['_id'] }}">
-                    {% if '_stack_id' in log %}
+                    {% if '_stack_hash' in log %}
                         <img src="{{ 'log4all:static/images/32x32/stack.png'|static_url }}" title="Stack Detail"
                              border="0">
                     {% else %}
@@ -71,15 +87,21 @@
                 </a>
             </td>
             {% for col in normal_columns %}
+                {% if col != 'date' %}
                 <td>
-                    <a href="#" onclick="searchTag('{{ col }}={{ log[col] }}');">
+                    <a href="#" onclick="searchTag('{{ col }}=\x22{{ log[col] }}\x22');">
                         {{ log[col] }}
                     </a>
                 </td>
+                {% else %}
+                    <td>
+                        {{ log[col] }}
+                    </td>
+                {% endif %}
             {% endfor %}
             {% for col in tag_columns %}
                 <td>
-                    <a href="#" onclick="searchTag('#{{ col }}={{ log['_tags'][col] }}');">
+                    <a href="#" onclick="searchTag('#{{ col }}=\x22{{ log['_tags'][col] }}\x22');">
                         {{ log['_tags'][col] }}
                     </a>
                 </td>

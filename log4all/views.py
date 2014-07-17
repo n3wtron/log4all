@@ -6,7 +6,7 @@ from bson import ObjectId
 from pyramid.url import route_url
 from pyramid.view import view_config
 
-from log4all.api.search import api_logs_search
+from log4all.api.log.search import api_logs_search
 from log4all.util import LEVEL_COLORS
 
 
@@ -23,7 +23,7 @@ def detail_view(request):
     try:
         log = request.mongodb.logs.find_one({'_id': ObjectId(request.GET['id'])})
         try:
-            stack = request.mongodb.stacks.find_one({'_id': log['_stack_id']})
+            stack = request.mongodb.stacks.find_one({'hash_stacktrace': log['_stack_hash']})
         except KeyError:
             stack = None
         logger.debug("Log:" + str(log))
@@ -104,7 +104,7 @@ def helper_tags_search(request):
     logger.debug("partial_tag:" + partial_tag)
     if len(partial_tag) > 0 and partial_tag[0] == '#':
         tags = list(
-            request.mongodb.tags.find({'name': {'$regex': partial_tag[1:]}}, fields={'_id': False, '_date': False}))
+            request.mongodb.tags.find({'name': {'$regex': partial_tag[1:]}}, fields={'_id': False, 'date': False}))
         str_tags = ""
         for c_tag in current_tags[:-1]:
             str_tags += c_tag + " "

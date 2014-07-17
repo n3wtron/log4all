@@ -3,25 +3,28 @@ import logging
 import datetime
 import re
 
+from pymongo.errors import DuplicateKeyError
+
 from pyramid.view import view_config
 
-from log4all.api import hash_regexp, value_regexp
+from log4all.api.log import hash_regexp, value_regexp
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 logger = logging.getLogger('log4all')
 add_log_regexp = hash_regexp + "((:)" + value_regexp + "){0,1}"
+add_log_matcher = re.compile(add_log_regexp)
 
 
 def parse_raw_log(raw_log):
     assert isinstance(raw_log, unicode)
     result = dict()
     result['_tags'] = dict()
-    matcher = re.compile(add_log_regexp)
-    raw_tags = matcher.findall(raw_log)
+    raw_tags = add_log_matcher.findall(raw_log)
     for raw_tag in raw_tags:
-        tag = raw_tag[0].replace("+", "")
+        tag = raw_tag[0][1:]  # removed '#'
+        tag = tag.replace("+", "")
         if len(raw_tag[1]) == 0:
             value = True
         else:
@@ -32,27 +35,29 @@ def parse_raw_log(raw_log):
     return result
 
 
-def db_insert(request, log, stack=None):
+def db_insert(db, log, stack=None):
     # add stack if is present
     if stack is not None:
-        # prevent multiple stacktrace documents
+        # prevent duplicated stacktrace documents
         hash_stack = hashlib.sha1(''.join(stack)).hexdigest()
-        db_stack = request.mongodb.stacks.find_one({'hash_stacktrace': hash_stack})
-        if db_stack:
-            log['_stack_id'] = db_stack['_id']
-        else:
-            stack_id = request.mongodb.stacks.insert({'hash_stacktrace': hash_stack, 'stacktrace': stack})
-            log['_stack_id'] = stack_id
+        try:
+            db.stacks.insert({'hash_stacktrace': hash_stack, 'stacktrace': stack}, w=1, continue_on_error=True)
+        except DuplicateKeyError as e:
+            logger.debug("Duplicated stack")
+        log['_stack_hash'] = hash_stack
 
     # insert log
-    log_id = request.mongodb.logs.insert(log)
+    log_id = db.logs.insert(log)
     tail_log = log
     tail_log['_id'] = log_id
-    request.mongodb.tail_logs.insert(tail_log)
+    db.tail_logs.insert(tail_log)
 
     # update tags collections
     for tag in log['_tags'].keys():
-        request.mongodb.tags.insert({'name': tag, 'date': datetime.datetime.now()})
+        try:
+            db.tags.insert({'name': tag, 'date': datetime.datetime.now()}, w=1)
+        except DuplicateKeyError as e:
+            logger.debug("Duplicated tags:" + tag)
 
 
 def parse_raw_stack(raw_stack):
@@ -65,12 +70,7 @@ def parse_raw_stack(raw_stack):
     return result
 
 
-def add_log(request, json_log, application):
-    app = request.mongodb.applications.find_one({'name': application})
-    if app is None:
-        logger.error('Application ' + application + ' not found')
-        return False, 'Application ' + application + ' not found'
-
+def add_log(db, json_log, application):
     if 'level' in json_log:
         level = json_log['level']
     else:
@@ -90,9 +90,9 @@ def add_log(request, json_log, application):
     logger.debug("toAdd: log:" + raw_log + " stack:" + str(raw_stack))
     log = parse_raw_log(raw_log)
     log['date'] = log_date
-    log['application'] = app['name']
+    log['application'] = application['name']
     log['level'] = level
-    db_insert(request, log, stack)
+    db_insert(db, log, stack)
     return True, None
 
 
@@ -104,17 +104,23 @@ def api_logs_add(request):
     try:
         logger.debug(request.body)
         err_msg = None
+        application = request.json_body['application']
+        app = request.mongodb.applications.find_one({'name': application})
+        if app is None:
+            err_msg = 'Application ' + application + ' not found'
+            logger.error(err_msg)
+            return {'result': False, 'message': err_msg}
+
         if 'logs' in request.json_body:
-            application = request.json_body['application']
+            # Multiple logs to add
             logger.info(str(len(request.json_body['logs'])) + " to add")
             for json_log in request.json_body['logs']:
-                add_success, add_err_msg = add_log(request, json_log, application)
+                add_success, add_err_msg = add_log(request.mongodb, json_log, app)
                 if not add_success:
                     err_msg = add_err_msg
                 success = success and add_success
         else:
-            application = request.json_body['application']
-            success, err_msg = add_log(request, request.json_body, application)
+            success, err_msg = add_log(request.mongodb, request.json_body, app)
         return {'result': success, 'message': err_msg}
     except Exception as e:
         logger.error(e.message)

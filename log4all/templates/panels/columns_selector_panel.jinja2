@@ -1,0 +1,45 @@
+<div id="columSelectorPanel" class="ui raised segment" style="display: none; position: absolute; background-color: #EFEFEF; z-index: 99; max-height: 300px; width:150px; overflow: auto; font-size: smaller;">
+    <div class="ui form">
+        <form id="colSelectorFrm">
+            <span id="tag_chks"></span>
+        </form>
+        <div class="ui small buttons">
+            <div class="ui button" id="filterColBtn">Filter</div>
+        </div>
+    </div>
+    <script>
+        function refreshColumns(columns){
+            $('#tag_chks').html("");
+            var colSelContent = "";
+            $.each(columns, function (i) {
+                var colName = columns[i];
+                colSelContent += "<div class=\"inline field\">";
+                colSelContent += "<div class=\"ui checkbox\">";
+                colSelContent += "<input type=\"checkbox\" id=\"" + colName + "\" name=\"columns[]\" value=\"" + colName + "\"";
+                if (src_columns == '' || src_columns.indexOf(colName)!=-1) {
+                    colSelContent += " checked ";
+                }
+                colSelContent += "/>";
+                colSelContent += "<label for=\"" + colName + "\">" + colName + "</label>";
+                colSelContent += "</div>";
+                colSelContent += "</div>";
+            });
+            $('#tag_chks').html(colSelContent);
+        }
+        $.getJSON("{{ 'api_tags_list' | route_url }}", function (data) {
+            var allColumns = ["date","application"];
+            $.each(data, function (i) {
+                 allColumns[allColumns.length]='#'+data[i]['name'];
+            });
+            refreshColumns(allColumns);
+        });
+
+        $('#filterColBtn').click(function () {
+            src_columns = "";
+            $.each($('#colSelectorFrm input[name="columns[]"]:checked'), function () {
+                src_columns += $(this).val() + ',';
+            });
+            search();
+        });
+    </script>
+</div>

@@ -2,86 +2,8 @@
 
 {% block middle %}
 
+    {% include 'panels/add_log_panel.jinja2' %}
 
-    <div class="panel" style="float:left;display: inline-block;">
-        <div class="title">Add Log</div>
-        <div class="contentPanel">
-            <form id="addLogFrm" class="ui form">
-                <div class="ui left fluid icon input">
-                    <input id="applicationFld" type="text" placeholder="Application">
-                    <i class="desktop icon"></i>
-                </div>
-                <div class="field" style="margin-top: 5px; " >
-                    <textarea style="height: 30px;" id="logEdt" name="log" placeholder="Message..." cols="50" rows="3"></textarea>
-                </div>
-                <div class="ui buttons">
-                    <div style="margin-top:5px;display: block;" class="ui green button" onclick="addLog('DEBUG');">
-                        Debug
-                    </div>
-                    <div style="margin-top:5px;display: block;" class="ui blue button" onclick="addLog('INFO');">Info
-                    </div>
-                    <div style="margin-top:5px;display: block;" class="ui orange button" onclick="addLog('WARN');">
-                        Warn
-                    </div>
-                    <div style="margin-top:5px;display: block;" class="ui red button" onclick="addLog('ERROR');">Error
-                    </div>
-                    <div style="margin-top:5px;display: block;" class="ui black button" onclick="addLog('FATAL');">
-                        Fatal
-                    </div>
-                </div>
-                <input type="submit" style="display: none;">
-            </form>
-        </div>
-        <div id="addedLogDimmer" class="ui dimmer" style="">
-            <div class="content">
-                <div class="center">
-                    <h2 class="ui inverted icon header">
-                        <i class="icon circular inverted emphasized green add"></i>
-                        Log Added
-                    </h2>
-                </div>
-            </div>
-        </div>
-        <div id="errorLogDimmer" class="ui dimmer" style="">
-            <div class="content">
-                <div class="center">
-                    <h2 class="ui inverted icon header">
-                        <i class="icon circular inverted emphasized red add"></i>
-                        <span id="addErrorMsg">Error adding log</span>
-                    </h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script language="JavaScript">
-        $('#applicationFld').autocomplete({
-            minLength: 2,
-            source: "{{ 'helper_application_search' | route_url }}"
-        });
-        function addLog(level) {
-            var log = {
-                'application': $('#applicationFld').val(),
-                'level': level,
-                'log': $('#logEdt').val()
-            }
-            $.ajax({
-                type: "POST",
-                url: "{{ 'api_logs_add'|route_url }}",
-                contentType: "application/json",
-                dataType: 'json',
-                data: JSON.stringify(log),
-                success: function (data, textStatus, jqXHR) {
-                    if (data['result']) {
-                        $('#addedLogDimmer').dimmer('show');
-                    }else{
-                        $('#addErrorMsg').html('Error:'+data['message']);
-                        $('#errorLogDimmer').dimmer('show');
-                    }
-                }
-            });
-        }
-    </script>
     <div class="panel" style="float:left;width: 50%;">
         <div class="title">Search</div>
         <div class="contentPanel">
@@ -133,6 +55,7 @@
         var toReset = false;
         var order = {};
         var result_per_page = 10;
+        var src_columns="";
         order['column'] = 'date';
         order['ascending'] = true;
         var tail_timer = null;
@@ -179,7 +102,8 @@
                 dtTo: Math.ceil(toSeconds),
                 page: currPage,
                 result_per_page: result_per_page,
-                order: order
+                order: order,
+                columns:src_columns
             };
             var url = "{{ 'result_table' | route_url }}?" + $.param(searchParam);
             cleanResult();

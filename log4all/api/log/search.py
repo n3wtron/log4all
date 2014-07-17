@@ -5,14 +5,15 @@ import re
 
 from pyramid.view import view_config
 
-from log4all.api import value_regexp, src_key_regexp
+from log4all.api.log import value_regexp, src_key_regexp
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 logger = logging.getLogger('log4all')
-operator_regexp = "([=|>|<|>=|<=|!=|\?=|<<|!<])"
+operator_regexp = "(=|>|<|>=|<=|!=|\?=|<<|!<)"
 search_regexp = src_key_regexp + '(' + operator_regexp + value_regexp + '){0,1}'
+search_matcher = re.compile(search_regexp)
 
 
 def parse_src_expression(raw):
@@ -22,8 +23,7 @@ def parse_src_expression(raw):
     assert isinstance(raw, unicode)
     result = {}
     try:
-        matcher = re.compile(search_regexp)
-        raw_exprs = matcher.findall(raw)
+        raw_exprs = search_matcher.findall(raw)
         for raw_expr in raw_exprs:
             key = raw_expr[0]
             if len(raw_expr[1]) == 0:
@@ -45,8 +45,10 @@ def parse_src_expression(raw):
             else:
                 val['key'] = key
             val['operator'] = operator
+            if ( value[0] == '"' and value[-1] == '"' ) or ( value[0] == "'" and value[-1] == "'" ):
+                value = value[1:-1]
             val['value'] = value
-        return result, matcher.sub("", raw)
+        return result, search_matcher.sub("", raw)
     except Exception as e:
         logger.exception(e)
 
@@ -85,10 +87,21 @@ def mongodb_parse_filter(query):
     return mongo_src
 
 
-def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page=None):
+def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page=None, result_columns=None):
     """
         Search method
     """
+    if result_columns is None:
+        result_attributes = ['date', 'level', 'application', 'message', '_stack_hash', '_tags']
+    else:
+        result_attributes = list()
+        for res_col in result_columns:
+            if res_col.strip() != '':
+                if res_col[0] == '#':
+                    result_attributes.append('_tags.' + res_col[1:])
+                else:
+                    result_attributes.append(res_col)
+
     result = dict()
     search_filter = mongodb_parse_filter(query)
     search_filter['date'] = {'$gte': dt_since, '$lte': dt_to}
@@ -100,13 +113,11 @@ def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page
 
     if page is not None and result_per_page is not None:
         cursor = request.mongodb.logs.find(search_filter,
-                                           fields=['date', 'level', 'application', 'message', '_stack_id', '_tags'],
+                                           fields=result_attributes,
                                            skip=page * result_per_page,
                                            limit=result_per_page).sort([sort_param])
     else:
-        cursor = request.mongodb.tail_logs.find(search_filter,
-                                                fields=['date', 'level', 'application', 'message', '_stack_id',
-                                                        '_tags'])
+        cursor = request.mongodb.tail_logs.find(search_filter, fields=result_attributes)
         cursor.sort([sort_param])
     result['logs'] = list(cursor)
     result['n_rows'] = n_rows
@@ -134,6 +145,10 @@ def api_logs_search(request):
     dt_since_str = request.GET['dtSince']
     dt_to_str = request.GET['dtTo']
     page = request.GET['page']
+    result_columns = None
+    if 'columns' in request.GET and request.GET['columns'].strip() != '':
+        logger.debug("column:" + str(request.GET['columns']))
+        result_columns = request.GET['columns'].split(',')
 
     result_per_page = request.GET['result_per_page']
     dt_since = None
@@ -149,7 +164,8 @@ def api_logs_search(request):
     logger.debug("order:" + str(order))
 
     # Search
-    result = db_search(request, query, dt_since, dt_to, order, int(page), int(result_per_page))
+    result = db_search(request, query, dt_since, dt_to, order, int(page), int(result_per_page),
+                       result_columns=result_columns)
     adjust_result(request.mongodb, result)
     result['elapsed_time'] = time.time() - start
     result['order'] = order
@@ -162,12 +178,16 @@ def api_logs_tail(request):
     logger.debug("api_logs_tail")
     query = request.GET['query']
     dt_since_str = request.GET['dtSince']
+    result_columns = None
+    if 'columns' in request.GET and request.GET['columns'].strip() != '':
+        logger.debug("column:" + str(request.GET['columns']))
+        result_columns = request.GET['columns'].split(',')
     dt_since = datetime.datetime.fromtimestamp(int(dt_since_str))
 
     # Order
     order = {'column': 'date', 'ascending': True}
 
-    result = db_search(request, query, dt_since, datetime.datetime.now(), order)
+    result = db_search(request, query, dt_since, datetime.datetime.now(), order, result_columns=result_columns)
     adjust_result(request.mongodb, result)
 
     logger.debug("tail n_result:" + str(result['n_rows']))
