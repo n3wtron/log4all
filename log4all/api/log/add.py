@@ -4,7 +4,6 @@ import datetime
 import re
 
 from pymongo.errors import DuplicateKeyError
-
 from pyramid.view import view_config
 
 from log4all.api.log import hash_regexp, value_regexp
@@ -29,6 +28,8 @@ def parse_raw_log(raw_log):
             value = True
         else:
             value = raw_tag[3]
+        if value[0] == '"' and value[-1] == '"':
+            value = value[1:-1]
         result['_tags'][tag] = value
     result['message'] = re.sub('#\+', "", raw_log)
     result['message'] = re.sub(add_log_regexp, "", result['message'])

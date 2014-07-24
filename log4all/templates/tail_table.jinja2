@@ -49,27 +49,32 @@
     }
 
 </script>
-<div class="field" style="text-align: right;">
-    <div class="ui toggle  checkbox">
-        <input type="checkbox" id="followLog1" checked="checked">
-        <label for="followLog1">Scroll to bottom</label>
+<div class="monospace" style="min-height: 350px;">
+    <div class="field" style="text-align: right;">
+        <div class="ui toggle  checkbox">
+            <input type="checkbox" id="followLog1" checked="checked">
+            <label for="followLog1" style="color: white;">Follow log</label>
+        </div>
     </div>
-</div>
-<div id="tailResult" class="monospace"></div>
-<i class="ui loading big icon "></i>
-<div class="field " style="text-align: right;">
-    <div class="ui toggle  checkbox">
-        <input type="checkbox" id="followLog2" checked="checked">
-        <label for="followLog2">Scroll to bottom</label>
+    <div id="tailResult"></div>
+    <div style="text-align: center;">
+        <i  class="ui loading huge icon "></i>
     </div>
+
+    <div class="field " style="text-align: right;">
+        <div class="ui toggle  checkbox">
+            <input type="checkbox" id="followLog2" checked="checked">
+            <label for="followLog2" style="color: white;">Follow log</label>
+        </div>
+    </div>
+    <script>
+        $('#followLog1').click(function () {
+            followLog = $(this).is(':checked');
+            $('#followLog2').prop('checked', followLog);
+        });
+        $('#followLog2').click(function () {
+            followLog = $(this).is(':checked');
+            $('#followLog1').prop('checked', followLog);
+        });
+    </script>
 </div>
-<script>
-    $('#followLog1').click(function () {
-        followLog = $(this).is(':checked');
-        $('#followLog2').prop('checked', followLog);
-    });
-    $('#followLog2').click(function () {
-        followLog = $(this).is(':checked');
-        $('#followLog1').prop('checked', followLog);
-    });
-</script>

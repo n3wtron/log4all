@@ -117,6 +117,7 @@ def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page
                                            skip=page * result_per_page,
                                            limit=result_per_page).sort([sort_param])
     else:
+        # Tail
         cursor = request.mongodb.tail_logs.find(search_filter, fields=result_attributes)
         cursor.sort([sort_param])
     result['logs'] = list(cursor)
@@ -126,7 +127,7 @@ def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page
     return result
 
 
-def adjust_result(db, result):
+def adjust_result(db, result, full_log=False):
     # Converting result to json compatible
     for res in result['logs']:
         for key in res.keys():
@@ -134,6 +135,11 @@ def adjust_result(db, result):
                 res[key] = str(res[key])
             if isinstance(res[key], datetime.datetime):
                 res[key] = time.mktime(res[key].timetuple())
+            if key == '_stack_hash' and full_log:
+                res['stacktrace'] = db.stacks.find_one({'hash_stacktrace': res['_stack_hash']},
+                                                       fields=['stacktrace'])
+                if res['stacktrace'] and 'stacktrace' in res['stacktrace']:
+                    res['stacktrace'] = res['stacktrace']['stacktrace']
 
 
 @view_config(route_name='api_logs_search', renderer='json', request_method='GET',
@@ -144,13 +150,20 @@ def api_logs_search(request):
     query = request.GET['query']
     dt_since_str = request.GET['dtSince']
     dt_to_str = request.GET['dtTo']
-    page = request.GET['page']
+    if 'page' in request.GET:
+        page = request.GET['page']
+    else:
+        page = 0
     result_columns = None
     if 'columns' in request.GET and request.GET['columns'].strip() != '':
         logger.debug("column:" + str(request.GET['columns']))
         result_columns = request.GET['columns'].split(',')
 
-    result_per_page = request.GET['result_per_page']
+    if 'result_per_page' in request.GET:
+        result_per_page = request.GET['result_per_page']
+    else:
+        result_per_page = 10
+
     dt_since = None
     dt_to = None
     if dt_since_str.strip() != '' and dt_to_str.strip() != '':
@@ -159,14 +172,22 @@ def api_logs_search(request):
 
     # Order
     order = dict()
-    order['column'] = request.GET['order[column]']
-    order['ascending'] = True if request.GET['order[ascending]'] == 'true' else False
+    if 'order[column]' in request.GET and 'order[ascending]' in request.GET:
+        order['column'] = request.GET['order[column]']
+        order['ascending'] = True if request.GET['order[ascending]'] == 'true' else False
+    else:
+        order['column'] = 'date'
+        order['ascending'] = True
+
     logger.debug("order:" + str(order))
 
     # Search
     result = db_search(request, query, dt_since, dt_to, order, int(page), int(result_per_page),
                        result_columns=result_columns)
-    adjust_result(request.mongodb, result)
+
+    full_log = True if 'full' in request.GET and request.GET['full'].lower() == 'true' else False
+
+    adjust_result(request.mongodb, result, full_log)
     result['elapsed_time'] = time.time() - start
     result['order'] = order
     return result
@@ -188,7 +209,8 @@ def api_logs_tail(request):
     order = {'column': 'date', 'ascending': True}
 
     result = db_search(request, query, dt_since, datetime.datetime.now(), order, result_columns=result_columns)
-    adjust_result(request.mongodb, result)
+    full_log = True if 'full' in request.GET and request.GET['full'].lower() == 'true' else False
+    adjust_result(request.mongodb, result, full_log)
 
     logger.debug("tail n_result:" + str(result['n_rows']))
     return result

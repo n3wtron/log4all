@@ -46,12 +46,13 @@ input, textarea, select {
     margin-bottom: 10px;
     font-size: 2em;
     font-weight: bold;
-    height: 64px;
-
+    height: 70px;
 }
 
 #top img {
-    vertical-align: top;
+    margin-top: 2px;
+    margin-left: 10px;
+    vertical-align: middle;
 }
 
 #bottom {
@@ -152,6 +153,9 @@ a, a:visited, a:hover {
 }
 
 .monospace{
+    color:white;
+    padding:4px;
+    background-color:#000000;
     font-family: 'Droid Sans Mono', ;
     line-height:150%;
 }
