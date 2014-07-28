@@ -1,12 +1,17 @@
+import logging
+import atexit
+
 import pymongo
 from pymongo.errors import CollectionInvalid
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from log4all import admin
+from log4all.background import init_scheduler, shutdown_scheduler
 
 
 log4all_session_factory = UnencryptedCookieSessionFactoryConfig('log4allsession')
+logger = logging.getLogger('log4all')
 
 
 def init_db(db):
@@ -14,7 +19,7 @@ def init_db(db):
     db.logs.ensure_index('date')
     db.logs.ensure_index('application')
     db.logs.ensure_index('level')
-    #creation of tail_logs capped collection
+    # creation of tail_logs capped collection
     try:
         db.create_collection('tail_logs', capped=True, size=256 * 1024 * 1024)
     except CollectionInvalid:
@@ -23,10 +28,10 @@ def init_db(db):
 
     db.stacks.ensure_index('hash_stacktrace', unique=True)
 
-    #application collection
+    # application collection
     db.applications.ensure_index('name', unique=True)
 
-    #tags collection
+    # tags collection
     db.tags.ensure_index('name', unique=True)
 
 
@@ -40,13 +45,16 @@ def main(global_config, **settings):
 
     # DB
     config.registry.mongo_conn = pymongo.Connection(host=settings['mongodb.hostname'])
-    init_db(config.registry.mongo_conn['log4all'])
+    init_db(config.registry.mongo_conn[settings['mongodb.dbname']])
 
     def mongo_db(request):
-        db = config.registry.mongo_conn['log4all']
+        db = config.registry.mongo_conn[settings['mongodb.dbname']]
         return db
 
     config.add_request_method(mongo_db, 'mongodb', reify=True)
+
+    # Scheduler
+    init_scheduler(settings)
 
     # Routing
     config.add_route('home', '/')
@@ -67,3 +75,8 @@ def main(global_config, **settings):
 
     app = config.make_wsgi_app()
     return app
+
+
+@atexit.register
+def on_exit():
+    shutdown_scheduler()

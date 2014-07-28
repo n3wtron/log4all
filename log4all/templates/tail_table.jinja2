@@ -12,7 +12,8 @@
         }
         var tailParam = {
             query: "{{ query |safe}}",
-            dtSince: sinceSeconds
+            dtSince: sinceSeconds,
+            full:true
         };
 
         var tail_url = "{{ 'api_logs_tail' | route_url }}?" + $.param(tailParam);
@@ -36,7 +37,12 @@
                             $.each(data['logs'][i]['_tags'], function (t, v) {
                                 row += " #" + t + ":" + v;
                             });
-                            row += "</span></a/><br/>";
+                            row += "</span></a>";
+                            if (!data['logs'][i]['stacktrace']=="") {
+                                row += "<pre><code>" + data['logs'][i]['stacktrace'] + "</code></pre><br/>";
+                            }else{
+                                row +="<br/>";
+                            }
                             $('#tailResult').append(row);
                         }
                         sinceSeconds += 1;
@@ -49,14 +55,14 @@
     }
 
 </script>
-<div class="monospace" style="min-height: 350px;">
+<div class="monospace" style=" min-height: 350px;">
     <div class="field" style="text-align: right;">
         <div class="ui toggle  checkbox">
             <input type="checkbox" id="followLog1" checked="checked">
             <label for="followLog1" style="color: white;">Follow log</label>
         </div>
     </div>
-    <div id="tailResult"></div>
+    <div id="tailResult" style="overflow: auto;"></div>
     <div style="text-align: center;">
         <i  class="ui loading huge icon "></i>
     </div>

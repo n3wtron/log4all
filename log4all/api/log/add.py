@@ -51,6 +51,7 @@ def db_insert(db, log, stack=None):
     log_id = db.logs.insert(log)
     tail_log = log
     tail_log['_id'] = log_id
+    tail_log['stacktrace'] = stack
     db.tail_logs.insert(tail_log)
 
     # update tags collections

@@ -12,7 +12,8 @@ requires = [
     'pyramid_jinja2',
     'pyramid_debugtoolbar',
     'waitress',
-    'pymongo'
+    'pymongo',
+    'apscheduler>=3.0'
 ]
 
 setup(name='log4all',

@@ -142,18 +142,18 @@
         </div>
     </div>
     <div class="panel" style="float: left;">
-        <div class="title">Levels Stat</div>
+        <div class="title">Levels Stat - Last updated:{{ app['stat']['updated'] }}</div>
         <div class="contentPanel">
             <div style="float: right;">
-                {% for stat in level_stat %}
-                    <span style="color:{{ stat['color'] }} ;">{{ stat['level'] }} :{{ stat['value'] }}<br/></span>
+                {% for level in app['stat']['levels'] %}
+                    <span style="color:{{ level_colors[level] }} ;">{{ level }} :{{ app['stat']['levels'][level] }}<br/></span>
                 {% endfor %}
             </div>
             <canvas id="levelChart" width="400" height="400"></canvas>
             <script>
                 var chartData = [
-                    {%- for stat in level_stat %}
-                        {value:{{  stat['value'] }}, color: '{{ stat['color']  }}'},
+                    {%- for level in app['stat']['levels'] %}
+                        {value:{{  app['stat']['levels'][level] | default(0) }}, color: '{{ level_colors[level]  }}'},
                     {% endfor -%}
                 ];
                 var ctx = document.getElementById("levelChart").getContext("2d");

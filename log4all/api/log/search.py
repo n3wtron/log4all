@@ -118,7 +118,7 @@ def db_search(request, query, dt_since, dt_to, order, page=None, result_per_page
                                            limit=result_per_page).sort([sort_param])
     else:
         # Tail
-        cursor = request.mongodb.tail_logs.find(search_filter, fields=result_attributes)
+        cursor = request.mongodb.tail_logs.find(search_filter)
         cursor.sort([sort_param])
     result['logs'] = list(cursor)
     result['n_rows'] = n_rows
@@ -210,7 +210,7 @@ def api_logs_tail(request):
 
     result = db_search(request, query, dt_since, datetime.datetime.now(), order, result_columns=result_columns)
     full_log = True if 'full' in request.GET and request.GET['full'].lower() == 'true' else False
-    adjust_result(request.mongodb, result, full_log)
+    adjust_result(request.mongodb, result)
 
     logger.debug("tail n_result:" + str(result['n_rows']))
     return result

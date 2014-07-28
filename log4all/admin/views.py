@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 
 from bson import ObjectId
-from bson.dbref import DBRef
+import pymongo
 from pymongo.errors import DuplicateKeyError
 from pyramid.view import view_config
 
@@ -68,13 +68,6 @@ def get_applications(request):
     return result
 
 
-def get_level_count(db, application):
-    return db.logs.aggregate([
-        {'$match': {'application': application}},
-        {'$group': {'_id': "$level", 'count': {'$sum': 1}}},
-    ])['result']
-
-
 @view_config(route_name="admin_edit_application", renderer='templates/application.jinja2')
 def edit_application(request):
     result = dict()
@@ -108,12 +101,22 @@ def edit_application(request):
     logger.debug('app:' + request.GET['idApp'] + str(app))
     result['csrf'] = request.session.get_csrf_token()
     result['app'] = app
-    result['level_stat'] = list()
     result['levels'] = LEVELS
-    for level_stat in get_level_count(request.mongodb, app['name']):
-        result['level_stat'].append(
-            {'level': level_stat['_id'],
-             'value': level_stat['count'],
-             'color': LEVEL_COLORS[level_stat['_id']]}
-        )
+    result['level_colors'] = LEVEL_COLORS
     return result
+
+
+@view_config(route_name="admin_stats", renderer='templates/stats.jinja2')
+def stats(request):
+    apps = request.mongodb.applications.find().sort([('n_logs', pymongo.DESCENDING)])
+    app_stats = dict()
+    if not 'type' in request.GET:
+        stat_type = 'simple'
+    else:
+        stat_type = request.GET['type']
+    for app in apps:
+        try:
+            app_stats[app['name']] = app['stat']
+        except KeyError:
+            app_stats[app['name']] = dict(n_logs=0, levels=dict())
+    return {'type': stat_type, 'stats': app_stats, 'levels': LEVELS, 'level_colors': LEVEL_COLORS}

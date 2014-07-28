@@ -43,7 +43,6 @@ input, textarea, select {
     padding-bottom: 0px;
     color: #ffffff;
     margin-top: 0px;
-    margin-bottom: 10px;
     font-size: 2em;
     font-weight: bold;
     height: 70px;
@@ -79,12 +78,11 @@ a, a:visited, a:hover {
     width: 110px;
     color: #ffffff;
     background: #282828;
-    top: 70px;
+    top: 63px;
     bottom: 0px;
     display: block;
     position: absolute;
     padding-top: 10px;
-
 }
 
 #leftCenter {

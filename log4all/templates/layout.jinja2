@@ -6,7 +6,7 @@
     <script src="{{ 'log4all:static/js/jquery-ui-1.10.4.min.js'|static_url }}"></script>
     <script src="{{ 'log4all:static/semantic/javascript/semantic.min.js'|static_url }}"></script>
     <script src="{{ 'log4all:static/js/jquery-ui-timepicker-addon.js'|static_url }}"></script>
-    <link rel="stylesheet" href="{{ 'log4all:static/css/themes/smoothness/jquery-ui.min.css'|static_url }}"/>
+    <link rel="stylesheet" href="{{ 'log4all:static/css/themes/ui-lightness/jquery-ui.min.css'|static_url }}"/>
     <link rel="stylesheet" href="{{ 'log4all:static/css/style.css'|static_url }}"/>
     <link rel="stylesheet" href="{{ 'log4all:static/semantic/css/semantic.min.css' | static_url }}"/>
     <link rel="stylesheet" href="{{ 'log4all:static/css/jquery-ui-timepicker-addon.css' | static_url }}"/>
@@ -14,11 +14,11 @@
     {% endblock %}
 </head>
 <body>
-    <div id="top">
+    <div id="top" style="height: 63px;">
         <a href="{{ 'home' | route_url }}"><img src="{{ 'log4all:static/images/64x64/logo.png'|static_url }}"></a>
     </div>
     <div id="middle">{% block middle %}{% endblock %}</div>
-    <div id="bottom">
+    <div id="bottom" >
         <a href="http://www.log4all.net" target="_blank">
             <img src="{{ 'log4all:static/images/32x32/logo.png'|static_url }}" title="www.log4all.net" border="0"/>
         </a>

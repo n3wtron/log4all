@@ -1,4 +1,3 @@
-import logging
 import smtplib
 import datetime
 
@@ -6,11 +5,10 @@ from bson import ObjectId
 from pyramid.url import route_url
 from pyramid.view import view_config
 
+from log4all import logger
+
 from log4all.api.log.search import api_logs_search
 from log4all.util import LEVEL_COLORS
-
-
-logger = logging.getLogger('log4all')
 
 
 @view_config(route_name='home', renderer='templates/home.jinja2')
@@ -93,36 +91,6 @@ def result_table(request):
             'n_rows': result['n_rows'],
             'elapsed_time': result['elapsed_time'],
             'logs': result['logs']}
-
-
-@view_config(route_name='helper_tags_search', renderer='json', request_method='GET', request_param=['term'])
-def helper_tags_search(request):
-    result = list()
-    logger.debug("term:" + request.GET['term'])
-    current_tags = request.GET['term'].split(' ')
-    partial_tag = current_tags[-1]
-    logger.debug("partial_tag:" + partial_tag)
-    if len(partial_tag) > 0 and partial_tag[0] == '#':
-        tags = list(
-            request.mongodb.tags.find({'name': {'$regex': partial_tag[1:]}}, fields={'_id': False, 'date': False}))
-        str_tags = ""
-        for c_tag in current_tags[:-1]:
-            str_tags += c_tag + " "
-        for tag in tags:
-            if '#' + tag['name'] not in str_tags:
-                choice = str_tags + '#' + tag['name']
-                result.append({'label': choice, 'value': choice})
-    return result
-
-
-@view_config(route_name='helper_application_search', renderer='json', request_method='GET', request_param=['term'])
-def helper_application_search(request):
-    result = list()
-    logger.debug("term:" + request.GET['term'])
-    apps = list(request.mongodb.applications.find({'name': {'$regex': request.GET['term']}}, fields={'name': True}))
-    for app in apps:
-        result.append({'label': app['name'], 'value': app['name']})
-    return result
 
 
 @view_config(route_name='tail_table', renderer='templates/tail_table.jinja2', request_method='GET',

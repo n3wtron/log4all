@@ -1,0 +1,55 @@
+{% extends 'admin_layout.jinja2' %}
+{% block head %}
+    <script src="{{ 'log4all:static/js/chart.min.js'|static_url }}"></script>
+{% endblock %}
+{% block center %}
+    <div class="panel" id="appsPnl" style="width: 95%;min-height: 500px;">
+        <div class="title">Applications Stat</div>
+        <div class="contentPanel" >
+            <form action="#">
+                <label>Type</label>
+                {% if type=='simple' %}
+                    <input type="hidden" name="type" value="detailed" />
+                    <input type="submit" class="ui submit button" value="Detailed"/>
+                {% else %}
+                    <input type="hidden" name="type" value="simple" />
+                    <input type="submit" class="ui submit button" value="Simple"/>
+                {% endif %}
+            </form>
+            <canvas id="appsChart"></canvas>
+            <script>
+                var graph;
+                var chartData = {
+                    labels : [{%- for app in stats %} "{{ app }}",{% endfor -%}
+                    ],
+                    datasets:[
+                        {% if type == 'detailed' %}
+                            {% for level in levels %}
+                                {
+                                    label:"{{ level }}",
+                                    fillColor:"{{ level_colors[level] }}",
+                                    data:[{%- for app in stats %} {{ stats[app]['levels'][level]| default(0) }}, {% endfor -%} ]
+                                },
+                            {% endfor %}
+                        {% else %}
+                            {
+                                label:"Total",
+                                fillColor: "rgba(151,187,205,0.8)",
+                                data:[{%- for app in stats %} {{ stats[app]['n_logs'] }}, {% endfor -%} ]
+                            }
+                        {% endif %}
+                    ]
+                };
+                function draw_graph() {
+                    var ctx = document.getElementById("appsChart").getContext("2d");
+                    $('#appsChart').attr('width', $('#appsPnl').width() - 50);
+                    $('#appsChart').attr('height', $('#appsPnl').height() - 50);
+                    graph=new Chart(ctx).Bar(chartData);
+                }
+                draw_graph();
+
+
+            </script>
+        </div>
+    </div>
+{% endblock %}
