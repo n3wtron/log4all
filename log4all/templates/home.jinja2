@@ -1,243 +1,186 @@
-{% extends "layout.jinja2" %}
+{% extends "left_layout.jinja2" %}
 
-{% block middle %}
-
-{% include 'panels/add_log_panel.jinja2' %}
-
-<div class="panel ui form" style="float:left;width: 60%;">
-    <script>
-        var levels = "";
-    </script>
-
-    <div class="title">Search</div>
-    <div class="contentPanel">
-        <form id="searchFrm">
-            <div id="timePanel" class="two fields" style="text-align: center;">
-                <div class="ui input field" style="text-align: left;">
-                    <label>Since</label>
-                    <input id="sinceEdt" class="date" type="text" placeholder="Since...">
-                </div>
-                <div class="ui input field" style="text-align: left;">
-                    <label>To</label>
-                    <input id="toEdt" class="date" type="text" placeholder="To...">
-                </div>
-            </div>
-            <div class="two fields">
-                <div class="field input">
-                    <label>Applications</label>
-                    <input type="text" placeholder="Applications" id="searchApplications">
-                    <script>
-                        $('#searchApplications').autocomplete({
-                            minLength: 2,
-                            source: "{{ 'helper_application_search' | route_url }}?multi=true"
-                        });
-                    </script>
-                </div>
-                <div class="field">
-                    <label>Levels</label>
-
-                    <div class="ui buttons">
-
-                        <div class="levelBtn ui button" btncolor="green" level="DEBUG">
-                            Debug
-                        </div>
-                        <div class="levelBtn ui button" btncolor="blue" level="INFO">
-                            Info
-                        </div>
-                        <div class="levelBtn ui button" btncolor="orange" level="WARN">
-                            Warn
-                        </div>
-                        <div class="levelBtn ui button" btncolor="red" level="ERROR">
-                            Error
-                        </div>
-                        <div class="levelBtn ui button" btncolor="black" level="FATAL">
-                            Fatal
-                        </div>
-                        <script>
-                            $('.levelBtn').click(function () {
-                                var currBtnClass = $(this).attr("class");
-                                var btnColor = $(this).attr("btncolor");
-                                var level = $(this).attr("level");
-                                if (currBtnClass.indexOf(btnColor) > -1) {
-                                    currBtnClass = currBtnClass.replace(" " + btnColor, "");
-                                    levels = levels.replace(level, "");
-                                } else {
-                                    currBtnClass = currBtnClass + " " + btnColor;
-                                    levels += " " + level
-                                }
-                                $(this).attr("class", currBtnClass);
-                            });
-                        </script>
-                    </div>
-                </div>
-            </div>
-            <div class="ui fluid input">
-                <input id="searchEdt" name="query" type="text" placeholder="Query...">
-            </div>
-            <div style="text-align: center">
-                <div class="ui buttons" style="margin-top: 5px; display: inline-block; width: 450px;">
-                    <div style="width: 200px;" id="searchBtn" class="ui green button">Search</div>
-                    <div class="or" style="z-index: 1;"></div>
-                    <div style="width: 200px;" id="tailBtn" class="ui red button">Tail</div>
-                </div>
-            </div>
-            <input type="submit" style="display: none;">
-        </form>
+{% block leftMenu %}
+    <div class="ui vertical fluid labeled icon menu inverted">
+        <a id="addLogPnlBtn" class="item">
+            <i class="add icon"></i>
+            Add Log
+        </a>
+        <a href="admin/" class="teal item">
+            <i class="settings icon"></i>
+            Admin
+        </a>
     </div>
-</div>
-<script language="JavaScript">
-    $('#timePanel .date').datetimepicker();
-    $('#timePanel .date').change(function (event) {
-        toReset = true;
-    })
-    $('#searchEdt').autocomplete({
-        minLength: 2,
-        source: "{{ 'helper_tags_search' | route_url }}"
-    });
-</script>
+{% endblock %}
 
-<div id="resultPnl" class="panel" style="clear:both; margin: 10px;">
-    <div class="title">Results</div>
-    <div class="contentPanel" style="overflow: auto;">
-        <div id="resultDiv" class="ui segment" style="min-height: 300px;"></div>
+{% block center %}
+    <div id="addLogSidebar"  class="ui very wide sidebar">
+        {% include 'panels/add_log_panel.jinja2' %}
     </div>
-</div>
 
-<script language="JavaScript">
-    var currPage = 0;
-    var lastQuery = null;
-    var toReset = false;
-    var order = {};
-    var result_per_page = 10;
-    var src_columns = "";
-    order['column'] = 'date';
-    order['ascending'] = true;
-    var tail_timer = null;
+    <div>
+        <script>
+            $('#addLogPnlBtn').click(function () {
+                $('#addLogSidebar')
+                        .sidebar({
+                            overlay: true
+                        })
+                        .sidebar('toggle');
+            });
+            $('#addLogSidebarCloseBtn').click(function () {
+                $('#addLogSidebar')
+                        .sidebar({
+                            overlay: true
+                        })
+                        .sidebar('toggle');
+            });
+        </script>
+    </div>
+
+    {% include 'panels/search_log_panel.jinja2' %}
+
+    <div id="resultPnl" class="panel" style="clear:both;">
+        <div class="title">Results</div>
+        <div class="contentPanel" style="overflow: auto;">
+            <div id="resultDiv" class="ui segment" style="min-height: 300px;"></div>
+        </div>
+    </div>
+
+    <script language="JavaScript">
+        var currPage = 0;
+        var lastQuery = null;
+        var toReset = false;
+        var order = {};
+        var result_per_page = 10;
+        var src_columns = "";
+        order['column'] = 'date';
+        order['ascending'] = true;
+        var tail_timer = null;
 
 
-    function searchTag(srcQuery) {
-        if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
-            $('#searchEdt').val($('#searchEdt').val() + " " + srcQuery);
-        } else {
-            $('#searchEdt').val($('#searchEdt').val().replace(srcQuery, ""));
-        }
-        search();
-    }
-
-    function cleanResult() {
-        if (tail_timer != null) {
-            clearTimeout(tail_timer);
-        }
-        $("#resultDiv").html("<div class=\"ui active inverted dimmer\"><div class=\"ui text loader\">Searching...</div></div>");
-    }
-
-    function makeSearchQuery() {
-        // Create search query string
-        var searchQuery = $("#searchEdt").val();
-
-        //applications
-        var applicationsAr = $('#searchApplications').val().split(' ');
-        var oneApplication = false;
-        var applicationsQry = "application<<";
-        for (var i = 0; i < applicationsAr.length; i++) {
-            if (applicationsAr[i].trim() != "") {
-                applicationsQry += applicationsAr[i].trim() + ',';
-                oneApplication = true;
+        function searchTag(srcQuery) {
+            if ($('#searchEdt').val().indexOf(srcQuery) == -1) {
+                $('#searchEdt').val($('#searchEdt').val() + " " + srcQuery);
+            } else {
+                $('#searchEdt').val($('#searchEdt').val().replace(srcQuery, ""));
             }
-        }
-         if (oneApplication) {
-            searchQuery += " " + applicationsQry.slice(0, - 1);
-        }
-
-        // levels
-        var levelsAr = $.trim(levels).split(' ');
-        var levelsQry = "level<<";
-        var oneLevel = false;
-        for (i = 0; i < levelsAr.length; i++) {
-            if (levelsAr[i].trim() != "") {
-                levelsQry += levelsAr[i].trim() + ',';
-                oneLevel = true;
-            }
-        }
-        if (oneLevel) {
-            searchQuery += " " + levelsQry.slice(0, - 1);
-        }
-        return searchQuery;
-    }
-
-    /**
-     * main search function
-     */
-    function search() {
-        if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
-            currPage = 0;
-            lastQuery = $("#searchEdt").val();
-            toReset = false;
-        }
-        var dtSince = $("#sinceEdt").datetimepicker('getDate');
-        var dtTo = $("#toEdt").datetimepicker('getDate');
-        if ($("#sinceEdt").val().trim() == "" || $("#toEdt").val().trim() == "") {
-            alert("The date range is mandatory");
-            return;
-        }
-        var sinceSeconds = (dtSince.getTime() / 1000);
-        var toSeconds = (dtTo.getTime() / 1000);
-        if (toSeconds == sinceSeconds) {
-            sinceSeconds -= 24 * 60 * 60;
-        }
-
-        //Calling Rest WS
-        var searchParam = {
-            query: makeSearchQuery(),
-            dtSince: Math.ceil(sinceSeconds),
-            dtTo: Math.ceil(toSeconds),
-            page: currPage,
-            result_per_page: result_per_page,
-            order: order,
-            columns: src_columns
-        };
-        var url = "{{ 'result_table' | route_url }}?" + $.param(searchParam);
-        cleanResult();
-        $.ajax({
-            type: "GET",
-            url: url
-        }).done(function (data) {
-            $('#resultDiv').html(data);
-        });
-    }// end search function
-
-    function tail() {
-        if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
-            currPage = 0;
-            lastQuery = $("#searchEdt").val();
-            toReset = false;
-        }
-        var searchParam = {
-            query: makeSearchQuery()
-        };
-        var url = "{{ 'tail_table' | route_url }}?" + $.param(searchParam);
-        cleanResult();
-        $.ajax({
-            type: "GET",
-            url: url
-        }).done(function (data) {
-            $('#resultDiv').html(data);
-            tail_timer = setInterval(tail_search, 1000);
-        });
-    }
-
-    $('#tailBtn').click(tail);
-
-    $('#searchBtn').click(search);
-    $('#searchEdt').keypress(function (event) {
-        if (event.which == 13) {
             search();
         }
-    });
-    $('#searchFrm').submit(function (event) {
-        search();
-        event.preventDefault();
-    });
 
-</script>
+        function cleanResult() {
+            if (tail_timer != null) {
+                clearTimeout(tail_timer);
+            }
+            $("#resultDiv").html("<div class=\"ui active inverted dimmer\"><div class=\"ui text loader\">Searching...</div></div>");
+        }
+
+        function makeSearchQuery() {
+            // Create search query string
+            var searchQuery = $("#searchEdt").val();
+
+            //applications
+            var applicationsAr = $('#searchApplications').val().split(' ');
+            var oneApplication = false;
+            var applicationsQry = "application<<";
+            for (var i = 0; i < applicationsAr.length; i++) {
+                if (applicationsAr[i].trim() != "") {
+                    applicationsQry += applicationsAr[i].trim() + ',';
+                    oneApplication = true;
+                }
+            }
+            if (oneApplication) {
+                searchQuery += " " + applicationsQry.slice(0, -1);
+            }
+
+            // levels
+            var levelsAr = $.trim(levels).split(' ');
+            var levelsQry = "level<<";
+            var oneLevel = false;
+            for (i = 0; i < levelsAr.length; i++) {
+                if (levelsAr[i].trim() != "") {
+                    levelsQry += levelsAr[i].trim() + ',';
+                    oneLevel = true;
+                }
+            }
+            if (oneLevel) {
+                searchQuery += " " + levelsQry.slice(0, -1);
+            }
+            return searchQuery;
+        }
+
+        /**
+         * main search function
+         */
+        function search() {
+            if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
+                currPage = 0;
+                lastQuery = $("#searchEdt").val();
+                toReset = false;
+            }
+            var dtSince = $("#sinceEdt").datetimepicker('getDate');
+            var dtTo = $("#toEdt").datetimepicker('getDate');
+            if ($("#sinceEdt").val().trim() == "" || $("#toEdt").val().trim() == "") {
+                alert("The date range is mandatory");
+                return;
+            }
+            var sinceSeconds = (dtSince.getTime() / 1000);
+            var toSeconds = (dtTo.getTime() / 1000);
+            if (toSeconds == sinceSeconds) {
+                sinceSeconds -= 24 * 60 * 60;
+            }
+
+            //Calling Rest WS
+            var searchParam = {
+                query: makeSearchQuery(),
+                dtSince: Math.ceil(sinceSeconds),
+                dtTo: Math.ceil(toSeconds),
+                page: currPage,
+                result_per_page: result_per_page,
+                order: order,
+                columns: src_columns
+            };
+            var url = "{{ 'result_table' | route_url }}?" + $.param(searchParam);
+            cleanResult();
+            $.ajax({
+                type: "GET",
+                url: url
+            }).done(function (data) {
+                $('#resultDiv').html(data);
+            });
+        }// end search function
+
+        function tail() {
+            if (toReset || lastQuery == null || lastQuery != $("#searchEdt").val()) {
+                currPage = 0;
+                lastQuery = $("#searchEdt").val();
+                toReset = false;
+            }
+            var searchParam = {
+                query: makeSearchQuery()
+            };
+            var url = "{{ 'tail_table' | route_url }}?" + $.param(searchParam);
+            cleanResult();
+            $.ajax({
+                type: "GET",
+                url: url
+            }).done(function (data) {
+                $('#resultDiv').html(data);
+                tail_timer = setInterval(tail_search, 1000);
+            });
+        }
+
+        $('#tailBtn').click(tail);
+
+        $('#searchBtn').click(search);
+        $('#searchEdt').keypress(function (event) {
+            if (event.which == 13) {
+                search();
+            }
+        });
+        $('#searchFrm').submit(function (event) {
+            search();
+            event.preventDefault();
+        });
+
+    </script>
 {% endblock %}

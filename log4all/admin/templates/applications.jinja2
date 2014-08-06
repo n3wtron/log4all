@@ -1,5 +1,47 @@
 {% extends 'admin_layout.jinja2' %}
 {% block center %}
+
+    {% if error_message %}
+        {% import 'log4all:templates/util/dialogs.jinja2' as dialogs %}
+        {% call dialogs.error_dialog('Error',error_message) %}
+        {% endcall %}
+    {% endif %}
+
+
+    <div id="delAppModal" class="ui modal">
+        <div class="header">
+            Delete Application
+        </div>
+        <div class="content">
+            Are you sure to delete the application <b><span id="delAppNameLbl"></span></b></br></br>
+            <form id="delAppFrm" method="POST">
+                <input type="hidden" name="operation" value="delApplication">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="name" id="delAppNameFld">
+
+                <div id="deleteAppBtn" class="ui red submit button ">Delete</div>
+                <div id="cancelDeleteAppBtn" class="ui button">Cancel</div>
+                <script>
+                    $("#cancelDeleteAppBtn").click(function () {
+                        $('#delAppModal').modal('hide');
+                    });
+                    $("#deleteAppBtn").click(function () {
+                        $('#delAppFrm').submit();
+                    });
+                </script>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function deleteApplication(name) {
+            $('#delAppNameLbl').html(name);
+            $('#delAppNameFld').val(name);
+            $('#delAppModal').modal('show');
+        }
+    </script>
+
+
     <div class="panel">
         <div class="title">Applications</div>
         <div class="contentPanel">
@@ -8,93 +50,68 @@
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
-                    <th>Insert Date</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                {% for application in applications %}
+                    <tr>
+                        <td>{{ application['name'] }}</td>
+                        <td>{{ application['description'] }}</td>
+                        <td>
+                            <a href="{{ 'admin_edit_application'|route_url }}?idApp={{ application['_id'] }}"
+                               style="text-decoration: none;">
+                                <i class="edit big icon link" title="Edit group"></i>
+                            </a>
+                            <i class="delete red big  icon link" title="Delete application"
+                               onclick="deleteApplication('{{ application['name'] }}');"></i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
                 <tfoot>
                 <tr>
                     <th colspan="3">
                         <div id="addApplicationBtn" class="ui green labeled icon button"><i class="desktop icon"></i>
                             Add Application
                         </div>
+                        <script>
+                            $('#addApplicationBtn').click(function(){
+                                 $('#addApplicationModal').modal('show');
+                            });
+                        </script>
                     </th>
                 </tr>
                 </tfoot>
             </table>
         </div>
     </div>
-    <script>
-        $('#addApplicationBtn').click(function () {
-            $('#addApplicationModal').modal('show');
-        });
-        function editApp(idApp){
-            window.location.href = "{{ 'admin_edit_application' | route_url }}?idApp="+idApp;
-        }
-        function refreshApplications() {
-            $.ajax({
-                url: '{{ 'admin_get_applications' | route_url }}'
-            }).done(function (data) {
-                $('#applicationTable tbody').html("");
-                var tblBody = "";
-                var dt = null;
-                $.each(data, function (i, app) {
-                    tblBody += "<tr><td>";
-                    tblBody += '<i class="large edit icon" style="cursor:pointer;" onclick="editApp(\''+app['_id']+'\');"></i>';
-                    tblBody += app['name'] + "</td>";
-                    tblBody += "<td>" + app['description'] + "</td>";
-                    if (app['date'] != null) {
-                        dt = new Date(app['date'] * 1000);
-                        tblBody += "<td>" + dt.toLocaleString() + "</td>";
-                    } else {
-                        tblBody += "<td></td>";
-                    }
-                    tblBody += "</tr>";
-                });
-                $('#applicationTable tbody').html(tblBody);
-            });
-        }
-        refreshApplications();
-    </script>
     <div id="addApplicationModal" class="ui modal">
         <div class="header">
             Add Application
         </div>
         <div class="ui form segment">
-            <div class="field">
-                <label>Application Name</label>
-                <input id="applicationName" type="text" placeholder="Application Name">
-            </div>
-            <div class="field">
-                <label>Application Description</label>
-                <textarea id="applicationDescription" placeholder="Application Description"></textarea>
-            </div>
-            <div id="saveApplicationBtn" class="ui green submit button">Add</div>
-            <div id="cancelApplicationBtn" class="ui button">Cancel</div>
-            <div id="fbPanel" style="padding: 5px;color: red;"></div>
+            <form id="addApplicationFrm" method="POST">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="operation" value="addApplication">
+                <div class="field">
+                    <label>Application Name</label>
+                    <input name="name" type="text" placeholder="Application Name">
+                </div>
+                <div class="field">
+                    <label>Application Description</label>
+                    <textarea name="description" placeholder="Application Description"></textarea>
+                </div>
+                <div id="saveApplicationBtn" class="ui green submit button">Add</div>
+                <div id="cancelApplicationBtn" class="ui button">Cancel</div>
+                <div id="fbPanel" style="padding: 5px;color: red;"></div>
+            </form>
             <script>
                 $("#cancelApplicationBtn").click(function () {
                     $('#addApplicationModal').modal('hide');
                 });
                 $("#saveApplicationBtn").click(function () {
-                    var applicationData = {
-                        'name': $('#applicationName').val(),
-                        'description': $('#applicationDescription').val()
-                    };
-                    $.ajax({
-                        type: 'POST',
-                        contentType: "application/json",
-                        url: '{{ 'admin_add_application' | route_url }}',
-                        data: JSON.stringify(applicationData),
-                        dataType: 'json'
-                    }).done(function (data) {
-                        if (data['result']) {
-                            $('#addApplicationModal').modal('hide');
-                            refreshApplications();
-                        } else {
-                            $('#fbPanel').html("Error:" + data['message']);
-                        }
-                    });
+                    $('#addApplicationFrm').submit();
                 });
             </script>
         </div>

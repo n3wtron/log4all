@@ -10,6 +10,7 @@ from log4all.util import mongo_db_result_to_json, LEVEL_COLORS, LEVELS
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
+
 logger = logging.getLogger('log4all')
 
 
@@ -20,7 +21,41 @@ def admin_home(request):
 
 @view_config(route_name='admin_applications', renderer='templates/applications.jinja2')
 def admin_applications(request):
-    return {}
+    error_messages = list()
+    if request.method == 'POST':
+        if request.POST['operation'] == 'addApplication':
+            application = dict()
+            application['name'] = request.POST['name']
+            application['description'] = request.POST['description']
+            application['date'] = datetime.now()
+            _init_applications_levels(application)
+            application['levels']['DEBUG']['delete'] = 5
+            application['levels']['INFO']['delete'] = 30
+            application['levels']['WARN']['delete'] = 60
+            application['levels']['ERROR']['archive'] = 90
+            application['levels']['FATAL']['archive'] = 180
+            try:
+                request.mongodb.applications.insert(application, w=1, continue_on_error=False)
+            except DuplicateKeyError as e:
+                logger.exception(e)
+                error_messages.append(e.message)
+        if request.POST['operation'] == 'delApplication':
+            try:
+                request.mongodb.applications.remove({'name': request.POST['name']})
+
+            except DuplicateKeyError as e:
+                logger.exception(e)
+                error_messages.append(e.message)
+
+    apps = mongo_db_result_to_json(list(request.mongodb.applications.find().sort('name')))
+    error_message = ""
+    for err in error_messages:
+        error_message += err + "</br>"
+    return {
+        'csrf': request.session.get_csrf_token(),
+        'applications': apps,
+        'error_message': error_message
+    }
 
 
 def _init_applications_levels(app):
@@ -33,48 +68,12 @@ def _init_applications_levels(app):
     application_levels['FATAL'] = dict()
 
 
-@view_config(route_name="admin_add_application", renderer='json', request_method='POST')
-def add_application(request):
-    try:
-        application_name = request.json_body['name']
-        application_description = request.json_body['description']
-        application = dict()
-        application['name'] = application_name
-        application['description'] = application_description
-        application['date'] = datetime.now()
-        _init_applications_levels(application)
-        application['levels']['DEBUG']['delete'] = 5
-        application['levels']['INFO']['delete'] = 30
-        application['levels']['WARN']['delete'] = 60
-        application['levels']['ERROR']['archive'] = 90
-        application['levels']['FATAL']['archive'] = 180
-
-        request.mongodb.applications.insert(application, w=1, continue_on_error=False)
-        return {'result': True}
-    except KeyError as e:
-        logger.exception(e)
-        return {'result': False, 'message': 'all parameters are mandatory'}
-    except DuplicateKeyError as e:
-        return {'result': False, 'message': e.message}
-    except Exception as e:
-        logger.exception(e)
-        return {'result': False, 'message': 'error adding application'}
-
-
-@view_config(route_name="admin_get_applications", renderer='json')
-def get_applications(request):
-    result = mongo_db_result_to_json(list(request.mongodb.applications.find().sort('name')))
-    logger.debug(result)
-    return result
-
-
 @view_config(route_name="admin_edit_application", renderer='templates/application.jinja2')
 def edit_application(request):
     result = dict()
     if request.method == 'POST' and 'csrf' in request.POST and request.POST['csrf'] == request.session.get_csrf_token():
         # Modification from Form
-        app = request.mongodb.applications.find_one({'_id': ObjectId(request.POST['idApp'])})
-        app['name'] = request.POST['name']
+        app = request.mongodb.applications.find_one({'_id': ObjectId(request.params['idApp'])})
         app['description'] = request.POST['description']
         _init_applications_levels(app)
         try:

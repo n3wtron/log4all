@@ -1,13 +1,11 @@
-import smtplib
 import datetime
 
 from bson import ObjectId
-from pyramid.url import route_url
 from pyramid.view import view_config
 
 from log4all import logger
-
 from log4all.api.log.search import api_logs_search
+from log4all.notifications import EmailNotification
 from log4all.util import LEVEL_COLORS
 
 
@@ -46,19 +44,8 @@ def detail_send_notification(request):
         if request.GET['csrf'] != request.session.get_csrf_token():
             return {'result': False}
         else:
-            smtp_hostname = request.registry.settings['smtp.hostname']
-            smtp_port = int(request.registry.settings['smtp.port'])
-            from_address = request.registry.settings['smtp.from_address']
             recipient = request.GET['email']
-            log_id_detail_url = route_url('detail', request) + "?id=" + request.GET['log_id']
-            smtp_server = smtplib.SMTP(smtp_hostname, port=smtp_port)
-            content = "From: Log4All <" + from_address + ">\n"
-            content += "To: <" + recipient + ">\n"
-            content += "MIME-Version: 1.0\n"
-            content += "Content-type: text/html\n"
-            content += "Subject: log4all notification\n\n"
-            content += "<a href=\"" + log_id_detail_url + "\">" + log_id_detail_url + "</a>"
-            smtp_server.sendmail(from_address, [recipient], content)
+            EmailNotification(request.registry.settings).notify(request.GET['log_id'], recipients=[recipient])
             return {'result': True}
     except Exception as e:
         logger.exception(e)

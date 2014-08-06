@@ -129,7 +129,10 @@ $.fn.accordion = function(parameters) {
           var
             $activeTitle     = $title.eq(index),
             $activeContent   = $activeTitle.next($content),
-            $previousTitle   = $activeTitle.siblings(selector.title).filter('.' + className.active),
+            $otherSections   = module.is.menu()
+              ? $activeTitle.parent().siblings(selector.item).find(selector.title)
+              : $activeTitle.siblings(selector.title),
+            $previousTitle   = $otherSections.filter('.' + className.active),
             $previousContent = $previousTitle.next($title),
             contentIsOpen    =  ($previousTitle.size() > 0)
           ;
@@ -205,7 +208,11 @@ $.fn.accordion = function(parameters) {
             })
           ;
         },
-
+        is: {
+          menu: function () {
+            return $module.hasClass(className.menu);
+          }
+        },
         setting: function(name, value) {
           if( $.isPlainObject(name) ) {
             $.extend(true, settings, name);
@@ -405,12 +412,15 @@ $.fn.accordion.settings = {
   },
 
   className   : {
-    active : 'active'
+    active : 'active',
+    menu   : 'menu',
   },
 
   selector    : {
     title   : '.title',
-    content : '.content'
+    content : '.content',
+    menu    : '.menu',
+    item    : '.item',
   }
 
 
@@ -1969,7 +1979,7 @@ $.fn.form.settings = {
     group   : '.field',
     input   : 'input',
     prompt  : '.prompt',
-    submit  : '.submit'
+    submit  : '.submit:not([type="submit"])'
   },
 
   className : {
@@ -4583,6 +4593,7 @@ $.fn.dropdown = function(parameters) {
             module.bind.touchEvents();
           }
           module.bind.mouseEvents();
+          module.bind.keyboardEvents();
           module.instantiate();
         },
 
@@ -4606,6 +4617,15 @@ $.fn.dropdown = function(parameters) {
         },
 
         bind: {
+          keyboardEvents: function() {
+            module.debug('Binding keyboard events');
+            $module
+              .on('keydown' + eventNamespace, module.handleKeyboard)
+            ;
+            $module
+              .on('focus' + eventNamespace, module.show)
+            ;
+          },
           touchEvents: function() {
             module.debug('Touch device detected binding touch events');
             $module
@@ -4666,6 +4686,69 @@ $.fn.dropdown = function(parameters) {
             $document
               .off('click' + eventNamespace)
             ;
+          }
+        },
+
+        handleKeyboard: function(event) {
+          var
+            $selectedItem = $item.filter('.' + className.selected),
+            pressedKey    = event.which,
+            keys          = {
+              enter     : 13,
+              escape    : 27,
+              upArrow   : 38,
+              downArrow : 40
+            },
+            selectedClass   = className.selected,
+            currentIndex    = $item.index( $selectedItem ),
+            hasSelectedItem = ($selectedItem.size() > 0),
+            resultSize      = $item.size(),
+            newIndex
+          ;
+          // close shortcuts
+          if(pressedKey == keys.escape) {
+            module.verbose('Escape key pressed, closing dropdown');
+            module.hide();
+          }
+          // result shortcuts
+          if(module.is.visible()) {
+            if(pressedKey == keys.enter && hasSelectedItem) {
+              module.verbose('Enter key pressed, choosing selected item');
+              $.proxy(module.event.item.click, $item.filter('.' + selectedClass) )(event);
+              event.preventDefault();
+              return false;
+            }
+            else if(pressedKey == keys.upArrow) {
+              module.verbose('Up key pressed, changing active item');
+              newIndex = (currentIndex - 1 < 0)
+                ? currentIndex
+                : currentIndex - 1
+              ;
+              $item
+                .removeClass(selectedClass)
+                .eq(newIndex)
+                  .addClass(selectedClass)
+              ;
+              event.preventDefault();
+            }
+            else if(pressedKey == keys.downArrow) {
+              module.verbose('Down key pressed, changing active item');
+              newIndex = (currentIndex + 1 >= resultSize)
+                ? currentIndex
+                : currentIndex + 1
+              ;
+              $item
+                .removeClass(selectedClass)
+                .eq(newIndex)
+                  .addClass(selectedClass)
+              ;
+              event.preventDefault();
+            }
+          }
+          else {
+            if(pressedKey == keys.enter) {
+              module.show();
+            }
           }
         },
 
@@ -5009,8 +5092,8 @@ $.fn.dropdown = function(parameters) {
           },
           animated: function($subMenu) {
             return ($subMenu)
-              ? $subMenu.is(':animated') || $subMenu.transition('is animating')
-              : $menu.is(':animated') || $menu.transition('is animating')
+              ? $subMenu.is(':animated') || $subMenu.transition && $subMenu.transition('is animating')
+              : $menu.is(':animated') || $menu.transition && $menu.transition('is animating')
             ;
           },
           visible: function($subMenu) {
@@ -5431,6 +5514,7 @@ $.fn.dropdown.settings = {
     placeholder : 'default',
     disabled    : 'disabled',
     visible     : 'visible',
+    selected    : 'selected',
     selection   : 'selection'
   }
 
@@ -5440,11 +5524,12 @@ $.fn.dropdown.settings = {
 $.extend( $.easing, {
   easeOutQuad: function (x, t, b, c, d) {
     return -c *(t/=d)*(t-2) + b;
-  },
+  }
 });
 
 
 })( jQuery, window , document );
+
 /*
  * # Semantic - Modal
  * http://github.com/semantic-org/semantic-ui/
@@ -5541,8 +5626,7 @@ $.fn.modal = function(parameters) {
             .dimmer('get dimmer')
           ;
 
-          $otherModals = $module.siblings(selector.modal);
-          $allModals   = $otherModals.add($module);
+          module.refreshSelectors();
 
           module.verbose('Attaching close events', $close);
           $close
@@ -5582,6 +5666,11 @@ $.fn.modal = function(parameters) {
           module.set.screenHeight();
           module.set.type();
           module.set.position();
+        },
+
+        refreshSelectors: function() {
+          $otherModals = $module.siblings(selector.modal);
+          $allModals   = $otherModals.add($module);
         },
 
         attachEvents: function(selector, event) {
@@ -5684,49 +5773,62 @@ $.fn.modal = function(parameters) {
           module.showModal(callback);
         },
 
+        onlyVisible: function() {
+          module.refreshSelectors();
+          return module.is.active() && $otherModals.filter(':visible').size() === 0;
+        },
+
+        othersVisible: function() {
+          module.refreshSelectors();
+          return $otherModals.filter(':visible').size() > 0;
+        },
+
         showModal: function(callback) {
+          if(module.is.active()) {
+            module.debug('Modal is already visible');
+            return;
+          }
+
           callback = $.isFunction(callback)
             ? callback
             : function(){}
           ;
-          if( !module.is.active() ) {
-            if(module.cache === undefined) {
-              module.cacheSizes();
-            }
-            module.set.position();
-            module.set.screenHeight();
-            module.set.type();
 
-            if( $otherModals.filter(':visible').size() > 0 && !settings.allowMultiple) {
-              module.debug('Other modals visible, queueing show animation');
-              module.hideOthers(module.showModal);
-            }
-            else {
-              $.proxy(settings.onShow, element)();
-              if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
-                module.debug('Showing modal with css animations');
-                $module
-                  .transition(settings.transition + ' in', settings.duration, function() {
-                    $.proxy(settings.onVisible, element)();
-                    module.set.active();
-                    callback();
-                  })
-                ;
-              }
-              else {
-                module.debug('Showing modal with javascript');
-                $module
-                  .fadeIn(settings.duration, settings.easing, function() {
-                    $.proxy(settings.onVisible, element)();
-                    module.set.active();
-                    callback();
-                  })
-                ;
-              }
-            }
+          module.save.focus();
+          module.add.keyboardShortcuts();
+
+          if(module.cache === undefined) {
+            module.cacheSizes();
+          }
+          module.set.position();
+          module.set.screenHeight();
+          module.set.type();
+
+          if(module.othersVisible()  && !settings.allowMultiple) {
+            module.debug('Other modals visible, queueing show animation');
+            module.hideOthers(module.showModal);
           }
           else {
-            module.debug('Modal is already visible');
+            $.proxy(settings.onShow, element)();
+
+            var transitionCallback = function() {
+              module.set.active();
+              $.proxy(settings.onVisible, element)();
+              callback();
+            };
+
+            if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
+              module.debug('Showing modal with css animations');
+              $module
+                .transition(settings.transition + ' in', settings.duration, transitionCallback)
+              ;
+            }
+            else {
+              module.debug('Showing modal with javascript');
+              $module
+                .fadeIn(settings.duration, settings.easing, transitionCallback)
+              ;
+            }
           }
         },
 
@@ -5736,7 +5838,7 @@ $.fn.modal = function(parameters) {
             $dimmable.dimmer('show');
           }
           else {
-            module.debug('Dimmer already visible');
+            module.debug('Dimmer is already visible');
           }
         },
 
@@ -5745,7 +5847,8 @@ $.fn.modal = function(parameters) {
             ? callback
             : function(){}
           ;
-          if($allModals.filter(':visible').size() <= 1) {
+          module.refreshSelectors();
+          if(module.onlyVisible()) {
             module.hideDimmer();
           }
           module.hideModal(callback);
@@ -5753,7 +5856,7 @@ $.fn.modal = function(parameters) {
 
         hideDimmer: function() {
           if( !module.is.active() ) {
-            module.debug('Dimmer is not visible cannot hide');
+            module.debug('Dimmer is already hidden');
             return;
           }
           module.debug('Hiding dimmer');
@@ -5774,35 +5877,37 @@ $.fn.modal = function(parameters) {
         },
 
         hideModal: function(callback) {
+          if(!module.is.active()) {
+            module.debug('Modal is already hidden');
+            return;
+          }
+
           callback = $.isFunction(callback)
             ? callback
             : function(){}
           ;
-          if( !module.is.active() ) {
-            module.debug('Cannot hide modal it is not active');
-            return;
-          }
-          module.debug('Hiding modal');
+
+          module.restore.focus();
           module.remove.keyboardShortcuts();
+
           $.proxy(settings.onHide, element)();
+
+          var transitionCallback = function() {
+            module.remove.active();
+            $.proxy(settings.onHidden, element)();
+            callback();
+          };
+
           if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
+            module.debug('Hiding modal with css animations');
             $module
-              .transition(settings.transition + ' out', settings.duration, function() {
-                $.proxy(settings.onHidden, element)();
-                module.remove.active();
-                module.restore.focus();
-                callback();
-              })
+              .transition(settings.transition + ' out', settings.duration, transitionCallback)
             ;
           }
           else {
+            module.debug('Hiding modal with javascript');
             $module
-              .fadeOut(settings.duration, settings.easing, function() {
-                $.proxy(settings.onHidden, element)();
-                module.remove.active();
-                module.restore.focus();
-                callback();
-              })
+              .fadeOut(settings.duration, settings.easing, transitionCallback)
             ;
           }
         },
@@ -5812,7 +5917,7 @@ $.fn.modal = function(parameters) {
             ? callback
             : function(){}
           ;
-          if( $allModals.is(':visible') ) {
+          if( $module.is(':visible') || module.othersVisible() ) {
             module.debug('Hiding all visible modals');
             module.hideDimmer();
             $allModals
@@ -5827,7 +5932,7 @@ $.fn.modal = function(parameters) {
             ? callback
             : function(){}
           ;
-          if( $otherModals.is(':visible') ) {
+          if( module.othersVisible() ) {
             module.debug('Hiding other modals');
             $otherModals
               .filter(':visible')
@@ -5920,16 +6025,21 @@ $.fn.modal = function(parameters) {
             }
           },
           active: function() {
-            module.add.keyboardShortcuts();
-            module.save.focus();
-            $module
-              .addClass(className.active)
-            ;
+            $module.addClass(className.active);
+
             if(settings.closable) {
               $dimmer
                 .off('click' + eventNamespace)
                 .on('click' + eventNamespace, module.event.click)
               ;
+            }
+
+            if(settings.autofocus) {
+                var $inputs    = $module.find(':input:visible');
+                var $autofocus = $inputs.filter('[autofocus]');
+                var $input     = $autofocus.length ? $autofocus : $inputs;
+
+                $input.first().focus();
             }
           },
           scrolling: function() {
@@ -6155,10 +6265,11 @@ $.fn.modal.settings = {
   allowMultiple : true,
   detachable    : true,
   closable      : true,
+  autofocus     : true,
   context       : 'body',
 
   duration      : 500,
-  easing        : 'easeOutExpo',
+  easing        : 'easeOutQuad',
   offset        : 0,
   transition    : 'scale',
 
@@ -6189,8 +6300,15 @@ $.fn.modal.settings = {
   }
 };
 
+// Adds easing
+$.extend( $.easing, {
+  easeOutQuad: function (x, t, b, c, d) {
+    return -c *(t/=d)*(t-2) + b;
+  }
+});
 
 })( jQuery, window , document );
+
 /*
  * # Semantic - Nag
  * http://github.com/jlukic/semantic-ui/
@@ -6996,6 +7114,7 @@ $.fn.popup = function(parameters) {
           $popup
             .remove()
           ;
+          $.proxy(settings.onRemove, $popup)();
         },
 
         save: {
@@ -7523,6 +7642,7 @@ $.fn.popup.settings = {
   namespace      : 'popup',
 
   onCreate       : function(){},
+  onRemove       : function(){},
   onShow         : function(){},
   onHide         : function(){},
 
@@ -7542,7 +7662,7 @@ $.fn.popup.settings = {
   preserve       : false,
 
   duration       : 250,
-  easing         : 'easeOutQuint',
+  easing         : 'easeOutQuad',
   transition     : 'scale',
 
   distanceAway   : 0,
@@ -7590,6 +7710,14 @@ $.fn.popup.settings = {
   }
 
 };
+
+// Adds easing
+$.extend( $.easing, {
+  easeOutQuad: function (x, t, b, c, d) {
+    return -c *(t/=d)*(t-2) + b;
+  }
+});
+
 
 })( jQuery, window , document );
 
@@ -8140,7 +8268,7 @@ $.fn.search = function(source, parameters) {
           if($results.filter(':visible').size() > 0) {
             if(keyCode == keys.enter) {
               module.verbose('Enter key pressed, selecting active result');
-              if( $result.filter('.' + activeClass).exists() ) {
+              if( $result.filter('.' + activeClass).size() > 0 ) {
                 $.proxy(module.results.select, $result.filter('.' + activeClass) )();
                 event.preventDefault();
                 return false;

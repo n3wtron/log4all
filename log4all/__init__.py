@@ -18,7 +18,7 @@ def init_db(db):
     db.tags.ensure_index('name', unique=True)
     db.logs.ensure_index('date')
     db.logs.ensure_index('application')
-    db.logs.ensure_index('level')
+    db.logs.ensure_index([('application', pymongo.ASCENDING), ('level', pymongo.ASCENDING)])
     # creation of tail_logs capped collection
     try:
         db.create_collection('tail_logs', capped=True, size=256 * 1024 * 1024)
@@ -34,9 +34,19 @@ def init_db(db):
     # tags collection
     db.tags.ensure_index('name', unique=True)
 
+    # groups/users collection
+    db.users.ensure_index('username', unique=True)
+    db.users.ensure_index('groups')
+    db.groups.ensure_index('name', unique=True)
+
+    # notifications
+    db.notifications.ensure_index('date')
+    db.notifications.ensure_index('groups')
+
 
 def main(global_config, **settings):
-    """ This function returns a Pyramid WSGI application.
+    """
+        This function returns a Pyramid WSGI application.
     """
     config = Configurator(settings=settings, session_factory=log4all_session_factory)
     config.include('pyramid_chameleon')

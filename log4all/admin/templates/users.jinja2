@@ -1,0 +1,149 @@
+{% extends 'admin_layout.jinja2' %}
+{% block center %}
+    {% if error_message %}
+        {% import 'log4all:templates/util/dialogs.jinja2' as dialogs %}
+        {% call dialogs.error_dialog('Error',error_message) %}
+        {% endcall %}
+    {% endif %}
+
+
+    <div id="delUserModal" class="ui modal">
+        <div class="header">
+            Delete User
+        </div>
+        <div class="content">
+            Are you sure to delete user <span id="delUsernameLbl"></span></br></br>
+            <form id="delUserFrm" method="POST">
+                <input type="hidden" name="operation" value="delUser">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="username" id="delUsernameFld">
+
+                <div id="deleteUserBtn" class="ui red submit button ">Delete</div>
+                <div id="cancelDeleteUserBtn" class="ui button">Cancel</div>
+                <script>
+                    $("#cancelDeleteUserBtn").click(function () {
+                        $('#delUserModal').modal('hide');
+                    });
+                    $("#deleteUserBtn").click(function () {
+                        $('#delUserFrm').submit();
+                    });
+                </script>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function deleteUser(username) {
+            $('#delUsernameLbl').html(username);
+            $('#delUsernameFld').val(username);
+            $('#delUserModal').modal('show');
+        }
+    </script>
+
+
+    <div class="panel">
+        <div class="title">Users</div>
+        <div class="contentPanel">
+            <table id="applicationTable" class="ui table segment">
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user['username'] }}</td>
+                        <td>{{ user['email'] }}</td>
+                        <td>{{ user['name'] }}</td>
+                        <td>{{ user['surname'] }}</td>
+                        <td>
+                            <a href="{{ 'admin_edit_user' | route_url }}?user={{ user['username'] }}"
+                               style="text-decoration: none;">
+                                <i class="edit big icon" title="Edit user"></i>
+                            </a>
+                            <i class="delete red big  icon link" title="Delete user"
+                               onclick="deleteUser('{{ user['username'] }}');"></i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="5">
+                        <div id="addUserBtn" class="ui green labeled icon button">
+                            <i class="user icon"></i>
+                            Add User
+                        </div>
+                        <script>
+                            $('#addUserBtn').click(function () {
+                                $('#addUserModal').modal('show');
+                            });
+                        </script>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="addUserModal" class="ui modal">
+        <div class="header">
+            Add User
+        </div>
+        <form id="addUserFrm" method="POST">
+            <input type="hidden" name="operation" value="addUser">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+
+            <div class="ui form segment">
+                <div class="field">
+                    <label>Username</label>
+                    <input name="username" type="text" placeholder="Username">
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input name="email" type="text" placeholder="Email">
+                </div>
+                <div class="field">
+                    <label>Name</label>
+                    <input name="name" type="text" placeholder="Name">
+                </div>
+                <div class="field">
+                    <label>Surname</label>
+                    <input name="surname" type="text" placeholder="Surname">
+                </div>
+                <div class="field">
+                    <label>Groups</label>
+                    <select name="groups" multiple="multiple">
+                        {% for group in groups %}
+                            <option value="{{ group['name'] }}">{{ group['name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Preferred Notifications</label>
+                    <select name="notifications" multiple="multiple">
+                        {% for notif in notif_methods %}
+                            <option value="{{ notif }}">{{ notif }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="saveUserBtn" class="ui green submit button">Add</div>
+                <div id="cancelUserBtn" class="ui button">Cancel</div>
+                <script>
+                    $("#cancelUserBtn").click(function () {
+                        $('#addUserModal').modal('hide');
+                    });
+                    $("#saveUserBtn").click(function () {
+                        $('#addUserFrm').submit();
+                    });
+                </script>
+            </div>
+        </form>
+    </div>
+{% endblock %}

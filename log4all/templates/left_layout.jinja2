@@ -1,6 +1,17 @@
 {% extends 'layout.jinja2' %}
 {%  block middle %}
-    <div id="leftMenu">
+     <script>
+        function adjustLeftMenu(){
+            $("#leftMenu").height( $("#container").height() - $("#top").height() );
+        }
+        $(document).ready(function(){
+           adjustLeftMenu();
+        });
+        $( document ).ajaxComplete(function() {
+             adjustLeftMenu();
+        });
+    </script>
+    <div id="leftMenu" class="ui bottom attached">
         {% block leftMenu %}
         {% endblock %}
     </div>

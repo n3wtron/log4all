@@ -1,15 +1,21 @@
 {% extends 'log4all:templates/left_layout.jinja2' %}
 {% block leftMenu %}
-    <div class="ui segment vertical inverted labeled icon menu">
+    <div class="ui vertical fluid labeled icon menu inverted">
         <a class="item" href="{{ 'admin_applications' | route_url }}">
             <i class="terminal icon"></i>
             Applications
         </a>
-        <a class="item">
-            <a class="item" href="{{ 'admin_stats' | route_url }}">
-                <i class="signal icon"></i>
-                Stats
-            </a>
+        <a class="item" href="{{ 'admin_stats' | route_url }}">
+            <i class="signal icon"></i>
+            Stats
+        </a>
+        <a class="item" href="{{ 'admin_users' | route_url }}">
+            <i class="user icon"></i>
+            Users
+        </a>
+        <a class="item" href="{{ 'admin_groups' | route_url }}">
+            <i class="users icon"></i>
+            Groups
         </a>
     </div>
 {% endblock %}

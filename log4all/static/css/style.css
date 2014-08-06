@@ -1,7 +1,12 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans);
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 
+.ui-autocomplete {
+    z-index: 9999 !important;
+}
+
 html {
+    width: 100%;
     margin: 0px;
     height: 100%;
     position: relative;
@@ -45,7 +50,7 @@ input, textarea, select {
     margin-top: 0px;
     font-size: 2em;
     font-weight: bold;
-    height: 70px;
+    height: 65px;
 }
 
 #top img {
@@ -64,7 +69,7 @@ input, textarea, select {
     text-align: center;
 }
 
-#bottom a,a:visited,a:hover{
+#bottom a, a:visited, a:hover {
     color: #ffffff;
     text-decoration: none;
 }
@@ -74,21 +79,16 @@ a, a:visited, a:hover {
 }
 
 #leftMenu {
-    float: left;
     width: 110px;
+    float: left;
     color: #ffffff;
     background: #282828;
-    top: 63px;
-    bottom: 0px;
-    display: block;
+    top: 65px;
     position: absolute;
-    padding-top: 10px;
 }
 
 #leftCenter {
-    width: 93%;
-    display: inline-block;
-    margin-left: 120px;
+    margin-left: 115px;
 }
 
 .panel {
@@ -98,7 +98,7 @@ a, a:visited, a:hover {
     margin: 20px;
 }
 
-.middle{
+.middle {
     padding-right: 20px;
 }
 
@@ -150,18 +150,18 @@ a, a:visited, a:hover {
     margin: 2px;
 }
 
-.monospace{
-    color:white;
-    padding:4px;
-    background-color:#000000;
-    font-family: 'Droid Sans Mono', ;
-    line-height:150%;
+.monospace {
+    color: white;
+    padding: 4px;
+    background-color: #000000;
+    font-family: 'Droid Sans Mono',;
+    line-height: 150%;
 }
 
-.monospace a, a:visited{
-    text-decoration:none;
+.monospace a, a:visited {
+    text-decoration: none;
 }
 
-.monospace a:hover{
-    text-decoration:underline;
+.monospace a:hover {
+    text-decoration: underline;
 }

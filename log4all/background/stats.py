@@ -8,7 +8,7 @@ __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 logger = logging.getLogger('log4all.background')
 
 
-def update_log_counter_by_application(settings):
+def update_log_counter_by_application_job(settings):
     db_cl = pymongo.Connection(host=settings['mongodb.hostname'])
     try:
         db = db_cl[settings['mongodb.dbname']]

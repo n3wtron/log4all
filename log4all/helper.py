@@ -45,22 +45,24 @@ def helper_application_search(request):
         partial_app = current_apps[-1]
         for c_app in current_apps[:-1]:
             pre_apps += c_app + " "
+        src_filter = {
+            '$and': [
+                {'name': {'$regex': partial_app}},
+                {'name': {
+                    '$not': {'$in': current_apps[:-1]}
+                }
+                }
+            ]
+        }
     else:
         partial_app = request.GET['term']
-
-    src_filter = {
-        '$and': [
-            {'name': {'$regex': partial_app}},
-            {'name': {
-                '$not': {'$in': current_apps[:-1]}
-            }
-            }
-        ]
-    }
+        src_filter = {
+            'name': {'$regex': partial_app}
+        }
     logger.debug("helper_application_search  filter:" + str(src_filter))
     apps = list(request.mongodb.applications.find(src_filter, fields={'name': True}))
 
     for app in apps:
         result.append({'label': app['name'], 'value': pre_apps + app['name']})
-
+    logger.debug("helper_application_search  result:" + str(result))
     return result

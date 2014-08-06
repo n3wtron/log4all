@@ -1,0 +1,66 @@
+{% extends 'admin_layout.jinja2' %}
+{% block center %}
+    {% if error_message %}
+        {% import 'log4all:templates/util/dialogs.jinja2' as dialogs %}
+        {% call dialogs.error_dialog('Error',error_message) %}
+        {% endcall %}
+    {% else %}
+        <div class="panel">
+            <div class="title">Edit User</div>
+            <div class="contentPanel">
+                <form id="updateUserFrm" method="POST">
+                    <input type="hidden" name="operation" value="updateUser">
+                    <input type="hidden" name="orig_username" value="{{ user['username'] }}">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+
+                    <div class="ui form segment">
+                        <div class="field">
+                            <label>Username</label>
+                            <input name="username" type="text" placeholder="Username" value="{{ user['username'] }}">
+                        </div>
+                        <div class="field">
+                            <label>Email</label>
+                            <input name="email" type="text" placeholder="Email" value="{{ user['email'] }}">
+                        </div>
+                        <div class="field">
+                            <label>Name</label>
+                            <input name="name" type="text" placeholder="Name" value="{{ user['name'] }}">
+                        </div>
+                        <div class="field">
+                            <label>Surname</label>
+                            <input name="surname" type="text" placeholder="Surname" value="{{ user['surname'] }}">
+                        </div>
+                        <div class="field">
+                            <label>Preferred Notifications</label>
+                            <select name="notifications" multiple="multiple">
+                                {% for notif in notif_methods %}
+                                    <option value="{{ notif }}"
+                                            {% if notif in user['notifications'] -%} selected {% endif -%}
+                                            >{{ notif }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Groups</label>
+                            <select name="groups" multiple="multiple">
+                                {% for group in groups %}
+                                    <option value="{{ group['name'] }}"
+                                            {% if group['name'] in user['groups'] -%} selected {% endif -%}
+                                            >{{ group['name'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <div id="saveUserBtn" class="ui green submit button">Save</div>
+                        <script>
+                            $("#saveUserBtn").click(function () {
+                                $('#updateUserFrm').submit();
+                            });
+                        </script>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -14,6 +14,8 @@ __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 logger = logging.getLogger('log4all')
 add_log_regexp = hash_regexp + "((:)" + value_regexp + "){0,1}"
 add_log_matcher = re.compile(add_log_regexp)
+group_notif_regexp = '@(\\w+)'
+group_notification_matcher = re.compile(group_notif_regexp)
 
 
 def parse_raw_log(raw_log):
@@ -21,6 +23,7 @@ def parse_raw_log(raw_log):
     result = dict()
     result['_tags'] = dict()
     raw_tags = add_log_matcher.findall(raw_log)
+    notif_groups = group_notification_matcher.findall(raw_log)
     for raw_tag in raw_tags:
         tag = raw_tag[0][1:]  # removed '#'
         tag = tag.replace("+", "")
@@ -28,11 +31,13 @@ def parse_raw_log(raw_log):
             value = True
         else:
             value = raw_tag[3]
-        if value[0] == '"' and value[-1] == '"':
-            value = value[1:-1]
+            if value[0] == '"' and value[-1] == '"':
+                value = value[1:-1]
         result['_tags'][tag] = value
     result['message'] = re.sub('#\+', "", raw_log)
+    result['message'] = re.sub(group_notif_regexp, "", result['message'])
     result['message'] = re.sub(add_log_regexp, "", result['message'])
+    result['notification_groups'] = notif_groups
     return result
 
 
@@ -60,6 +65,15 @@ def db_insert(db, log, stack=None):
             db.tags.insert({'name': tag, 'date': datetime.datetime.now()}, w=1)
         except DuplicateKeyError as e:
             logger.debug("Duplicated tags:" + tag)
+
+    # add notification
+    if 'notification_groups' in log and log['notification_groups'] and len(log['notification_groups']) > 0:
+        db.notifications.insert(dict(
+            date=datetime.datetime.now(),
+            log_level=log['level'],
+            log_id=log_id,
+            groups=log['notification_groups']
+        ))
 
 
 def parse_raw_stack(raw_stack):
@@ -95,6 +109,7 @@ def add_log(db, json_log, application):
     log['application'] = application['name']
     log['level'] = level
     db_insert(db, log, stack)
+
     return True, None
 
 
@@ -125,5 +140,5 @@ def api_logs_add(request):
             success, err_msg = add_log(request.mongodb, request.json_body, app)
         return {'result': success, 'message': err_msg}
     except Exception as e:
-        logger.error(e.message)
+        logger.exception(e)
         return {'result': False, 'message': str(e)}

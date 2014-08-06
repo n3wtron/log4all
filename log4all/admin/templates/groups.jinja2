@@ -1,0 +1,129 @@
+{% extends 'admin_layout.jinja2' %}
+{% block center %}
+    {% if error_message %}
+        {% import 'log4all:templates/util/dialogs.jinja2' as dialogs %}
+        {% call dialogs.error_dialog('Error',error_message) %}
+        {% endcall %}
+    {% endif %}
+
+    <div id="delGroupModal" class="ui modal">
+        <div class="header">
+            Delete Group
+        </div>
+        <div class="content">
+            Are you sure to delete the group <span id="delGroupNameLbl"></span></br></br>
+            <form id="delGroupFrm" method="POST">
+                <input type="hidden" name="operation" value="delGroup">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="name" id="delGroupNameFld">
+
+                <div id="deleteGroupBtn" class="ui red submit button ">Delete</div>
+                <div id="cancelDeleteGroupBtn" class="ui button">Cancel</div>
+                <script>
+                    $("#cancelDeleteGroupBtn").click(function () {
+                        $('#delGroupModal').modal('hide');
+                    });
+                    $("#deleteGroupBtn").click(function () {
+                        $('#delGroupFrm').submit();
+                    });
+                </script>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function deleteGroup(name) {
+            $('#delGroupNameLbl').html(name);
+            $('#delGroupNameFld').val(name);
+            $('#delGroupModal').modal('show');
+        }
+    </script>
+
+
+    <div class="panel">
+        <div class="title">Groups</div>
+        <div class="contentPanel">
+            <table id="applicationTable" class="ui table segment">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for group in groups %}
+                    <tr>
+                        <td>{{ group['name'] }}</td>
+                        <td>{{ group['description'] }}</td>
+                        <td>
+                            <a href="{{ 'admin_edit_group'|route_url }}?group={{ group['name'] }}"
+                               style="text-decoration: none;">
+                                <i class="edit big icon link" title="Edit group"></i>
+                            </a>
+                            <i class="delete red big  icon link" title="Delete group"
+                               onclick="deleteGroup('{{ group['name'] }}');"></i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="5">
+                        <div id="addGroupBtn" class="ui green labeled icon button">
+                            <i class="user icon"></i>
+                            Add Group
+                        </div>
+                        <script>
+                            $('#addGroupBtn').click(function () {
+                                $('#addGroupModal').modal('show');
+                            });
+                        </script>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div id="addGroupModal" class="ui modal">
+        <div class="header">
+            Add Group
+        </div>
+        <form id="addGroupFrm" method="POST">
+            <input type="hidden" name="operation" value="addGroup">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+
+            <div class="ui form segment">
+                <div class="field">
+                    <label>Name</label>
+                    <input name="name" type="text" placeholder="Name">
+                </div>
+                <div class="field">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Description"></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Levels Notifications</label>
+                    <select name="notification_levels" multiple="multiple" style="height: 130px;">
+                        {% for level in levels %}
+                            <option value="{{ level }}">{{ level }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="saveGroupBtn" class="ui green submit button">Add</div>
+                <div id="cancelGroupBtn" class="ui button">Cancel</div>
+                <script>
+                    $("#cancelGroupBtn").click(function () {
+                        $('#addGroupModal').modal('hide');
+                    });
+                    $("#saveGroupBtn").click(function () {
+                        $('#addGroupFrm').submit();
+                    });
+                </script>
+            </div>
+        </form>
+    </div>
+{% endblock %}

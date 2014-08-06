@@ -1,0 +1,15 @@
+{% macro error_dialog(title,message,caller) %}
+    <div id="errorDialog" class="ui modal">
+    <i class="close icon"></i>
+        <div class="header">
+            <i class="warning red icon"></i>
+            {{ title }}
+        </div>
+        <div class="content">
+            {{ message | safe}}
+        </div>
+    </div>
+    <script>
+        $('#errorDialog').modal('show');
+    </script>
+{% endmacro %}

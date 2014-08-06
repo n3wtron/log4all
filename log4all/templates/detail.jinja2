@@ -55,6 +55,8 @@
                 <div style="margin-left: 10px;margin-bottom: 10px;  ">{{ log['application'] }}</div>
                 <div class="ui ribbon label orange">Level</div><br/>
                 <div style="margin-left: 10px;margin-bottom: 10px; ">{{ log['level'] }}</div>
+                <div class="ui ribbon label orange">Date</div><br/>
+                <div style="margin-left: 10px;margin-bottom: 10px; ">{{ log['date'] }}</div>
                 <br/>
                 {% for tag in log['_tags'] %}
                     <div class="ui ribbon label blue">#{{ tag }}</div><br/>

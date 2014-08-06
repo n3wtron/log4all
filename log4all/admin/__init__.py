@@ -6,5 +6,8 @@ def add_route(config):
     config.add_route('admin_edit_application', '/admin/application')
     config.add_route('admin_stats', '/admin/stats')
     config.add_route('admin_applications', '/admin/applications')
-    config.add_route('admin_add_application', '/admin/api/applications/add')
-    config.add_route('admin_get_applications', '/admin/api/applications/get')
+
+    config.add_route('admin_groups', '/admin/groups')
+    config.add_route('admin_users', '/admin/users')
+    config.add_route('admin_edit_user', '/admin/user')
+    config.add_route('admin_edit_group', '/admin/group')

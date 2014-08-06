@@ -24,12 +24,14 @@
                         var dt_log;
                         var row;
                         var level;
+                        var lnk_start;
                         for (var i = 0; i < data['n_rows']; i++) {
                             sinceSeconds = data['logs'][i]['date'];
                             dt_log = new Date(sinceSeconds * 1000);
                             level = data['logs'][i]['level'];
                             row = "<span class='log'>";
-                            row += "<a style=\"color:" + level_colors[level] + ";\" href=\"{{ 'detail' | route_url }}?id=" + data['logs'][i]['_id'] + "\">";
+                            lnk_start = "<a target=\"_blank\" style=\"color:" + level_colors[level] + ";\" href=\"{{ 'detail' | route_url }}?id=" + data['logs'][i]['_id'] + "\">";
+                            row += lnk_start;
                             row += dt_log.toLocaleString();
                             row += "&nbsp;&nbsp;" + level;
                             row += "&nbsp;&nbsp;" + data['logs'][i]['application'];
@@ -39,7 +41,9 @@
                             });
                             row += "</span></a>";
                             if (!data['logs'][i]['stacktrace']=="") {
+                                row += lnk_start;
                                 row += "<pre><code>" + data['logs'][i]['stacktrace'] + "</code></pre><br/>";
+                                row += "</a>";
                             }else{
                                 row +="<br/>";
                             }

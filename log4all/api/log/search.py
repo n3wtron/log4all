@@ -26,6 +26,7 @@ def parse_src_expression(raw):
         raw_exprs = search_matcher.findall(raw)
         for raw_expr in raw_exprs:
             key = raw_expr[0]
+            operator = None
             if len(raw_expr[1]) == 0:
                 if key[0] == '#':
                     # check if tag exist
@@ -35,19 +36,19 @@ def parse_src_expression(raw):
                 # tag with value
                 operator = raw_expr[2]
                 value = raw_expr[3]
-
-            if not operator in result:
-                result[operator] = list()
-            val = dict()
-            result[operator].append(val)
-            if key[0] == '#':
-                val['key'] = '_tags.' + key[1:]
-            else:
-                val['key'] = key
-            val['operator'] = operator
-            if ( value[0] == '"' and value[-1] == '"' ) or ( value[0] == "'" and value[-1] == "'" ):
-                value = value[1:-1]
-            val['value'] = value
+            if operator is not None:
+                if not operator in result:
+                    result[operator] = list()
+                val = dict()
+                result[operator].append(val)
+                if key[0] == '#':
+                    val['key'] = '_tags.' + key[1:]
+                else:
+                    val['key'] = key
+                val['operator'] = operator
+                if ( value[0] == '"' and value[-1] == '"' ) or ( value[0] == "'" and value[-1] == "'" ):
+                    value = value[1:-1]
+                val['value'] = value
         return result, search_matcher.sub("", raw)
     except Exception as e:
         logger.exception(e)
