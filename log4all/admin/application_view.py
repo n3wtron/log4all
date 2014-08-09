@@ -6,7 +6,10 @@ import pymongo
 from pymongo.errors import DuplicateKeyError
 from pyramid.view import view_config
 
-from log4all.util import mongo_db_result_to_json, LEVEL_COLORS, LEVELS
+from log4all.background import majordomo
+
+from log4all.util import mongo_db_result_to_json, LEVEL_COLORS, LEVELS, APPLICATION_STATUS_ACTIVE, \
+    APPLICATION_STATUS_DELETING
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
@@ -28,6 +31,8 @@ def admin_applications(request):
             application['name'] = request.POST['name']
             application['description'] = request.POST['description']
             application['date'] = datetime.now()
+            application['status'] = APPLICATION_STATUS_ACTIVE
+            application['stat'] = dict()
             _init_applications_levels(application)
             application['levels']['DEBUG']['delete'] = 5
             application['levels']['INFO']['delete'] = 30
@@ -41,13 +46,16 @@ def admin_applications(request):
                 error_messages.append(e.message)
         if request.POST['operation'] == 'delApplication':
             try:
-                request.mongodb.applications.remove({'name': request.POST['name']})
-
+                request.mongodb.applications.update({'name': request.POST['name']},
+                                                    {'$set': {'status': APPLICATION_STATUS_DELETING}})
+                majordomo.insert_opertation(request.mongodb, majordomo.OP_DELETE_APPLICATION,
+                                            {'application_name': request.POST['name']})
             except DuplicateKeyError as e:
                 logger.exception(e)
                 error_messages.append(e.message)
 
-    apps = mongo_db_result_to_json(list(request.mongodb.applications.find().sort('name')))
+    apps = mongo_db_result_to_json(
+        list(request.mongodb.applications.find({'status': APPLICATION_STATUS_ACTIVE}).sort('name')))
     error_message = ""
     for err in error_messages:
         error_message += err + "</br>"

@@ -7,6 +7,7 @@ from pymongo.errors import DuplicateKeyError
 from pyramid.view import view_config
 
 from log4all.api.log import hash_regexp, value_regexp
+from log4all.util import APPLICATION_STATUS_ACTIVE
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
@@ -122,7 +123,7 @@ def api_logs_add(request):
         logger.debug(request.body)
         err_msg = None
         application = request.json_body['application']
-        app = request.mongodb.applications.find_one({'name': application})
+        app = request.mongodb.applications.find_one({'name': application, 'status': APPLICATION_STATUS_ACTIVE})
         if app is None:
             err_msg = 'Application ' + application + ' not found'
             logger.error(err_msg)

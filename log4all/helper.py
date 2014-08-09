@@ -1,3 +1,5 @@
+from log4all.util import APPLICATION_STATUS_ACTIVE
+
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 from pyramid.view import view_config
 
@@ -48,16 +50,19 @@ def helper_application_search(request):
         src_filter = {
             '$and': [
                 {'name': {'$regex': partial_app}},
-                {'name': {
-                    '$not': {'$in': current_apps[:-1]}
-                }
-                }
+                {
+                    'name': {
+                        '$not': {'$in': current_apps[:-1]}
+                    }
+                },
+                {'status': APPLICATION_STATUS_ACTIVE}
             ]
         }
     else:
         partial_app = request.GET['term']
         src_filter = {
-            'name': {'$regex': partial_app}
+            'name': {'$regex': partial_app},
+            'status': APPLICATION_STATUS_ACTIVE
         }
     logger.debug("helper_application_search  filter:" + str(src_filter))
     apps = list(request.mongodb.applications.find(src_filter, fields={'name': True}))

@@ -2,6 +2,7 @@ import logging
 
 from pymongo.errors import DuplicateKeyError
 from pyramid.view import view_config
+from log4all.background import majordomo
 
 from log4all.util import LEVELS
 
@@ -57,6 +58,7 @@ def del_group(request):
             group_name = request.POST['name'].strip()
             request.mongodb.groups.remove({'name': group_name})
             request.mongodb.users.update({'groups': group_name}, {'$pull': {'groups': group_name}}, multi=True)
+            majordomo.insert_opertation(request.mongodb,majordomo.OP_DELETE_GROUP,{'group_name': group_name})
         except DuplicateKeyError as e:
             err_message = e.message
 

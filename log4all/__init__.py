@@ -7,7 +7,7 @@ from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from log4all import admin
-from log4all.background import init_scheduler, shutdown_scheduler
+from log4all.background.core import init_scheduler, shutdown_scheduler
 
 
 log4all_session_factory = UnencryptedCookieSessionFactoryConfig('log4allsession')

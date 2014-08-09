@@ -9,6 +9,9 @@ __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 LEVELS = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL']
 LEVEL_COLORS = {'DEBUG': "#5abb71", 'INFO': '#00CCFF', 'WARN': '#FF9900', 'ERROR': '#FF0000', 'FATAL': '#000000'}
 
+APPLICATION_STATUS_ACTIVE = 'active'
+APPLICATION_STATUS_UNACTIVE = 'unative'
+APPLICATION_STATUS_DELETING = 'deleting'
 
 def adjust_record(data):
     if isinstance(data, ObjectId):

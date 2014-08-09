@@ -32,6 +32,9 @@ def archive_old_logs(db, arch_path, application, level, before):
 
 
 def logs_eraser_job(settings):
+    """
+    Delete / Archive old logs by levels configured on the realtive application
+    """
     db_cl = pymongo.Connection(host=settings['mongodb.hostname'])
     try:
         db = db_cl[settings['mongodb.dbname']]
