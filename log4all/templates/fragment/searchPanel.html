@@ -1,4 +1,4 @@
-<div class="ui small form segment">
+<div class="ui form segment">
     <h2 class="ui header"><i class="ui search blue icon"></i> Search</h2>
     <div class="two fields">
         <div class="field">
@@ -19,12 +19,12 @@
               selected-object="updateApplication"
               remote-url="{{ 'helper_applications_autocomplete'| route_url }}?searchstr="
               remote-url-data-field="results"
-              title-field="name"
+              title-field="field"
               input-class=""/>
         </div>
         <div class="field">
             <label>Levels</label>
-            <div class="buttons">
+            <div class="ui buttons">
                 <div class="ui button" ng-click="updateLevel('DEBUG')" ng-class="{green:levelIsEnabled('DEBUG')}">DEBUG</div>
                 <div class="ui button" ng-click="updateLevel('INFO')" ng-class="{blue:levelIsEnabled('INFO')}">INFO</div>
                 <div class="ui button" ng-click="updateLevel('WARN')" ng-class="{orange:levelIsEnabled('WARN')}">WARN</div>

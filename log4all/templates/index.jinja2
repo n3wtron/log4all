@@ -5,7 +5,8 @@
     <script src="{{ 'log4all:bower_components/angular-route/angular-route.min.js'|static_url }}"></script>
 
     <script src="{{ 'log4all:bower_components/jquery-ui/jquery-ui.min.js'|static_url }}"></script>
-    <link rel="stylesheet" href="{{ 'log4all:bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css'|static_url }}"/>
+    <link rel="stylesheet"
+          href="{{ 'log4all:bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css'|static_url }}"/>
 
     <script src="{{ 'log4all:bower_components/semantic-ui/dist/semantic.min.js'|static_url }}"></script>
 
@@ -19,16 +20,13 @@
     <script src="{{ 'log4all:static/js/jquery-ui-timepicker-addon.js'|static_url }}"></script>
     <link rel="stylesheet" href="{{ 'log4all:static/css/jquery-ui-timepicker-addon.css' | static_url }}"/>
 </head>
-<body >
+<body ng-controller="LogController">
 <div layout="column">
-    <div>
-        <span>Log4All</span>
-    </div>
-    <div ng-controller="LogController" id="logScope">
-        {% include  "fragment/searchPanel.html" %}
-        {% include "fragment/errorPanel.html" %}
-        {% include  "fragment/resultPanel.html" %}
-    </div>
+    {% include  "fragment/leftMenu.html" %}
+    {% include  "fragment/addLogPanel.jinja2" %}
+    {% include  "fragment/searchPanel.html" %}
+    {% include "fragment/errorPanel.html" %}
+    {% include  "fragment/resultPanel.html" %}
 </div>
 </body>
 </html>

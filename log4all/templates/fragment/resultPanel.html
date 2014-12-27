@@ -3,7 +3,7 @@
 
     <div style="float: right; display: inline-block; margin-bottom: 4px;">
         <div class="ui selection dropdown">
-            <input type="hidden" name="max_result" id="maxResultFld" ng-value="src_query.max_result" value="10">
+            <input type="hidden" name="max_result" id="maxResultFld"  value="10">
 
             <div class="default text">Max Result</div>
             <i class="dropdown icon"></i>
@@ -20,7 +20,7 @@
         <script>
             $('.ui.dropdown').dropdown();
             $('#maxResultFld').change(function(){
-               $('#logScope').scope().src_query.max_result=$('#maxResultFld').val();
+               $(this).scope().src_query.max_result=$('#maxResultFld').val();
             });
         </script>
         <i class="ui backward icon"></i>
@@ -38,6 +38,8 @@
     <table class="ui table">
         <thead>
         <tr>
+            <th>Level</th>
+            <th>Application</th>
             <th>Message</th>
             <th>Date</th>
             <th ng-repeat="tag in tags">{[{tag}]}</th>
@@ -45,6 +47,8 @@
         </thead>
         <tbody>
         <tr ng-repeat="log in logs">
+            <td>{[{ log.level }]}</td>
+            <td>{[{ log.application }]}</td>
             <td>{[{ log.message }]}</td>
             <td>{[{ log.date }]}</td>
             <td ng-repeat="tag in tags">{[{log.tags[tag]}]}</td>

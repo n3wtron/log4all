@@ -45,7 +45,7 @@ def parse_src_expression(raw):
             else:
                 val['key'] = key
             val['operator'] = operator
-            if (value[0] == '"' and value[-1] == '"') or (value[0] == "'" and value[-1] == "'"):
+            if value is not None and ((value[0] == '"' and value[-1] == '"') or (value[0] == "'" and value[-1] == "'")):
                 value = value[1:-1]
             val['value'] = value
     return result, search_matcher.sub("", raw)
@@ -91,9 +91,13 @@ def api_logs_search(request):
     _log.debug(str(request.json))
     src_query = mongodb_parse_filter(request.json.get('query'))
 
-    src_application = request.json.get('application')
-    if src_application is not None:
-        src_query['application'] = src_application
+    src_applications = request.json.get('applications')
+    if src_applications is not None:
+        if ',' in src_applications:
+            # multiple applications
+            src_query['application'] = {"$in": [a.strip() for a in src_applications.split(',')]}
+        else:
+            src_query['application'] = src_applications
 
     src_levels = request.json.get('levels')
     if src_levels is not None:

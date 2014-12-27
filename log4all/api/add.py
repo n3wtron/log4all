@@ -15,7 +15,7 @@ def _add_log(application, json_log, db):
     if 'date' in json_log:
         dt_insert = datetime.fromtimestamp(int(json_log['date']) / 1000)
     else:
-        dt_insert = None
+        dt_insert = datetime.now()
     log = Log(application=application, level=json_log['level'], raw_message=json_log['message'], date=dt_insert)
 
     # Stack
@@ -31,7 +31,8 @@ def _add_log(application, json_log, db):
         tags = list()
         for tag_name in log.tags.keys():
             tags.append(Tag(tag_name))
-        Tag.bulk_save(db, tags)
+        if len(tags)>0:
+            Tag.bulk_save(db, tags)
 
 
 @view_config(route_name="api_logs_add", request_method="POST", renderer="json")
@@ -46,7 +47,7 @@ def api_logs_add(request):
         else:
             # single log
             _add_log(request.json['application'], request.json, request.db)
-        return {'result': True}
+        return {'success': True}
     except Exception as e:
         _log.exception(e)
-        return {'result': False, 'error': str(e)}
+        return {'success': False, 'message': str(e)}

@@ -1,0 +1,45 @@
+<div id="addLogPanel" class="ui modal" ng-controller="AddLogController">
+    <div class="header">
+        <div class="ui icon button right floated" id="addLogPanelCloseBtn"><i class="ui close icon"></i></div>
+        <i class="add icon"></i>Add Log
+    </div>
+    <script>
+        $('#addLogPanelCloseBtn').click(function(){
+            $('#addLogPanel').modal('hide');
+        });
+    </script>
+    <div class="ui form segment">
+        <div class="field">
+            <label>Application</label>
+            <angucomplete-alt id="applications"
+              placeholder="Application"
+              pause="400"
+              selected-object="setLogApplication"
+              remote-url="{{ 'helper_applications_autocomplete'| route_url }}?single=true&searchstr="
+              remote-url-data-field="results"
+              title-field="name"
+              input-class=""/>
+        </div>
+        <div class="field">
+            <label>Message</label>
+            <input type="text"  ng-model="log.message"/>
+        </div>
+        <div class="field">
+            <label>Extended Message</label>
+            <textarea  ng-model="log.stack"></textarea>
+        </div>
+        <div class="field">
+            <label>Add Log</label>
+            <div class="ui four  buttons ">
+                <div class="ui button green" ng-click="addLog('DEBUG')" >DEBUG</div>
+                <div class="ui button blue" ng-click="addLog('INFO')">INFO</div>
+                <div class="ui button orange" ng-click="addLog('WARN')">WARN</div>
+                <div class="ui button red" ng-click="addLog('ERROR')">ERROR</div>
+            </div>
+        </div>
+    </div>
+    {% include "errorPanel.html" %}
+</div>
+<script>
+    $('#addLogPanel').modal({'closable':false});
+</script>

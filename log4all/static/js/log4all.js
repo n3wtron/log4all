@@ -19,9 +19,9 @@ log4all.controller('LogController', function ($scope, $http) {
 
     $scope.updateApplication = function(selected) {
         if (selected != null) {
-            $scope.src_query.application = selected.originalObject.name;
+            $scope.src_query.applications = selected.originalObject.field;
         }else{
-            $scope.src_query.application = null;
+            $scope.src_query.applications = null;
         }
     };
 
@@ -65,4 +65,30 @@ log4all.controller('LogController', function ($scope, $http) {
             }
         });
     }
+});
+
+log4all.controller('AddLogController', function ($scope, $http) {
+    $scope.log={};
+    $scope.setLogApplication = function(selected){
+        if (selected != null) {
+            $scope.log.application = selected.originalObject.field;
+        }else{
+            $scope.log.application = null;
+        }
+    };
+    $scope.addLog = function(level){
+        $scope.log.level = level;
+        console.log($scope.log);
+        $http.post('http://localhost:6543/api/logs/add', $scope.log).success(function (data) {
+            console.log(data);
+            if (!data.success){
+                $scope.inError = true;
+                $scope.errorMessage = data.message;
+            }else {
+                $scope.inError = false;
+                $scope.errorMessage = null;
+                $('#addLogPanel').modal('hide');
+            }
+        });
+    };
 });

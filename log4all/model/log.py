@@ -81,7 +81,7 @@ class Log:
         else:
             max_result = int(max_result)
 
-        fields = ['message', 'application', 'date']
+        fields = ['message', 'application', 'date', 'level']
         if tags is not None and len(tags)>0:
             for tag in tags:
                 fields.append('tags.' + tag)
