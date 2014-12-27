@@ -1,0 +1,54 @@
+<div class="ui segment attached" ng-hide="inError">
+    <h2 class="ui header"><i class="ui content green icon"></i>Result</h2>
+
+    <div style="float: right; display: inline-block; margin-bottom: 4px;">
+        <div class="ui selection dropdown">
+            <input type="hidden" name="max_result" id="maxResultFld" ng-value="src_query.max_result" value="10">
+
+            <div class="default text">Max Result</div>
+            <i class="dropdown icon"></i>
+
+            <div class="menu">
+                <div class="item" data-value="10">10</div>
+                <div class="item" data-value="20">20</div>
+                <div class="item" data-value="30">30</div>
+                <div class="item" data-value="40">40</div>
+                <div class="item" data-value="50">50</div>
+                <div class="item" data-value="100">100</div>
+            </div>
+        </div>
+        <script>
+            $('.ui.dropdown').dropdown();
+            $('#maxResultFld').change(function(){
+               $('#logScope').scope().src_query.max_result=$('#maxResultFld').val();
+            });
+        </script>
+        <i class="ui backward icon"></i>
+        <div class="ui input compact">
+            <input  type="number" ng-model="src_query.page"/>
+        </div>
+        <i class="ui forward icon"></i>
+    </div>
+
+    <div style="float: left;">
+        <a class="ui tag green label" ng-repeat="tag in tags">
+            #{[{ tag }]}
+        </a>
+    </div>
+    <table class="ui table">
+        <thead>
+        <tr>
+            <th>Message</th>
+            <th>Date</th>
+            <th ng-repeat="tag in tags">{[{tag}]}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="log in logs">
+            <td>{[{ log.message }]}</td>
+            <td>{[{ log.date }]}</td>
+            <td ng-repeat="tag in tags">{[{log.tags[tag]}]}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
