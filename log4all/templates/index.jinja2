@@ -21,11 +21,11 @@
     <link rel="stylesheet" href="{{ 'log4all:static/css/jquery-ui-timepicker-addon.css' | static_url }}"/>
 </head>
 <body ng-controller="LogController">
-<div layout="column">
+<div>
     {% include  "fragment/leftMenu.html" %}
     {% include  "fragment/addLogPanel.jinja2" %}
     {% include  "fragment/searchPanel.html" %}
-    {% include "fragment/errorPanel.html" %}
+    {% include  "fragment/errorPanel.html" %}
     {% include  "fragment/resultPanel.html" %}
 </div>
 </body>

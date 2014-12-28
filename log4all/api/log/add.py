@@ -1,15 +1,12 @@
 from datetime import datetime
 import logging
-
 from pyramid.view import view_config
+from log4all import Tag,Log,Stack
 
-from log4all.model.tag import Tag
-from log4all.model.log import Log
-from log4all.model.stack import Stack
 
+__author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 _log = logging.getLogger(__name__)
-
 
 def _add_log(application, json_log, db):
     if 'date' in json_log:
@@ -31,7 +28,7 @@ def _add_log(application, json_log, db):
         tags = list()
         for tag_name in log.tags.keys():
             tags.append(Tag(tag_name))
-        if len(tags)>0:
+        if len(tags) > 0:
             Tag.bulk_save(db, tags)
 
 

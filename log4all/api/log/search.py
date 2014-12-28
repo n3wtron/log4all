@@ -3,8 +3,8 @@ import logging
 import re
 from pyramid.view import view_config
 
-from log4all import Log
-from log4all.api.response import SearchResponse
+from log4all.model.log import Log
+from log4all.api.log.response import SearchResponse
 from log4all.util.regexp import src_key_regexp, value_regexp
 
 
@@ -119,3 +119,4 @@ def api_logs_search(request):
                                       max_result=request.json.get('max_result'),
                                       tags=request.json.get('tags')))
     return response.json()
+

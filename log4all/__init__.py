@@ -30,7 +30,9 @@ def initdb(db):
 def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.include('pyramid_jinja2')
+    config.add_renderer('.jsinja2', 'pyramid_jinja2.renderer_factory')
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('admin_static', 'admin_static', cache_max_age=3600)
     config.add_static_view('bower_components', 'bower_components', cache_max_age=3600)
 
     # MongoDB
@@ -56,6 +58,16 @@ def main(global_config, **settings):
     config.add_route('api_logs_add', '/api/logs/add')
     config.add_route('api_logs_search', '/api/logs/search')
     config.add_route('helper_applications_autocomplete', 'api/applications/autocompleteSearch')
+    config.add_route('api_applications_add', '/api/applications/add')
+    config.add_route('api_applications_all', '/api/applications')
+
+    config.add_route('admin', '/admin')
+    config.add_route('admin_js', '/admin/js/admin_log4all.js')
+    config.add_route('admin_applications', '/admin/applications')
+    config.add_route('admin_application_edit', '/admin/application/edit')
+    config.add_route('api_application_get', '/admin/application/get')
+
+
 
     config.scan()
     return config.make_wsgi_app()

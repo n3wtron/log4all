@@ -1,0 +1,34 @@
+/**
+ * Created by igor on 12/28/14.
+ */
+var Log4AllAdmin = angular.module('Log4AllAdmin', []);
+
+Log4AllAdmin.config(function ($interpolateProvider) {
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+});
+
+Log4AllAdmin.controller('ApplicationsController', function ($scope, $http) {
+    $scope.application = {};
+    $scope.addApplication = function () {
+        $http.put("{{'api_applications_add' | route_url}}", $scope.application).success(function (data) {
+            console.log(data);
+            updateApplications();
+        });
+    };
+
+    function updateApplications() {
+        $http.get("{{'api_applications_all' | route_url}}").success(function (data) {
+            $scope.applications = data;
+        });
+    }
+
+    updateApplications();
+});
+
+Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $location) {
+    $scope.application = {};
+    $http.get("{{'api_application_get' | route_url}}?id=" + $location.search()['id']).success(function (data) {
+        $scope.application = data;
+    });
+});

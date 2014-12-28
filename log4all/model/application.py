@@ -6,21 +6,28 @@ _log = logging.getLogger(__name__)
 
 
 class Application:
-    def __init__(self, name):
+    def __init__(self, name, description=None, configuration=None):
         self.name = name
+        self.description = description
+        self.configuration = configuration
 
     def json(self):
         return {
-            'name': self.name
+            'name': self.name,
+            'description': self.description,
+            'configuration': self.configuration
         }
 
     @staticmethod
     def init(db):
-        db.application.ensure_index('name', unique=True)
+        db.applications.ensure_index('name', unique=True)
 
     def save(self, db):
-        db.application.insert(self.json())
+        db.applications.insert(self.json())
 
     @staticmethod
-    def search(db, src_query):
-        return db.application.find(src_query)
+    def search(db, src_query={}, single=False):
+        if not single:
+            return db.applications.find(src_query)
+        else:
+            return db.applications.find_one(src_query)

@@ -1,0 +1,28 @@
+{% extends "index.jinja2" %}
+{% block center %}
+    <div class="ui segment" ng-controller="ApplicationController">
+    <h2 class="ui header">Edit Application</h2>
+        <div class="ui form">
+            <div class="field" >
+                <label>Name</label>
+                <input type="text" ng-model="application.name"/>
+            </div>
+            <div class="field" >
+                <label>Description</label>
+                <input type="text" ng-model="application.description"/>
+            </div>
+        </div>
+        <h2 class="ui header">Configuration</h2>
+        <div class="ui tabular menu">
+            <div class="item">Debug</div>
+            <div class="item">Info</div>
+            <div class="item">Warning</div>
+            <div class="item">Debug</div>
+        </div>
+        <div class="ui bottom attached active tab segment">
+            <p></p>
+
+            <p></p>
+        </div>
+    </div>
+{% endblock %}

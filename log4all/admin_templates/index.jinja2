@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Log4All Administration</title>
+    <script src="{{ 'log4all:bower_components/jquery/dist/jquery.min.js'|static_url }}"></script>
+    <script src="{{ 'log4all:bower_components/angular/angular.min.js'|static_url }}"></script>
+    <script src="{{ 'log4all:bower_components/angular-route/angular-route.min.js'|static_url }}"></script>
+
+    <script src="{{ 'log4all:bower_components/jquery-ui/jquery-ui.min.js'|static_url }}"></script>
+    <link rel="stylesheet" href="{{ 'log4all:bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css'|static_url }}"/>
+
+    <script src="{{ 'log4all:bower_components/semantic-ui/dist/semantic.min.js'|static_url }}"></script>
+
+    <link rel="stylesheet" href="{{ 'log4all:bower_components/angular/angular-csp.css' | static_url }}"/>
+    <link rel="stylesheet" href="{{ 'log4all:bower_components/semantic-ui/dist/semantic.min.css' | static_url }}"/>
+    <script src="{{ 'admin_js'|route_url }}"></script>
+</head>
+<body ng-app="Log4AllAdmin">
+    <div class="ui grid">
+        <div class="ui two wide column vertical menu inverted" >
+            <div class="header item">
+                <i class="ui settings icon"></i>Log4All Admin
+            </div>
+            <a class="item" href="/admin/applications">
+               <i class="ui rocket icon"></i>Applications
+            </a>
+            <a class="item">
+               <i class="ui users icon"></i>Groups
+            </a>
+        </div>
+        <div class="ui thirteen wide column">
+            {% block center %}
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>
