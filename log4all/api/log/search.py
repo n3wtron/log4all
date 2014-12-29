@@ -1,5 +1,7 @@
 import logging
 
+from pymongo import ASCENDING, DESCENDING
+
 import re
 from pyramid.view import view_config
 
@@ -103,6 +105,12 @@ def api_logs_search(request):
     if src_levels is not None:
         src_query['level'] = {"$in": src_levels}
 
+    src_sort_field = request.json.get('sort_field')
+    src_sort_ascending = request.json.get('sort_ascending')
+    if src_sort_field is not None and src_sort_ascending is not None:
+        sort_direction = ASCENDING if src_sort_ascending else DESCENDING
+        sort = [(src_sort_field, sort_direction)]
+        _log.debug('sort:' + str(sort) )
     response = SearchResponse()
 
     dt_since = request.json.get('dt_since')
@@ -110,13 +118,14 @@ def api_logs_search(request):
     if dt_since is None or dt_to is None:
         response.success = False
         response.message = 'Since and To are mandatory'
-        _log.warn(str(response.json()))
-        return response.json()
+        _log.warn(str(response.__json__()))
+        return response.__json__()
 
-    _log.debug('src_query:' + str(src_query))
+    _log.debug('src_query:' + str(src_query) )
+
     response.result = list(Log.search(request.db, src_query=src_query,
                                       page=request.json.get('page'),
                                       max_result=request.json.get('max_result'),
-                                      tags=request.json.get('tags')))
-    return response.json()
+                                      tags=request.json.get('tags'), sort=sort))
+    return response
 

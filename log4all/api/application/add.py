@@ -14,4 +14,4 @@ _log = logging.getLogger(__name__)
 def api_application_add(request):
     app = Application(request.json['name'], request.json['description'])
     app.save(request.db)
-    return {"success": True}
+    return {"success": True,'application':app}

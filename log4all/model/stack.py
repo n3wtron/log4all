@@ -16,7 +16,7 @@ class Stack:
         self.stacktrace = stacktrace
         self.sha = hashlib.sha1(''.join(self.stacktrace).encode('UTF-8')).hexdigest()
 
-    def json(self):
+    def __json__(self,request=None):
         return jsonizer({
             'sha': self.sha,
             'stacktrace': self.stacktrace
@@ -27,8 +27,8 @@ class Stack:
         db.stacktraces.ensure_index('sha', unique=True)
 
     def save(self, db):
-        _log.debug("stack:" + str(self.json()) + " inserted")
+        _log.debug("stack:" + str(self.__json__()) + " inserted")
         try:
-            db.stacktraces.insert(self.json())
+            db.stacktraces.insert(self.__json__())
         except DuplicateKeyError as e:
             _log.debug("double stack, no problem")

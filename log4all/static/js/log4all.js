@@ -14,7 +14,9 @@ log4all.controller('LogController', function ($scope, $http) {
     $scope.src_query={
         page:0,
         max_result:10,
-        levels:['DEBUG','WARN','INFO','ERROR']
+        levels:['DEBUG','WARN','INFO','ERROR'],
+        sort_field:'date',
+        sort_ascending:false
     };
 
     $scope.updateApplication = function(selected) {
@@ -64,12 +66,22 @@ log4all.controller('LogController', function ($scope, $http) {
                 $scope.logs = data.result;
             }
         });
+    };
+    $scope.sortResult=function(field){
+        if ($scope.src_query.sort_field == field){
+            $scope.src_query.sort_ascending = ! $scope.src_query.sort_ascending;
+        }else{
+            $scope.src_query.sort_field = field;
+            $scope.src_query.sort_ascending = true;
+        }
+        $scope.search();
     }
 });
 
 log4all.controller('AddLogController', function ($scope, $http) {
     $scope.log={};
     $scope.setLogApplication = function(selected){
+        console.log(selected);
         if (selected != null) {
             $scope.log.application = selected.originalObject.field;
         }else{

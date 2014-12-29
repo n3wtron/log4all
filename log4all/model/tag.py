@@ -9,7 +9,7 @@ class Tag:
     def __init__(self, tag_name):
         self.tag_name = tag_name
 
-    def json(self):
+    def __json__(self,request = None):
         return {
             'tag_name': self.tag_name
         }
@@ -20,7 +20,7 @@ class Tag:
 
     @staticmethod
     def bulk_save(db, tags):
-        db.tags.insert([tag.json() for tag in tags])
+        db.tags.insert([tag.__json__() for tag in tags])
 
     def save(self, db):
         db.tags.insert(self.json())

@@ -10,11 +10,11 @@ class SearchResponse:
         self.message = message
 
     def __unicode__(self):
-        return self.json()
+        return self.__json__()
 
-    def json(self):
-        return jsonizer({
+    def __json__(self, request=None):
+        return {
             'success':self.success,
             'result' : self.result,
             'message': self.message
-        })
+        }

@@ -1,18 +1,41 @@
 /**
  * Created by igor on 12/28/14.
  */
-var Log4AllAdmin = angular.module('Log4AllAdmin', []);
+var Log4AllAdmin = angular.module('Log4AllAdmin', ['ngRoute','ngAnimate']);
 
 Log4AllAdmin.config(function ($interpolateProvider) {
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
 });
 
-Log4AllAdmin.controller('ApplicationsController', function ($scope, $http) {
+Log4AllAdmin.config(['$routeProvider', function ($routeProvider) {
+    $routeProvider
+        .when('/applications', {
+            templateUrl: "{{ 'log4all:admin_static/fragment/applications.html' | static_url  }}",
+            controller: 'ApplicationsController'
+        })
+        .when('/applications/:applicationId', {
+            templateUrl: "{{ 'log4all:admin_static/fragment/application.html' | static_url  }}",
+            controller: 'ApplicationController'
+        });
+}]);
+
+Log4AllAdmin.controller('ApplicationsController', function ($scope, $http, $location) {
     $scope.application = {};
+
     $scope.addApplication = function () {
         $http.put("{{'api_applications_add' | route_url}}", $scope.application).success(function (data) {
             console.log(data);
+            if (data['success']) {
+                updateApplications();
+                $location.path('applications/' + data.application['_id']);
+                $('#addLogModal').modal('hide');
+            }
+        });
+    };
+
+    $scope.deleteApplication = function (applicationId) {
+        $http.delete("{{'api_application_delete' | route_url}}?id=" + applicationId).success(function (data) {
             updateApplications();
         });
     };
@@ -26,9 +49,46 @@ Log4AllAdmin.controller('ApplicationsController', function ($scope, $http) {
     updateApplications();
 });
 
-Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $location) {
+Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $routeParams, $interval) {
     $scope.application = {};
-    $http.get("{{'api_application_get' | route_url}}?id=" + $location.search()['id']).success(function (data) {
+
+    $http.get("{{'api_application_get' | route_url}}?id=" + $routeParams.applicationId).success(function (data) {
         $scope.application = data;
+        if ($scope.application.configuration == null) {
+            $scope.application.configuration = {};
+        }
+        $scope.changeConfiguration("DEBUG");
     });
+
+    $scope.currentConfiguration = {};
+    $scope.changeConfiguration = function (level) {
+        $scope.currentConfigurationLevel = level;
+        if ($scope.application.configuration == null || !(level in $scope.application.configuration)) {
+            $scope.currentConfiguration = {
+                archive: 30,
+                delete: 90
+            };
+            $scope.application.configuration[level] = $scope.currentConfiguration;
+        } else {
+            $scope.currentConfiguration = $scope.application.configuration[level];
+        }
+    };
+
+    $scope.updateApplication = function () {
+        $scope.result={};
+        console.log($scope.application);
+        $http.post("{{'api_application_update' | route_url}}", $scope.application).success(function (data) {
+            if (data['success']) {
+                $scope.result.success = true;
+                $scope.result.message = "Updated";
+                $interval(function () {
+                    $scope.result = null;
+                }, 3000);
+            } else {
+                $scope.result.success = false;
+                $scope.result.message = "Not Updated. Error:" + data['message'];
+            }
+        });
+    };
+
 });

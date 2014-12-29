@@ -66,7 +66,8 @@ def main(global_config, **settings):
     config.add_route('admin_applications', '/admin/applications')
     config.add_route('admin_application_edit', '/admin/application/edit')
     config.add_route('api_application_get', '/admin/application/get')
-
+    config.add_route('api_application_delete', '/admin/application/delete')
+    config.add_route('api_application_update', '/admin/application/update')
 
 
     config.scan()

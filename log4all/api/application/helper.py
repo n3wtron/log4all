@@ -22,11 +22,12 @@ def api_applications_autocomplete(request):
     applications = Application.search(request.db, {'name': {'$regex': partial_src.strip()}})
     results = list()
     for app in applications:
+        result = {}
         if not single:
-            app['field'] = ''.join(search_str.split(',')[:-1]) + ',' + app['name']
-            if app['field'][0] == ',':
-                app['field'] = app['field'][1:]
+            result['field'] = ''.join(search_str.split(',')[:-1]) + ',' + app.name
+            if result['field'][0] == ',':
+                result['field'] = result['field'][1:]
         else:
-            app['field'] = app['name']
-        results.append(jsonizer(app))
+            result['field'] = app.name
+        results.append(jsonizer(result))
     return {'results': results}
