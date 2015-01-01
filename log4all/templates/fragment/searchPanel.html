@@ -1,56 +1,78 @@
-<div class="ui form segment">
-    <h2 class="ui header"><i class="ui search blue icon"></i> Search</h2>
-    <div class="two fields">
-        <div class="field">
-            <label>Since</label>
-            <input type="text" class="datetimepicker" id="dtSinceFld"/>
-        </div>
-        <div class="field">
-            <label>To</label>
-            <input type="text" class="datetimepicker" id="dtToFld"/>
-        </div>
-    </div>
-    <div class="two fields">
-        <div class="field">
-            <label>Application</label>
-            <angucomplete-alt id="applications"
-              placeholder="Applications"
-              pause="400"
-              selected-object="updateApplication"
-              remote-url="{{ 'helper_applications_autocomplete'| route_url }}?searchstr="
-              remote-url-data-field="results"
-              title-field="field"
-              input-class=""/>
-        </div>
-        <div class="field">
-            <label>Levels</label>
-            <div class="ui buttons">
-                <div class="ui button" ng-click="updateLevel('DEBUG')" ng-class="{green:levelIsEnabled('DEBUG')}">DEBUG</div>
-                <div class="ui button" ng-click="updateLevel('INFO')" ng-class="{blue:levelIsEnabled('INFO')}">INFO</div>
-                <div class="ui button" ng-click="updateLevel('WARN')" ng-class="{orange:levelIsEnabled('WARN')}">WARN</div>
-                <div class="ui button" ng-click="updateLevel('ERROR')" ng-class="{red:levelIsEnabled('ERROR')}">ERROR</div>
-            </div>
-        </div>
-    </div>
-    <div class="field">
-        <label>Query</label>
-        <input type="text" ng-model="src_query.query"/>
+<div class="ui  segment attached">
+    <div class="ui basic segment attached" style="border: none;margin: -10px;">
+        <h2 class="ui right floated header right aligned" style="margin-right: -30px;">
+            <i class="link icon" ng-class="{'up arrow':!searchHidden,'down arrow':searchHidden}"
+               ng-click="searchHidden=!searchHidden"></i>
+        </h2>
+
+        <h2 class="ui left floated header">
+            <i class="ui search blue icon"></i> Search
+        </h2>
     </div>
 
-    <div class="field" style="text-align: center;">
-        <div class="ui buttons">
-            <div class="ui icon green button" ng-click="search();"><i class="ui search icon"></i>&nbsp;Search&nbsp;&nbsp;</div>
-            <div class="or"></div>
-            <div class="ui icon red button"><i class="ui content icon"></i>&nbsp;&nbsp;Tail&nbsp;</div>
+    <div class="ui form  animate-hide" id="searchFrm" ng-hide="searchHidden" style="margin-bottom: -10px;">
+        <div class="two fields">
+            <div class="field">
+                <label>Since</label>
+                <input type="text" class="datetimepicker" id="dtSinceFld"/>
+            </div>
+            <div class="field">
+                <label>To</label>
+                <input type="text" class="datetimepicker" id="dtToFld"/>
+            </div>
         </div>
+        <div class="two fields">
+            <div class="field">
+                <label>Application</label>
+                <angucomplete-alt id="applications"
+                                  placeholder="Applications"
+                                  pause="400"
+                                  selected-object="updateApplication"
+                                  remote-url="{{ 'helper_applications_autocomplete'| route_url }}?searchstr="
+                                  remote-url-data-field="results"
+                                  title-field="field"
+                                  input-class=""/>
+            </div>
+            <div class="field">
+                <label>Levels</label>
+
+                <div class="ui buttons">
+                    <div class="ui button" ng-click="updateLevel('DEBUG')" ng-class="{green:levelIsEnabled('DEBUG')}">
+                        DEBUG
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('INFO')" ng-class="{blue:levelIsEnabled('INFO')}">
+                        INFO
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('WARN')" ng-class="{orange:levelIsEnabled('WARN')}">
+                        WARN
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('ERROR')" ng-class="{red:levelIsEnabled('ERROR')}">
+                        ERROR
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label>Query</label>
+            <input type="text" ng-model="src_query.query"/>
+        </div>
+
+        <div class="field" style="text-align: center;margin-bottom: -10px;">
+            <div class="ui buttons">
+                <div class="ui icon green button" ng-click="search();"><i class="ui search icon"></i>&nbsp;Search&nbsp;&nbsp;
+                </div>
+                <div class="or"></div>
+                <div class="ui icon red button"><i class="ui content icon"></i>&nbsp;&nbsp;Tail&nbsp;</div>
+            </div>
+        </div>
+        <script>
+            $('.datetimepicker').datetimepicker();
+            $('#dtSinceFld').change(function () {
+                $(this).scope().src_query.dt_since = $('#dtSinceFld').datetimepicker('getDate').getTime();
+            });
+            $('#dtToFld').change(function () {
+                $(this).scope().src_query.dt_to = $('#dtToFld').datetimepicker('getDate').getTime();
+            });
+        </script>
     </div>
-    <script>
-        $('.datetimepicker').datetimepicker();
-        $('#dtSinceFld').change(function(){
-            $(this).scope().src_query.dt_since=$('#dtSinceFld').datetimepicker('getDate').getTime();
-        });
-        $('#dtToFld').change(function(){
-            $(this).scope().src_query.dt_to=$('#dtToFld').datetimepicker('getDate').getTime();
-        });
-    </script>
 </div>

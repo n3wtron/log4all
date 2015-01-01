@@ -5,7 +5,6 @@ from pymongo import ASCENDING, DESCENDING
 import re
 
 from log4all.util.json_util import jsonizer
-
 from log4all.util.regexp import add_log_matcher, add_log_regexp, group_notification_regexp, group_notification_matcher
 
 
@@ -85,7 +84,7 @@ class Log:
 
 
     @staticmethod
-    def search(db, src_query=dict(), page=0, max_result=100, tags=[], sort=[('date', DESCENDING)]):
+    def search(db, dt_since, dt_to, src_query=dict(), page=0, max_result=100, tags=[], sort=[('date', DESCENDING)]):
         if page is None:
             page = 0
         else:
@@ -102,6 +101,9 @@ class Log:
                 fields.append('tags.' + tag)
         else:
             fields.append('tags')
+
+        src_query['date'] = {'$gte': dt_since, '$lte': dt_to}
+        _log.debug(src_query)
 
         for db_log in db.logs.find(src_query, fields=fields, sort=sort, skip=page * max_result, limit=max_result):
             yield Log.from_bson(db_log)

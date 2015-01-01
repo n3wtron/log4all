@@ -1,7 +1,7 @@
 /**
  * Created by igor on 12/23/14.
  */
-var log4all = angular.module('log4all', ["angucomplete-alt"]);
+var log4all = angular.module('log4all', ["angucomplete-alt","ngAnimate"]);
 
 log4all.config(function ($interpolateProvider) {
     $interpolateProvider.startSymbol('{[{');
@@ -40,7 +40,7 @@ log4all.controller('LogController', function ($scope, $http) {
         return $scope.src_query.levels.indexOf(level)!=-1;
     };
 
-
+    $scope.searchHidden = false;
     $scope.search = function () {
         $http.post('http://localhost:6543/api/logs/search', $scope.src_query).success(function (data) {
             console.log(data);

@@ -21,6 +21,7 @@
             $('.ui.dropdown').dropdown();
             $('#maxResultFld').change(function(){
                $(this).scope().src_query.max_result=$('#maxResultFld').val();
+               $(this).scope().search();
             });
         </script>
         <i class="ui backward icon"></i>
@@ -40,20 +41,20 @@
         <tr>
             <th>
                 <a class="ui link" ng-click="sortResult('level')">Level</a>
-                <i ng-class="{'ui up arrow icon':(src_query.sort_field=='level' && src_query.sort_ascending),'ui down arrow icon':(src_query.sort_field=='level' && !src_query.sort_ascending)}"></i>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='level' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='level' && !src_query.sort_ascending)}"></i>
             </th>
             <th>
                 <a class="ui link" ng-click="sortResult('application')">Application</a>
-                <i ng-class="{'ui up arrow icon':(src_query.sort_field=='application' && src_query.sort_ascending),'ui down arrow icon':(src_query.sort_field=='application' && !src_query.sort_ascending)}"></i>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='application' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='application' && !src_query.sort_ascending)}"></i>
             </th>
             <th>Message</th>
             <th>
                 <a class="ui link" ng-click="sortResult('date')">Date</a>
-                <i ng-class="{'ui up arrow icon':(src_query.sort_field=='date' && src_query.sort_ascending),'ui down arrow icon':(src_query.sort_field=='date' && !src_query.sort_ascending)}"></i>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='date' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='date' && !src_query.sort_ascending)}"></i>
             </th>
             <th ng-repeat="tag in tags">
                 <a class="ui link" ng-click="sortResult('tags.'+tag)">{[{tag}]}</a>
-                <i ng-class="{'ui up arrow icon':(src_query.sort_field=='tags.'+tag && src_query.sort_ascending),'ui down arrow icon':(src_query.sort_field=='tags.'+tag && !src_query.sort_ascending)}"></i>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='tags.'+tag && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='tags.'+tag && !src_query.sort_ascending)}"></i>
             </th>
         </tr>
         </thead>

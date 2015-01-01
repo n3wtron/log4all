@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 from pymongo import ASCENDING, DESCENDING
@@ -90,7 +91,7 @@ def mongodb_parse_filter(query):
 
 @view_config(route_name='api_logs_search', renderer='json', request_method="POST")
 def api_logs_search(request):
-    _log.debug(str(request.json))
+    _log.debug('search request:'+ str(request.json))
     src_query = mongodb_parse_filter(request.json.get('query'))
 
     src_applications = request.json.get('applications')
@@ -110,22 +111,27 @@ def api_logs_search(request):
     if src_sort_field is not None and src_sort_ascending is not None:
         sort_direction = ASCENDING if src_sort_ascending else DESCENDING
         sort = [(src_sort_field, sort_direction)]
-        _log.debug('sort:' + str(sort) )
+        _log.debug('sort:' + str(sort))
     response = SearchResponse()
 
-    dt_since = request.json.get('dt_since')
-    dt_to = request.json.get('dt_to')
-    if dt_since is None or dt_to is None:
+    # Date range
+    dt_since_param = request.json.get('dt_since')
+    dt_to_param = request.json.get('dt_to')
+    if dt_since_param is None or dt_to_param is None:
         response.success = False
         response.message = 'Since and To are mandatory'
         _log.warn(str(response.__json__()))
-        return response.__json__()
+        return response
+    else:
+        dt_since = datetime.fromtimestamp(int(dt_since_param)/1000)
+        dt_to = datetime.fromtimestamp(int(dt_to_param)/1000)
 
-    _log.debug('src_query:' + str(src_query) )
+    _log.debug('src_query:' + str(src_query))
 
     response.result = list(Log.search(request.db, src_query=src_query,
-                                      page=request.json.get('page'),
-                                      max_result=request.json.get('max_result'),
+                                      dt_since=dt_since, dt_to=dt_to,
+                                      page=int(request.json.get('page')),
+                                      max_result=int(request.json.get('max_result')),
                                       tags=request.json.get('tags'), sort=sort))
     return response
 
