@@ -16,15 +16,26 @@ class Stack:
         self.stacktrace = stacktrace
         self.sha = hashlib.sha1(''.join(self.stacktrace).encode('UTF-8')).hexdigest()
 
-    def __json__(self,request=None):
+    def __json__(self, request=None):
         return jsonizer({
             'sha': self.sha,
             'stacktrace': self.stacktrace
         })
 
     @staticmethod
+    def from_bson(bson):
+        stack = Stack(bson['stacktrace'])
+        stack.sha = bson['sha']
+        return stack
+
+    @staticmethod
     def init(db):
         db.stacktraces.ensure_index('sha', unique=True)
+
+    @staticmethod
+    def get(db, src_query):
+        return Stack.from_bson(db.stacktraces.find_one(src_query))
+
 
     def save(self, db):
         _log.debug("stack:" + str(self.__json__()) + " inserted")

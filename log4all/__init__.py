@@ -57,18 +57,21 @@ def main(global_config, **settings):
     config.add_route('home', '/')
     config.add_route('api_logs_add', '/api/logs/add')
     config.add_route('api_logs_search', '/api/logs/search')
+    config.add_route('api_logs_tail', '/api/logs/tail')
     config.add_route('helper_applications_autocomplete', 'api/applications/autocompleteSearch')
     config.add_route('api_applications_add', '/api/applications/add')
     config.add_route('api_applications_all', '/api/applications')
+
+    config.add_route('api_application_get', '/api/application/get')
+    config.add_route('api_application_delete', '/api/application/delete')
+    config.add_route('api_application_update', '/api/application/update')
+    config.add_route('api_tags_get', '/api/tags')
+    config.add_route('api_stack_get', '/api/stack')
 
     config.add_route('admin', '/admin')
     config.add_route('admin_js', '/admin/js/admin_log4all.js')
     config.add_route('admin_applications', '/admin/applications')
     config.add_route('admin_application_edit', '/admin/application/edit')
-    config.add_route('api_application_get', '/admin/application/get')
-    config.add_route('api_application_delete', '/admin/application/delete')
-    config.add_route('api_application_update', '/admin/application/update')
-
 
     config.scan()
     return config.make_wsgi_app()

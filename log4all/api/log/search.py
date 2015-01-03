@@ -2,7 +2,6 @@ from datetime import datetime
 import logging
 
 from pymongo import ASCENDING, DESCENDING
-
 import re
 from pyramid.view import view_config
 
@@ -91,7 +90,22 @@ def mongodb_parse_filter(query):
 
 @view_config(route_name='api_logs_search', renderer='json', request_method="POST")
 def api_logs_search(request):
-    _log.debug('search request:'+ str(request.json))
+    _log.debug('search request:' + str(request.json))
+
+    response = SearchResponse()
+    # Date range
+    dt_since_param = request.json.get('dt_since')
+    dt_to_param = request.json.get('dt_to')
+    if dt_since_param is None or dt_to_param is None:
+        response.success = False
+        response.message = 'Since and To are mandatory'
+        _log.warn(str(response.__json__()))
+        return response
+    else:
+        dt_since = datetime.fromtimestamp(int(dt_since_param) / 1000)
+        dt_to = datetime.fromtimestamp(int(dt_to_param) / 1000)
+
+    # Elaborating query string
     src_query = mongodb_parse_filter(request.json.get('query'))
 
     src_applications = request.json.get('applications')
@@ -108,23 +122,11 @@ def api_logs_search(request):
 
     src_sort_field = request.json.get('sort_field')
     src_sort_ascending = request.json.get('sort_ascending')
+    sort = None
     if src_sort_field is not None and src_sort_ascending is not None:
         sort_direction = ASCENDING if src_sort_ascending else DESCENDING
         sort = [(src_sort_field, sort_direction)]
         _log.debug('sort:' + str(sort))
-    response = SearchResponse()
-
-    # Date range
-    dt_since_param = request.json.get('dt_since')
-    dt_to_param = request.json.get('dt_to')
-    if dt_since_param is None or dt_to_param is None:
-        response.success = False
-        response.message = 'Since and To are mandatory'
-        _log.warn(str(response.__json__()))
-        return response
-    else:
-        dt_since = datetime.fromtimestamp(int(dt_since_param)/1000)
-        dt_to = datetime.fromtimestamp(int(dt_to_param)/1000)
 
     _log.debug('src_query:' + str(src_query))
 
@@ -135,3 +137,35 @@ def api_logs_search(request):
                                       tags=request.json.get('tags'), sort=sort))
     return response
 
+
+@view_config(route_name='api_logs_tail', renderer='json', request_method="POST")
+def api_logs_tail(request):
+    _log.debug('tail request:' + str(request.json))
+    # Date range
+    response = SearchResponse()
+    dt_since_param = request.json.get('dt_since')
+    if dt_since_param is None:
+        response.success = False
+        response.message = 'Since  are mandatory'
+        _log.warn(str(response.__json__()))
+        return response
+    else:
+        dt_since = datetime.fromtimestamp(int(dt_since_param) / 1000)
+        dt_to = datetime.now()
+
+    src_query = mongodb_parse_filter(request.json.get('query'))
+    src_applications = request.json.get('applications')
+    if src_applications is not None:
+        if ',' in src_applications:
+            # multiple applications
+            src_query['application'] = {"$in": [a.strip() for a in src_applications.split(',')]}
+        else:
+            src_query['application'] = src_applications
+
+    src_levels = request.json.get('levels')
+    if src_levels is not None:
+        src_query['level'] = {"$in": src_levels}
+
+    response.result = list(Log.tail(request.db, src_query=src_query,
+                                    dt_since=dt_since, dt_to=dt_to))
+    return response

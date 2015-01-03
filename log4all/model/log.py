@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 
 from pymongo import ASCENDING, DESCENDING
+from pymongo.errors import CollectionInvalid
 import re
 
 from log4all.util.json_util import jsonizer
@@ -77,10 +78,17 @@ class Log:
     def init(db):
         db.logs.ensure_index([('date', DESCENDING)])
         db.logs.ensure_index([('date', ASCENDING), ('application', ASCENDING), ('level', ASCENDING)])
+        try:
+            db.create_collection('tail_logs', capped=True, size=256 * 1024 * 1024)
+        except CollectionInvalid:
+            pass
+        db.tail_logs.ensure_index([('date', ASCENDING)])
+        db.tail_logs.ensure_index([('date', ASCENDING), ('application', ASCENDING), ('level', ASCENDING)])
 
     def save(self, db):
-        _log.debug("log:" + str(self.__json__()) + " inserted")
-        db.logs.insert(self.__json__())
+        json_log = self.__json__()
+        db.logs.insert(json_log)
+        db.tail_logs.insert(json_log)
 
 
     @staticmethod
@@ -95,15 +103,21 @@ class Log:
         else:
             max_result = int(max_result)
 
-        fields = ['message', 'application', 'date', 'level']
-        if tags is not None and len(tags) > 0:
-            for tag in tags:
-                fields.append('tags.' + tag)
-        else:
-            fields.append('tags')
+        fields = ['message', 'application', 'date', 'level', 'stack_sha', 'tags']
+        # if tags is not None and len(tags) > 0:
+        # for tag in tags:
+        # fields.append('tags.' + tag)
+        # else:
 
         src_query['date'] = {'$gte': dt_since, '$lte': dt_to}
         _log.debug(src_query)
 
         for db_log in db.logs.find(src_query, fields=fields, sort=sort, skip=page * max_result, limit=max_result):
+            yield Log.from_bson(db_log)
+
+
+    @staticmethod
+    def tail(db, dt_since, dt_to, src_query=dict()):
+        src_query['date'] = {'$gte': dt_since, '$lte': dt_to}
+        for db_log in db.logs.find(src_query, sort=[('date', ASCENDING)]):
             yield Log.from_bson(db_log)

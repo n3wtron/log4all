@@ -1,12 +1,15 @@
 from datetime import datetime
 import logging
+
 from pyramid.view import view_config
-from log4all import Tag,Log,Stack
+
+from log4all import Tag, Log, Stack
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 _log = logging.getLogger(__name__)
+
 
 def _add_log(application, json_log, db):
     if 'date' in json_log:
@@ -16,7 +19,7 @@ def _add_log(application, json_log, db):
     log = Log(application=application, level=json_log['level'], raw_message=json_log['message'], date=dt_insert)
 
     # Stack
-    if 'stack' in json_log.keys():
+    if 'stack' in json_log.keys() and json_log['stack'] is not None:
         stack = Stack(stacktrace=json_log['stack'])
         stack.save(db)
         log.stack_sha = stack.sha
@@ -44,7 +47,7 @@ def api_logs_add(request):
         else:
             # single log
             _add_log(request.json['application'], request.json, request.db)
-        return {'success': True}
+        return {'success': True, 'message': None}
     except Exception as e:
         _log.exception(e)
         return {'success': False, 'message': str(e)}

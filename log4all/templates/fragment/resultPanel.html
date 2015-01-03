@@ -1,4 +1,4 @@
-<div class="ui segment attached" ng-hide="inError">
+<div class="ui segment attached" ng-hide="resultType!='searchResult'">
     <h2 class="ui header"><i class="ui content green icon"></i>Result</h2>
 
     <div style="float: right; display: inline-block; margin-bottom: 4px;">
@@ -24,15 +24,15 @@
                $(this).scope().search();
             });
         </script>
-        <i class="ui backward icon"></i>
+        <i class="ui backward icon"  ng-click="changePage(src_query.page-1)"></i>
         <div class="ui input compact">
-            <input  type="number" ng-model="src_query.page"/>
+            <input  type="number" ng-model="src_query.page" ng-change="search()"/>
         </div>
-        <i class="ui forward icon"></i>
+        <i class="ui forward icon" ng-click="changePage(src_query.page+1)"></i>
     </div>
 
     <div style="float: left;">
-        <a class="ui tag green label" ng-repeat="tag in tags">
+        <a class="ui tag green label" ng-repeat="tag in resultTags">
             #{[{ tag }]}
         </a>
     </div>
@@ -52,7 +52,7 @@
                 <a class="ui link" ng-click="sortResult('date')">Date</a>
                 <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='date' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='date' && !src_query.sort_ascending)}"></i>
             </th>
-            <th ng-repeat="tag in tags">
+            <th ng-repeat="tag in resultTags">
                 <a class="ui link" ng-click="sortResult('tags.'+tag)">{[{tag}]}</a>
                 <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='tags.'+tag && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='tags.'+tag && !src_query.sort_ascending)}"></i>
             </th>
@@ -64,7 +64,7 @@
             <td>{[{ log.application }]}</td>
             <td>{[{ log.message }]}</td>
             <td>{[{ log.date }]}</td>
-            <td ng-repeat="tag in tags">{[{log.tags[tag]}]}</td>
+            <td ng-repeat="tag in resultTags">{[{log.tags[tag]}]}</td>
         </tr>
         </tbody>
     </table>

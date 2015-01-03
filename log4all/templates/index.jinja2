@@ -24,9 +24,13 @@
 </head>
 <body ng-controller="LogController">
 <div>
-    {% include  "fragment/leftMenu.html" %}
+    <div class="ui basic segment center aligned" style="padding: 0px;">
+        {% include  "fragment/rightMenu.html" %}
+        {% include  "fragment/leftMenu.html" %}
+    </div>
     {% include  "fragment/addLogPanel.jinja2" %}
     {% include  "fragment/searchPanel.html" %}
+    {% include  "fragment/tailPanel.html" %}
     {% include  "fragment/errorPanel.html" %}
     {% include  "fragment/resultPanel.html" %}
 </div>

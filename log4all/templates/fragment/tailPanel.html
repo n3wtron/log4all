@@ -1,0 +1,21 @@
+<div class="ui inverted segment attached" ng-hide="resultType!='tailResult'">
+    <h2 class="ui header"><i class="ui content red icon"></i>Tail</h2>
+
+    <div class="ui active loader"></div>
+    <div class="ui inverted divided list">
+        <div class="item" ng-repeat="log in tailLogs">
+            <div class="ui grid">
+                <div class="four wide column "><i class="icon"
+                       ng-class="{'red circle warning':log.level=='ERROR','warning sign yellow':log.level=='WARN','info blue':log.level=='INFO','code green':log.level=='DEBUG'}"></i>
+                    {[{ log.date }]}</div>
+                <div class="four wide column wide">{[{ log.application }]}</div>
+                <div class="four wide column wide">{[{ log.message }]}</div>
+                <div class="four wide column wide">
+                     <span class="ui tag green label" ng-repeat="(tag,value) in log.tags">
+                        #{[{ tag }]} : {[{ value }]}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
