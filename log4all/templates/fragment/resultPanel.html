@@ -40,6 +40,9 @@
         <thead>
         <tr>
             <th>
+                Detail
+            </th>
+            <th>
                 <a class="ui link" ng-click="sortResult('level')">Level</a>
                 <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='level' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='level' && !src_query.sort_ascending)}"></i>
             </th>
@@ -60,6 +63,7 @@
         </thead>
         <tbody>
         <tr ng-repeat="log in logs">
+            <td><div class="ui icon button" ng-click="showDetail(log)"><i class="content icon"></i></div> </td>
             <td>{[{ log.level }]}</td>
             <td>{[{ log.application }]}</td>
             <td>{[{ log.message }]}</td>

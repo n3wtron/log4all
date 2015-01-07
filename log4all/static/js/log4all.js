@@ -8,12 +8,29 @@ log4all.config(function ($interpolateProvider) {
     $interpolateProvider.endSymbol('}]}');
 });
 
+log4all.filter('code', function () {
+    return function (text) {
+        if (text != undefined) {
+            return text.replace(new RegExp('\n', 'g'), '<br/>')
+        } else {
+            return "";
+        }
+    }
+});
+
+log4all.filter('unsafe', function ($sce) {
+    return function (val) {
+        return $sce.trustAsHtml(val);
+    };
+});
+
 log4all.controller('LogController', function ($scope, $http, $interval) {
     $scope.resultType = null;
+    $scope.followLog = false;
     var tailRefresh;
 
     $scope.resetSearch = function () {
-        if (angular.isDefined(tailRefresh)){
+        if (angular.isDefined(tailRefresh)) {
             $interval.cancel(tailRefresh);
             tailRefresh = undefined;
             $scope.resultType = null;
@@ -63,7 +80,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
     $scope.searchHidden = false;
     $scope.search = function () {
         //stop tail
-        if (angular.isDefined(tailRefresh)){
+        if (angular.isDefined(tailRefresh)) {
             $interval.cancel(tailRefresh);
             tailRefresh = undefined;
         }
@@ -93,11 +110,17 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
 
     $scope.tail = function () {
         $scope.tailLogs = [];
-        if (angular.isDefined(tailRefresh)){
+        if (angular.isDefined(tailRefresh)) {
             return;
         }
         $scope.src_query.dt_since = new Date().getTime();
+        var newLog = false;
         tailRefresh = $interval(function () {
+            if (newLog && $scope.followLog) {
+                //scroll to bottom
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+            newLog = false;
             $http.post('http://localhost:6543/api/logs/tail', $scope.src_query).success(function (data) {
                 if (data.success == false) {
                     $scope.resultType = 'error';
@@ -106,13 +129,39 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
                 } else {
                     $scope.resultType = 'tailResult';
                     $scope.errorMessage = null;
-                    data.result.forEach(function(lg){
+
+                    data.result.forEach(function (lg) {
+                        newLog = true;
                         $scope.tailLogs.push(lg);
                     });
                     $scope.src_query.dt_since = new Date().getTime();
+
                 }
             });
+
         }, 1000);
+    };
+
+    function getStack(log) {
+        if (log['stack_sha'] != undefined) {
+            $http.get('http://localhost:6543/api/stack?sha=' + log['stack_sha']).success(function (data) {
+                log['stack'] = data;
+            });
+        } else {
+            log['stack'] = undefined;
+        }
+    }
+
+    $scope.showDetail = function (log) {
+        $scope.logDetail = log;
+        getStack($scope.logDetail);
+        $scope.prevResultType = $scope.resultType;
+        $scope.resultType = "logDetail";
+    };
+
+    $scope.closeDetail = function () {
+        $scope.resultType = "logDetail";
+        $scope.resultType = $scope.prevResultType;
     };
 
     $scope.changePage = function (page) {
@@ -139,7 +188,6 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
 log4all.controller('AddLogController', function ($scope, $http) {
     $scope.log = {};
     $scope.setLogApplication = function (selected) {
-        console.log(selected);
         if (selected != null) {
             $scope.log.application = selected.originalObject.field;
         } else {
@@ -148,7 +196,6 @@ log4all.controller('AddLogController', function ($scope, $http) {
     };
     $scope.addLog = function (level) {
         $scope.log.level = level;
-        console.log($scope.log);
         $http.post('http://localhost:6543/api/logs/add', $scope.log).success(function (data) {
             console.log(data);
             if (!data.success) {

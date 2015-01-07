@@ -22,8 +22,8 @@ def _add_log(application, json_log, db):
     if 'stack' in json_log.keys() and json_log['stack'] is not None:
         stack = Stack(stacktrace=json_log['stack'])
         stack.save(db)
+        log.stack = json_log['stack']
         log.stack_sha = stack.sha
-
     log.save(db)
 
     # Tags

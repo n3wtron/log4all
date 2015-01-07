@@ -2,20 +2,44 @@
     <h2 class="ui header"><i class="ui content red icon"></i>Tail</h2>
 
     <div class="ui active loader"></div>
-    <div class="ui inverted divided list">
-        <div class="item" ng-repeat="log in tailLogs">
-            <div class="ui grid">
-                <div class="four wide column "><i class="icon"
-                       ng-class="{'red circle warning':log.level=='ERROR','warning sign yellow':log.level=='WARN','info blue':log.level=='INFO','code green':log.level=='DEBUG'}"></i>
-                    {[{ log.date }]}</div>
-                <div class="four wide column wide">{[{ log.application }]}</div>
-                <div class="four wide column wide">{[{ log.message }]}</div>
-                <div class="four wide column wide">
+    <div class="ui grid">
+        <div class="row">
+            <div class="ui right floated inverted segment followLog1">
+                <div class="ui toggle checkbox">
+                    <input type="checkbox" />
+                    <label style="color: #ffffff;">Follow</label>
+                </div>
+            </div>
+        </div>
+        <div class="row" ng-repeat="log in tailLogs">
+            <div class="three wide column "><i class="icon"
+                                               ng-class="{'red circle warning':log.level=='ERROR','warning sign yellow':log.level=='WARN','info blue':log.level=='INFO','code green':log.level=='DEBUG'}"></i>
+                {[{ log.date }]}
+            </div>
+            <div class="six wide column wide">{[{ log.application }]} : {[{ log.message }]}</div>
+            <div class="seven wide column wide">
                      <span class="ui tag green label" ng-repeat="(tag,value) in log.tags">
                         #{[{ tag }]} : {[{ value }]}
                     </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="ui right floated inverted segment">
+                <div class="ui toggle checkbox followLog2">
+                    <input type="checkbox"/>
+                    <label style="color: #ffffff;">Follow</label>
                 </div>
             </div>
+            <script>
+                $('.followLog1').checkbox({
+                    onChange:function(){
+                        $(this).scope().followLog = $('.followLog1').checkbox('is checked');
+                    }
+                });
+                $('.followLog2').checkbox('attach events','.followLog1');
+                $('.followLog1').checkbox('attach events','.followLog2');
+
+            </script>
         </div>
     </div>
 </div>

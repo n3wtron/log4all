@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 
 class Log:
     def __init__(self, application=None, level=None, raw_message=None, message=None, tags=None,
-                 notification_groups=None, stack_sha=None, date=datetime.now()):
+                 notification_groups=None, stack_sha=None, date=datetime.now(), stack=None):
         self._id = None
         self.application = application
         self.raw_message = raw_message
@@ -22,6 +22,7 @@ class Log:
         self.level = level
         self.message = message
         self.tags = tags
+        self.stack = stack
         self.stack_sha = stack_sha
         self.notification_groups = notification_groups
         self._elaborate_message()
@@ -70,7 +71,8 @@ class Log:
                   message=bson.get('message'),
                   date=jsonizer(bson.get('date')),
                   tags=jsonizer(bson.get('tags')),
-                  stack_sha=bson.get('stack_sha'))
+                  stack_sha=bson.get('stack_sha'),
+                  stack=bson.get('stack'))
         log._id = str(bson.get('_id'))
         return log
 
@@ -88,6 +90,8 @@ class Log:
     def save(self, db):
         json_log = self.__json__()
         db.logs.insert(json_log)
+        if self.stack is not None:
+            json_log['stack'] = self.stack
         db.tail_logs.insert(json_log)
 
 
