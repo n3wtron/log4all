@@ -30,12 +30,11 @@ class Stack:
 
     @staticmethod
     def init(db):
-        db.stacktraces.ensure_index('sha', unique=True)
+        db.stacktraces.ensure_index('sha', unique=True, dropDups=True)
 
     @staticmethod
     def get(db, src_query):
         return Stack.from_bson(db.stacktraces.find_one(src_query))
-
 
     def save(self, db):
         _log.debug("stack:" + str(self.__json__()) + " inserted")

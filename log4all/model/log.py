@@ -123,5 +123,6 @@ class Log:
     @staticmethod
     def tail(db, dt_since, dt_to, src_query=dict()):
         src_query['date'] = {'$gte': dt_since, '$lte': dt_to}
+        _log.debug("log_search:"+str(src_query))
         for db_log in db.logs.find(src_query, sort=[('date', ASCENDING)]):
             yield Log.from_bson(db_log)

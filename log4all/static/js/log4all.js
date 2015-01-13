@@ -24,7 +24,11 @@ log4all.filter('unsafe', function ($sce) {
     };
 });
 
-log4all.controller('LogController', function ($scope, $http, $interval) {
+function getApiUrl($location,apiUrl){
+    return $location.protocol()+"://"+$location.host()+":"+$location.port()+"/api/"+apiUrl;
+}
+
+log4all.controller('LogController', function ($scope, $location, $http, $interval) {
     $scope.resultType = null;
     $scope.followLog = false;
     var tailRefresh;
@@ -37,7 +41,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
         }
         $scope.src_query = {
             page: 0,
-
+            query : '',
             max_result: 10,
             levels: ['DEBUG', 'WARN', 'INFO', 'ERROR'],
             sort_field: 'date',
@@ -50,11 +54,15 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
 
     // Retrieve all tags
     $scope.getTags = function () {
-        $http.get('http://localhost:6543/api/tags').success(function (data) {
+        $http.get(getApiUrl($location,'tags')).success(function (data) {
             $scope.tags = data;
         });
     };
     $scope.getTags();
+
+    $scope.addTagInQuery = function(tag){
+        $scope.src_query.query += " #"+tag
+    };
 
     $scope.updateApplication = function (selected) {
         if (selected != null) {
@@ -84,7 +92,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
             $interval.cancel(tailRefresh);
             tailRefresh = undefined;
         }
-        $http.post('http://localhost:6543/api/logs/search', $scope.src_query).success(function (data) {
+        $http.post(getApiUrl($location,'logs/search'), $scope.src_query).success(function (data) {
             if (data.success == false) {
                 $scope.resultType = 'error';
                 $scope.errorMessage = data.message;
@@ -121,7 +129,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
                 window.scrollTo(0, document.body.scrollHeight);
             }
             newLog = false;
-            $http.post('http://localhost:6543/api/logs/tail', $scope.src_query).success(function (data) {
+            $http.post(getApiUrl($location,'logs/tail'), $scope.src_query).success(function (data) {
                 if (data.success == false) {
                     $scope.resultType = 'error';
                     $scope.errorMessage = data.message;
@@ -135,7 +143,6 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
                         $scope.tailLogs.push(lg);
                     });
                     $scope.src_query.dt_since = new Date().getTime();
-
                 }
             });
 
@@ -144,7 +151,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
 
     function getStack(log) {
         if (log['stack_sha'] != undefined) {
-            $http.get('http://localhost:6543/api/stack?sha=' + log['stack_sha']).success(function (data) {
+            $http.get(getApiUrl($location,'stack?sha=' + log['stack_sha'])).success(function (data) {
                 log['stack'] = data;
             });
         } else {
@@ -153,6 +160,8 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
     }
 
     $scope.showDetail = function (log) {
+        $scope.prevSearchHidden = $scope.searchHidden;
+        $scope.searchHidden = true;
         $scope.logDetail = log;
         getStack($scope.logDetail);
         $scope.prevResultType = $scope.resultType;
@@ -160,6 +169,9 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
     };
 
     $scope.closeDetail = function () {
+        if ($scope.searchHidden != $scope.prevSearchHidden) {
+            $scope.searchHidden = $scope.prevSearchHidden;
+        }
         $scope.resultType = "logDetail";
         $scope.resultType = $scope.prevResultType;
     };
@@ -185,7 +197,7 @@ log4all.controller('LogController', function ($scope, $http, $interval) {
     }
 });
 
-log4all.controller('AddLogController', function ($scope, $http) {
+log4all.controller('AddLogController', function ($scope, $http,$location) {
     $scope.log = {};
     $scope.setLogApplication = function (selected) {
         if (selected != null) {
@@ -196,7 +208,7 @@ log4all.controller('AddLogController', function ($scope, $http) {
     };
     $scope.addLog = function (level) {
         $scope.log.level = level;
-        $http.post('http://localhost:6543/api/logs/add', $scope.log).success(function (data) {
+        $http.post(getApiUrl($location,'logs/add'), $scope.log).success(function (data) {
             console.log(data);
             if (!data.success) {
                 $scope.inError = true;

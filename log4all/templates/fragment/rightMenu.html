@@ -3,9 +3,13 @@
 </div>
 
 <div id="rightMenu" class="ui right vertical inverted thin sidebar ">
-    <a class="ui tag green label">
-        ciao
-    </a>
+    <div class="ui list">
+        <div class="item" ng-repeat="tag in tags">
+            <a class="ui tag green label" ng-click="addTagInQuery(tag.tag_name)" title="Search Tag">
+                {[{tag.tag_name}]}
+            </a>
+        </div>
+    </div>
 </div>
 <script>
     $('#showTagMenuBtn').click(function () {

@@ -19,7 +19,7 @@ class Tag:
 
     @staticmethod
     def init(db):
-        db.tags.ensure_index('tag_name', unique=True)
+        db.tags.ensure_index('tag_name', unique=True, dropDups=True)
 
     @staticmethod
     def bulk_save(db, tags):

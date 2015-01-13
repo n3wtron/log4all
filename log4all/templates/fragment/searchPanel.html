@@ -52,51 +52,85 @@
                 </div>
             </div>
         </div>
-        <div class="field">
-            <label>Query</label>
-            <input type="text" ng-model="src_query.query"/>
-        </div>
-        <div class="two fields">
+
+                <div class="two fields">
             <div class="field">
                 <label>Sort Field</label>
+
                 <div class="ui search selection dropdown" id="sortFld">
                     <input type="hidden" name="sort">
                     <i class="dropdown icon"></i>
-                    <div class="default text">Sort Field</div>
+                    <div class="default text">{[{src_query.sort_field}]}</div>
                     <div class="menu">
-                        <div class="item" data-value="{[{tag.tag_name}]}" ng-repeat="tag in tags">{[{ tag.tag_name }]}</div>
+                        <div class="item" data-value="date">date</div>
+                        <div class="item" data-value="date">application</div>
+                        <div class="item" data-value="date">level</div>
+                        <div class="item" data-value="tags.{[{tag.tag_name}]}" ng-repeat="tag in tags">#{[{ tag.tag_name
+                            }]}
+                        </div>
                     </div>
                 </div>
                 <script>
-                    $('#sortFld').dropdown();
+                    $('#sortFld').dropdown({
+                        onChange: function (value, text, choice) {
+                            $(this).scope().src_query.sort_field = value;
+                            console.log($(this).scope().src_query);
+                        }
+                    });
                 </script>
             </div>
             <div class="field">
                 <label>Sort Direction</label>
-                <select>
-                    <option>Ascending</option>
-                    <option>Descending</option>
-                </select>
+                <div class="ui checkbox" id="sortDirectionFld">
+                  <input type="checkbox" ng-model="src_query.sort_ascending">
+                  <label>Ascending</label>
+                </div>
+                <script>
+                    $('#sortDirectionFld').checkbox({
+                       onChange:function(){
+                            $(this).scope().src_query.sort_ascending = $('#sortDirectionFld').checkbox('is checked');
+                        }
+                    });
+                </script>
             </div>
         </div>
+
+        <div class="field">
+            <label>Query</label>
+            <input type="text" ng-model="src_query.query"/>
+        </div>
+
 
         <div class="field" style="text-align: center;margin-bottom: -10px;">
             <div class="ui buttons">
                 <div class="ui icon green button" ng-click="search();"><i class="ui search icon"></i>&nbsp;Search&nbsp;&nbsp;
                 </div>
                 <div class="or"></div>
-                <div class="ui icon red button" ng-click="tail();"><i class="ui content icon"></i>&nbsp;&nbsp;Tail&nbsp;</div>
+                <div class="ui icon red button" ng-click="tail();"><i class="ui content icon"></i>&nbsp;&nbsp;Tail&nbsp;
+                </div>
                 <div class="or"></div>
-                <div class="ui icon  button" ng-click="resetSearch()"><i class="ui recycle icon" ></i>&nbsp;&nbsp;Reset&nbsp;</div>
+                <div class="ui icon  button" ng-click="resetSearch()"><i class="ui recycle icon"></i>&nbsp;&nbsp;Reset&nbsp;
+                </div>
             </div>
         </div>
         <script>
-            $('.datetimepicker').datetimepicker();
-            $('#dtSinceFld').change(function () {
-                $(this).scope().src_query.dt_since = $('#dtSinceFld').datetimepicker('getDate').getTime();
+            $('#dtSinceFld').datetimepicker({
+                onChangeDateTime:function(since){
+                    if (since != undefined) {
+                        $(this).scope().src_query.dt_since = since.getTime();
+                    }else{
+                        $(this).scope().src_query.dt_since = since;
+                    }
+                }
             });
-            $('#dtToFld').change(function () {
-                $(this).scope().src_query.dt_to = $('#dtToFld').datetimepicker('getDate').getTime();
+            $('#dtToFld').datetimepicker({
+                onChangeDateTime:function(to){
+                    if (to != undefined) {
+                        $(this).scope().src_query.dt_to = to.getTime();
+                    }else{
+                        $(this).scope().src_query.dt_to = to;
+                    }
+                }
             });
         </script>
     </div>
