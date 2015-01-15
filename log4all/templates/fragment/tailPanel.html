@@ -18,7 +18,7 @@
             </div>
             <div class="six wide column wide">{[{ log.application }]} : {[{ log.message }]}</div>
             <div class="seven wide column wide">
-                     <span class="ui tag green label" ng-repeat="(tag,value) in log.tags">
+                     <span class="ui tag green label" ng-repeat="(tag,value) in log.tags" ng-click="addTagValueInQuery(tag,value,false)">
                         #{[{ tag }]} : {[{ value }]}
                     </span>
             </div>
