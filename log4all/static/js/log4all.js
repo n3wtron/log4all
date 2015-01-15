@@ -61,7 +61,20 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
     $scope.getTags();
 
     $scope.addTagInQuery = function(tag){
-        $scope.src_query.query += " #"+tag
+        $scope.src_query.query += " #"+tag;
+    };
+
+    $scope.addTagValueInQuery = function(tag,tagValue,searchAfter){
+        var tag_src = "#"+tag+"="+tagValue;
+        if ($scope.src_query.query.indexOf(tag_src)>0){
+            $scope.src_query.query = $scope.src_query.query.replace(tag_src,"");
+            $scope.src_query.query = $scope.src_query.query.replace("  "," ");
+        }else {
+            $scope.src_query.query += " "+tag_src;
+        }
+        if (searchAfter){
+            $scope.search();
+        }
     };
 
     $scope.updateApplication = function (selected) {
@@ -115,6 +128,8 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
             }
         });
     };
+
+
 
     $scope.tail = function () {
         $scope.tailLogs = [];

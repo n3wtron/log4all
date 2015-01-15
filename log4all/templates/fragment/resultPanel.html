@@ -68,7 +68,7 @@
             <td>{[{ log.application }]}</td>
             <td>{[{ log.message }]}</td>
             <td>{[{ log.date }]}</td>
-            <td ng-repeat="tag in resultTags">{[{log.tags[tag]}]}</td>
+            <td ng-repeat="tag in resultTags">{[{log.tags[tag]}]}<i class="ui filter icon link"  ng-if="log.tags[tag]" ng-click="addTagValueInQuery(tag,log.tags[tag],true)"></i></td>
         </tr>
         </tbody>
     </table>
