@@ -38,8 +38,29 @@ def _add_log(application, json_log, db):
 @view_config(route_name="api_logs_add", request_method="POST", renderer="json")
 def api_logs_add(request):
     _log.debug(request.json)
-    # check if is a massive log
+    application_name = request.json.get('application')
+    application_token = request.json.get('application_token')
+
+    if application_name is None or application_name == '':
+        return {'success': False, 'message': 'Application name is mandatory'}
+
+    application = request.applications(application_name)
+
+    if application is None:
+        return {'success': False, 'message': 'Application ' + application_name + ' is not present on DB'}
+    if application.token is not None and application.token != "":
+        # token is required
+        if application_token is None:
+            return {'success': False,
+                    'message': 'Application token is mandatory for ' + application_name + ' application'}
+        else:
+            if application_token != application.token:
+                return {'success': False,
+                        'message': 'The application token ' + application_token + " doesn't match for " +
+                                   application_name + ' application'}
+
     try:
+        # check if is a multiple log
         if 'logs' in request.json.keys():
             # multiple log
             for json_log in request.json['logs']:

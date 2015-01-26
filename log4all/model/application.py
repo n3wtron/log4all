@@ -9,9 +9,10 @@ _log = logging.getLogger(__name__)
 
 
 class Application:
-    def __init__(self, name, description=None, configuration=None):
+    def __init__(self, name, token=None, description=None, configuration=None):
         self._id = None
         self.name = name
+        self.token = token
         self.description = description
         self.configuration = configuration
         if self.configuration is None:
@@ -37,6 +38,7 @@ class Application:
     def __json__(self, request=None):
         json = {
             'name': self.name,
+            'token': self.token,
             'description': self.description,
             'configuration': self.configuration
         }
@@ -46,7 +48,7 @@ class Application:
 
     @staticmethod
     def from_bson(bson):
-        app = Application(bson['name'], bson['description'], bson['configuration'])
+        app = Application(bson['name'], bson.get('token'), bson.get('description'), bson.get('configuration'))
         app._id = str(bson['_id'])
         return app
 

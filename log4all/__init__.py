@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+from urllib.parse import urlparse
+
 from gridfs import GridFS
 import pymongo
 from pyramid.config import Configurator
@@ -8,12 +11,8 @@ from log4all.model.stack import Stack
 from log4all.model.tag import Tag
 
 
-try:
-    # for python 2
-    from urlparse import urlparse
-except ImportError:
-    # for python 3
-    from urllib.parse import urlparse
+applications = None
+dt_applications_updated = None
 
 
 def initdb(db):
@@ -48,10 +47,24 @@ def main(global_config, **settings):
     def get_gridfs(request):
         return GridFS(request.db)
 
+    def get_application(request, application_name=None):
+        global applications
+        global dt_applications_updated
+        now = datetime.now()
+        if applications is None or dt_applications_updated is None or application_name not in applications or \
+                        dt_applications_updated < now - timedelta(seconds=30):
+            # retrieve applications from db
+            dt_applications_updated = now
+            applications = dict()
+            for app in Application.search(request.db):
+                applications[app.name] = app
+        return applications.get(application_name)
+
     initdb(get_db(None))
 
     config.add_request_method(get_db, 'db', reify=True)
     config.add_request_method(get_gridfs, 'gridfs', reify=True)
+    config.add_request_method(get_application, 'applications')
 
     # Routing
     config.add_route('home', '/')

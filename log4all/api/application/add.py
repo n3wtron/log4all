@@ -12,6 +12,6 @@ _log = logging.getLogger(__name__)
 
 @view_config(route_name="api_applications_add", renderer='json', request_method="PUT")
 def api_application_add(request):
-    app = Application(request.json['name'], request.json['description'])
+    app = Application(request.json['name'], description=request.json['description'])
     app.save(request.db)
     return {"success": True,'application':app}
