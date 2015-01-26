@@ -10,7 +10,7 @@
         </h2>
     </div>
 
-    <div class="ui form  animate-hide" id="searchFrm" ng-hide="searchHidden" style="margin-bottom: -10px;">
+    <div class="ui form " id="searchFrm" ng-hide="searchHidden" style="margin-bottom: -10px;">
         <div class="two fields">
             <div class="field">
                 <label>Since</label>
@@ -63,8 +63,8 @@
                     <div class="default text">{[{src_query.sort_field}]}</div>
                     <div class="menu">
                         <div class="item" data-value="date">date</div>
-                        <div class="item" data-value="date">application</div>
-                        <div class="item" data-value="date">level</div>
+                        <div class="item" data-value="application">application</div>
+                        <div class="item" data-value="level">level</div>
                         <div class="item" data-value="tags.{[{tag.tag_name}]}" ng-repeat="tag in tags">#{[{ tag.tag_name
                             }]}
                         </div>

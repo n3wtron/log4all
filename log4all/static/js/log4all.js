@@ -138,6 +138,7 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
         }
         $scope.src_query.dt_since = new Date().getTime();
         var newLog = false;
+        $scope.resultType = 'tailResult';
         tailRefresh = $interval(function () {
             if (newLog && $scope.followLog) {
                 //scroll to bottom
@@ -150,9 +151,12 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
                     $scope.errorMessage = data.message;
                     $interval.cancel(tailRefresh);
                 } else {
-                    $scope.resultType = 'tailResult';
-                    $scope.errorMessage = null;
 
+                    $scope.errorMessage = null;
+                    //remove first 100 after 200
+                    if ($scope.tailLogs.length > 200){
+                        $scope.tailLogs.splice(0,100);
+                    }
                     data.result.forEach(function (lg) {
                         newLog = true;
                         $scope.tailLogs.push(lg);
@@ -187,7 +191,6 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
         if ($scope.searchHidden != $scope.prevSearchHidden) {
             $scope.searchHidden = $scope.prevSearchHidden;
         }
-        $scope.resultType = "logDetail";
         $scope.resultType = $scope.prevResultType;
     };
 

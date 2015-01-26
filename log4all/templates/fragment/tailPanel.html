@@ -12,8 +12,8 @@
             </div>
         </div>
         <div class="row" ng-repeat="log in tailLogs">
-            <div class="three wide column "><i class="icon"
-                                               ng-class="{'red circle warning':log.level=='ERROR','warning sign yellow':log.level=='WARN','info blue':log.level=='INFO','code green':log.level=='DEBUG'}"></i>
+            <div class="three wide column "><i class="icon link"
+                                               ng-class="{'red circle warning':log.level=='ERROR','warning sign yellow':log.level=='WARN','info blue':log.level=='INFO','code green':log.level=='DEBUG'}" ng-click="showDetail(log)"></i>
                 {[{ log.date }]}
             </div>
             <div class="six wide column wide">{[{ log.application }]} : {[{ log.message }]}</div>

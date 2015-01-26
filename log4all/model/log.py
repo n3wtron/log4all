@@ -25,6 +25,7 @@ class Log:
         self.stack = stack
         self.stack_sha = stack_sha
         self.notification_groups = notification_groups
+        self._dt_insert = datetime.now()
         self._elaborate_message()
 
     def _elaborate_message(self):
@@ -58,7 +59,8 @@ class Log:
             'level': self.level,
             'date': self.date,
             'tags': self.tags,
-            'stack_sha': self.stack_sha
+            'stack_sha': self.stack_sha,
+            '_dt_insert': self._dt_insert
         }
         if self._id is not None:
             json['_id'] = self._id
@@ -74,6 +76,7 @@ class Log:
                   stack_sha=bson.get('stack_sha'),
                   stack=bson.get('stack'))
         log._id = str(bson.get('_id'))
+        log._dt_insert = jsonizer(bson.get('_dt_insert'))
         return log
 
     @staticmethod
@@ -107,7 +110,7 @@ class Log:
         else:
             max_result = int(max_result)
 
-        fields = ['message', 'application', 'date', 'level', 'stack_sha', 'tags']
+        fields = ['message', 'application', 'date', 'level', 'stack_sha', 'tags','_dt_insert']
         # if tags is not None and len(tags) > 0:
         # for tag in tags:
         # fields.append('tags.' + tag)
@@ -122,7 +125,7 @@ class Log:
 
     @staticmethod
     def tail(db, dt_since, dt_to, src_query=dict()):
-        src_query['date'] = {'$gte': dt_since, '$lte': dt_to}
+        src_query['_dt_insert'] = {'$gte': dt_since, '$lte': dt_to}
         _log.debug("log_search:"+str(src_query))
         for db_log in db.logs.find(src_query, sort=[('date', ASCENDING)]):
             yield Log.from_bson(db_log)
