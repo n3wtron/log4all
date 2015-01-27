@@ -25,7 +25,7 @@ log4all.filter('unsafe', function ($sce) {
 });
 
 function getApiUrl($location,apiUrl){
-    return $location.protocol()+"://"+$location.host()+":"+$location.port()+"/api/"+apiUrl;
+    return $location.absUrl()+"/api/"+apiUrl;
 }
 
 log4all.controller('LogController', function ($scope, $location, $http, $interval) {
