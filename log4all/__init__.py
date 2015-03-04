@@ -58,7 +58,7 @@ def init_log4all(config):
     :param config: pyramid configuration
     """
     db_url = urlparse(config.get_settings()['mongo_uri'])
-    config.registry.db = pymongo.Connection(host=db_url.hostname, port=db_url.port)
+    config.registry.db = pymongo.MongoClient(config.get_settings()['mongo_uri'])
 
     def get_db(request):
         db = config.registry.db[db_url.path[1:]]
