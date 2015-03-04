@@ -35,7 +35,7 @@ class Log:
             raw_tags = add_log_matcher.findall(self.raw_message)
             for raw_tag in raw_tags:
                 tag = raw_tag[0][1:]  # removed #
-                tag = tag.replace("+", "")
+                tag = tag.replace("#", "")  # second # for visible tag
                 if len(raw_tag[1]) == 0:
                     tag_value = True
                 else:
@@ -45,7 +45,7 @@ class Log:
                 self.tags[tag] = tag_value
 
             # Cleaning message
-            self.message = re.sub('#\+', "", self.raw_message)
+            self.message = re.sub('##', "", self.raw_message)
             self.message = re.sub(group_notification_regexp, "", self.message)
             self.message = re.sub(add_log_regexp, "", self.message)
 
