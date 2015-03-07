@@ -10,7 +10,7 @@
         </h2>
     </div>
 
-    <div class="ui form " id="searchFrm" ng-hide="searchHidden" style="margin-bottom: -10px;">
+    <div class="ui form " id="searchFrm" ng-cloak ng-hide="searchHidden" style="margin-bottom: -10px;">
         <div class="two fields">
             <div class="field">
                 <label>Since</label>
@@ -25,6 +25,7 @@
             <div class="field">
                 <label>Application</label>
                 <angucomplete-alt id="applications"
+                     type="text"
                                   placeholder="Applications"
                                   pause="400"
                                   selected-object="updateApplication"
