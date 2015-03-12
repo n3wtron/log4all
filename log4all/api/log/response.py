@@ -1,5 +1,3 @@
-from log4all.util.json_util import jsonizer
-
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 
@@ -14,7 +12,7 @@ class SearchResponse:
 
     def __json__(self, request=None):
         return {
-            'success':self.success,
-            'result' : self.result,
+            'success': self.success,
+            'result': self.result,
             'message': self.message
         }

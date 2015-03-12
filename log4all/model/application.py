@@ -48,6 +48,8 @@ class Application:
 
     @staticmethod
     def from_bson(bson):
+        if bson is None:
+            return None
         app = Application(bson['name'], bson.get('token'), bson.get('description'), bson.get('configuration'))
         app._id = str(bson['_id'])
         return app

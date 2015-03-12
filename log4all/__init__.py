@@ -4,11 +4,14 @@ from urllib.parse import urlparse
 from gridfs import GridFS
 import pymongo
 from pyramid.config import Configurator
+from log4all.api import init_api_url
 
 from log4all.model.application import Application
+from log4all.model.group import Group
 from log4all.model.log import Log
 from log4all.model.stack import Stack
 from log4all.model.tag import Tag
+from log4all.model.user import User
 
 
 applications = None
@@ -24,6 +27,8 @@ def init_db(db):
     Stack.init(db)
     Tag.init(db)
     Application.init(db)
+    Group.init(db)
+    User.init(db)
 
 
 def init_routing(config):
@@ -33,24 +38,12 @@ def init_routing(config):
     """
 
     config.add_route('home', '/')
-    config.add_route('api_logs_add', '/api/logs/add')
-    config.add_route('api_logs_search', '/api/logs/search')
-    config.add_route('api_logs_tail', '/api/logs/tail')
-    config.add_route('helper_applications_autocomplete', 'api/applications/autocompleteSearch')
-    config.add_route('api_applications_add', '/api/applications/add')
-    config.add_route('api_applications_all', '/api/applications')
-
-    config.add_route('api_application_get', '/api/application/get')
-    config.add_route('api_application_delete', '/api/application/delete')
-    config.add_route('api_application_update', '/api/application/update')
-    config.add_route('api_tags_get', '/api/tags')
-    config.add_route('api_stack_get', '/api/stack')
-
     config.add_route('admin', '/admin')
     config.add_route('admin_js', '/admin/js/admin_log4all.js')
     config.add_route('admin_applications', '/admin/applications')
     config.add_route('admin_application_edit', '/admin/application/edit')
 
+    init_api_url(config)
 
 def init_log4all(config):
     """
@@ -73,8 +66,8 @@ def init_log4all(config):
         global applications
         global dt_applications_updated
         now = datetime.now()
-        if applications is None or dt_applications_updated is None or application_name not in applications or \
-                        dt_applications_updated < now - timedelta(seconds=30):
+        if applications is None or dt_applications_updated is None or application_name not in applications or dt_applications_updated < now - timedelta(
+                seconds=30):
             # retrieve applications from db
             dt_applications_updated = now
             applications = dict()

@@ -26,9 +26,9 @@ class Log:
         self.stack_sha = stack_sha
         self.notification_groups = notification_groups
         self._dt_insert = datetime.now()
-        self._elaborate_message()
+        self._parse_message()
 
-    def _elaborate_message(self):
+    def _parse_message(self):
         if self.message is None and self.raw_message is not None:
             if self.tags is None:
                 self.tags = dict()
@@ -52,7 +52,7 @@ class Log:
             # Notification groups
             self.notification_groups = group_notification_matcher.findall(self.raw_message)
 
-    def __json__(self, request=None):
+    def __json__(self):
         json = {
             'message': self.message,
             'application': self.application,
@@ -68,6 +68,8 @@ class Log:
 
     @staticmethod
     def from_bson(bson):
+        if bson is None:
+            return None
         log = Log(application=bson.get('application'),
                   level=bson.get('level'),
                   message=bson.get('message'),
@@ -110,7 +112,7 @@ class Log:
         else:
             max_result = int(max_result)
 
-        fields = ['message', 'application', 'date', 'level', 'stack_sha', 'tags','_dt_insert']
+        fields = ['message', 'application', 'date', 'level', 'stack_sha', 'tags', '_dt_insert']
         # if tags is not None and len(tags) > 0:
         # for tag in tags:
         # fields.append('tags.' + tag)

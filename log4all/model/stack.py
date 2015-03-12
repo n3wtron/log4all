@@ -24,6 +24,8 @@ class Stack:
 
     @staticmethod
     def from_bson(bson):
+        if bson is None:
+            return None
         stack = Stack(bson['stacktrace'])
         stack.sha = bson['sha']
         return stack

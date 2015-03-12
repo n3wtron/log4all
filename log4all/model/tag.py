@@ -1,6 +1,7 @@
 import logging
 
 from pymongo import ASCENDING
+from pymongo.errors import DuplicateKeyError
 
 
 __author__ = 'Igor Maculan <n3wtron@gmail.com>'
@@ -23,7 +24,10 @@ class Tag:
 
     @staticmethod
     def bulk_save(db, tags):
-        db.tags.insert([tag.__json__() for tag in tags])
+        try:
+            db.tags.insert([tag.__json__() for tag in tags])
+        except DuplicateKeyError as e:
+            _log.debug("double tag, no problem")
 
     @staticmethod
     def search(db, src_query={}):

@@ -2,9 +2,11 @@ from datetime import datetime
 import logging
 
 from pymongo import ASCENDING, DESCENDING
+from pyramid.response import Response
 import re
 from pyramid.view import view_config
 
+from log4all.api.util import __new_response
 from log4all.model.log import Log
 from log4all.api.log.response import SearchResponse
 from log4all.util.regexp import src_key_regexp, value_regexp
@@ -88,55 +90,78 @@ def mongodb_parse_filter(query):
     return mongo_src
 
 
+@view_config(route_name='api_logs_search_options', renderer='json', request_method="OPTIONS")
+def api_logs_search_options(request):
+    resp = Response()
+    resp.headerlist.append(('Allow', 'OPTIONS, POST'))
+    resp.headerlist.append(('Access-Control-Allow-Origin', '*'))
+    resp.headerlist.append(('Content-Length', '0'))
+    resp.headerlist.append(('Access-Control-Allow-Headers', 'Content-Type'))
+    return resp
+
+
 @view_config(route_name='api_logs_search', renderer='json', request_method="POST")
 def api_logs_search(request):
     _log.debug('search request:' + str(request.json))
-
     response = SearchResponse()
-    # Date range
-    dt_since_param = request.json.get('dt_since')
-    dt_to_param = request.json.get('dt_to')
-    if dt_since_param is None or dt_to_param is None:
-        response.success = False
-        response.message = 'Since and To are mandatory'
-        _log.warn(str(response.__json__()))
-        return response
-    else:
-        dt_since = datetime.fromtimestamp(int(dt_since_param) / 1000)
-        dt_to = datetime.fromtimestamp(int(dt_to_param) / 1000)
-
-    # Elaborating query string
-    src_query = mongodb_parse_filter(request.json.get('query'))
-
-    src_applications = request.json.get('applications')
-    if src_applications is not None:
-        if ',' in src_applications:
-            # multiple applications
-            src_query['application'] = {"$in": [a.strip() for a in src_applications.split(',')]}
+    try:
+        # Date range
+        dt_since_param = request.json.get('dt_since')
+        dt_to_param = request.json.get('dt_to')
+        if dt_since_param is None or dt_to_param is None:
+            response.success = False
+            response.message = 'Since and To are mandatory'
+            _log.warn(str(response.__json__()))
+            return __new_response(response.__json__(), ('Access-Control-Allow-Origin', '*'))
         else:
-            src_query['application'] = src_applications
+            dt_since = datetime.fromtimestamp(int(dt_since_param) / 1000)
+            dt_to = datetime.fromtimestamp(int(dt_to_param) / 1000)
 
-    src_levels = request.json.get('levels')
-    if src_levels is not None:
-        src_query['level'] = {"$in": src_levels}
+        # Elaborating query string
+        src_query = mongodb_parse_filter(request.json.get('query'))
 
-    src_sort_field = request.json.get('sort_field')
-    src_sort_ascending = request.json.get('sort_ascending')
-    sort = None
-    if src_sort_field is not None and src_sort_ascending is not None:
-        sort_direction = ASCENDING if src_sort_ascending else DESCENDING
-        sort = [(src_sort_field, sort_direction)]
-        _log.debug('sort:' + str(sort))
+        src_applications = request.json.get('applications')
+        if src_applications is not None:
+            if ',' in src_applications:
+                # multiple applications
+                src_query['application'] = {"$in": [a.strip() for a in src_applications.split(',')]}
+            else:
+                src_query['application'] = src_applications
 
-    _log.debug('src_query:' + str(src_query))
+        src_levels = request.json.get('levels')
+        if src_levels is not None:
+            src_query['level'] = {"$in": src_levels}
 
-    response.result = list(Log.search(request.db, src_query=src_query,
-                                      dt_since=dt_since, dt_to=dt_to,
-                                      page=int(request.json.get('page')),
-                                      max_result=int(request.json.get('max_result')),
-                                      tags=request.json.get('tags'), sort=sort))
-    return response
+        src_sort_field = request.json.get('sort_field')
+        src_sort_ascending = request.json.get('sort_ascending')
+        sort = None
+        if src_sort_field is not None and src_sort_ascending is not None:
+            sort_direction = ASCENDING if src_sort_ascending else DESCENDING
+            sort = [(src_sort_field, sort_direction)]
+            _log.debug('sort:' + str(sort))
 
+        _log.debug('src_query:' + str(src_query))
+
+        search_results = list(Log.search(request.db, src_query=src_query, dt_since=dt_since, dt_to=dt_to,
+                                         page=int(request.json.get('page')),
+                                         max_result=int(request.json.get('max_result')), tags=request.json.get('tags'),
+                                         sort=sort))
+        response.result = [l.__json__() for l in search_results]
+        return __new_response(response.__json__(), ('Access-Control-Allow-Origin', '*'))
+    except Exception as e:
+        response.success = False
+        response.message = e
+        _log.error(str(response.__json__()))
+        return __new_response(response.__json__(), ('Access-Control-Allow-Origin', '*'))
+
+@view_config(route_name='api_logs_tail_options', renderer='json', request_method="OPTIONS")
+def api_logs_tail_options(request):
+    resp = Response()
+    resp.headerlist.append(('Allow', 'OPTIONS, POST'))
+    resp.headerlist.append(('Access-Control-Allow-Origin', '*'))
+    resp.headerlist.append(('Content-Length', '0'))
+    resp.headerlist.append(('Access-Control-Allow-Headers', 'Content-Type'))
+    return resp
 
 @view_config(route_name='api_logs_tail', renderer='json', request_method="POST")
 def api_logs_tail(request):
@@ -148,7 +173,7 @@ def api_logs_tail(request):
         response.success = False
         response.message = 'Since  are mandatory'
         _log.warn(str(response.__json__()))
-        return response
+        return __new_response(response.__json__(), ('Access-Control-Allow-Origin', '*'))
     else:
         dt_since = datetime.fromtimestamp(int(dt_since_param) / 1000)
         dt_to = datetime.now()
@@ -166,6 +191,6 @@ def api_logs_tail(request):
     if src_levels is not None:
         src_query['level'] = {"$in": src_levels}
 
-    response.result = list(Log.tail(request.db, src_query=src_query,
-                                    dt_since=dt_since, dt_to=dt_to))
-    return response
+    search_results = list(Log.tail(request.db, src_query=src_query, dt_since=dt_since, dt_to=dt_to))
+    response.result = [l.__json__() for l in search_results]
+    return __new_response(response.__json__(), ('Access-Control-Allow-Origin', '*'))

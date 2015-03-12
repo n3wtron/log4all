@@ -1,0 +1,63 @@
+<div ng-controller="UsersController">
+    <div class="ui menu" style="height: 36px;">
+        <div class="item link" id="openUserModalBtn">
+            <i class="ui add icon"></i>Add User
+        </div>
+    </div>
+    <script>
+        $('#openUserModalBtn').click(function () {
+            $('#addUserModal').modal('show');
+        });
+    </script>
+
+    <div class="ui modal" id="addUserModal">
+        <i class="close icon"></i>
+
+        <div class="header">
+            Add User
+        </div>
+        <div class="ui content form">
+            <div class="field">
+                <label>Email</label>
+                <input type="text" ng-model="user.email">
+            </div>
+            <div class="field">
+                <label>Name</label>
+                <input type="text" ng-model="user.name">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" ng-model="user.password">
+            </div>
+            <div class="ui icon button" ng-click="addUser()">
+                <i class="add icon"></i>Add User
+            </div>
+        </div>
+    </div>
+
+    <div class="ui bottom attached segment">
+        <table class="ui table attached">
+            <thead>
+            <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="user in users">
+                <td>{[{ user.email }]}</td>
+                <td>{[{ user.name }]}</td>
+                <td>
+                    <a class="ui icon button" href="#users/{[{ user._id }]}">
+                        <i class="edit icon"></i>
+                    </a>
+                    <a class="ui icon button" ng-click="deleteUser(user._id)">
+                        <i class="trash icon"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
