@@ -13,5 +13,5 @@ _log = logging.getLogger(__name__)
 
 @view_config(route_name='api_application_delete', renderer='json', request_method='DELETE')
 def api_application_delete(request):
-    Application.delete(request.db, ObjectId(request.params['id']))
+    Application.delete(request.db, ObjectId(request.matchdict['applicationId']))
     return {'success': True}

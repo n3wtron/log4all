@@ -8,8 +8,8 @@ Log4AllAdmin.controller('UsersController', function ($scope, $http, $location,lo
         log4AllUserService.add($scope.user).then(function (data) {
             if (data['success']) {
                 updateUsers();
-                $location.path('users/' + data.user['_id']);
                 $('#addUserModal').modal('hide');
+                $location.path('users/' + data.user['_id']);
             }
         },function(error){
            alert(error);

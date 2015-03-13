@@ -1,4 +1,5 @@
 import logging
+from uuid import uuid4
 
 from pyramid.view import view_config
 
@@ -13,5 +14,6 @@ _log = logging.getLogger(__name__)
 @view_config(route_name="api_applications_add", renderer='json', request_method="PUT")
 def api_application_add(request):
     app = Application(request.json['name'], description=request.json['description'])
+    app.token = str(uuid4())
     app.save(request.db)
-    return {"success": True,'application':app}
+    return {"success": True, 'application': app}

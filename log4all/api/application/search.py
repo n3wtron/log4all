@@ -17,5 +17,5 @@ def api_applications_all(request):
 
 @view_config(route_name='api_application_get', renderer='json', request_method='GET')
 def api_application_get(request):
-    app = Application.get(request.db, {'_id': ObjectId(request.params['id'])})
+    app = Application.get(request.db, {'_id': ObjectId(request.matchdict['applicationId'])})
     return app

@@ -8,8 +8,8 @@ Log4AllAdmin.controller('GroupsController', function ($scope, $http, $location, 
         log4AllGroupService.add($scope.group).then(function (data) {
             if (data['success']) {
                 updateGroups();
-                $location.path('groups/' + data.group['_id']);
                 $('#addGroupModal').modal('hide');
+                $location.path('groups/' + data.group['_id']);
             }
         });
     };

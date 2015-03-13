@@ -1,15 +1,17 @@
 /**
  * Created by igor on 3/11/15.
  */
-Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $routeParams,$location,$interval) {
+Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $routeParams,$interval,log4AllApplicationService) {
     $scope.application = {};
 
-    $http.get(getApiUrl($location,'application/get')+"?id=" + $routeParams.applicationId).success(function (data) {
+    log4AllApplicationService.get($routeParams.applicationId).then(function (data) {
         $scope.application = data;
         if ($scope.application.configuration == null) {
             $scope.application.configuration = {};
         }
         $scope.changeConfiguration("DEBUG");
+    },function(error){
+        alert(error);
     });
 
     $scope.currentConfiguration = {};
@@ -29,7 +31,7 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
     $scope.updateApplication = function () {
         $scope.result = {};
         console.log($scope.application);
-        $http.post(getApiUrl($location,'application/update'), $scope.application).success(function (data) {
+        log4AllApplicationService.update($routeParams.applicationId,$scope.application).then(function (data) {
             if (data['success']) {
                 $scope.result.success = true;
                 $scope.result.message = "Updated";
@@ -40,6 +42,8 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
                 $scope.result.success = false;
                 $scope.result.message = "Not Updated. Error:" + data['message'];
             }
+        },function(error){
+            alert(error);
         });
     };
 
