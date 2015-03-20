@@ -13,7 +13,9 @@ GET     /favicon.ico                            404
 GET     /public/*filepath                       Static.Serve("public")
 
 # API
-PUT     /api/log                                ApiLog.Add
+PUT     /api/log                                ApiLog.AddLog
+PUT     /api/logs                               ApiLog.AddLogs
+POST	/api/logs/search						ApiLog.Search
 
 # Catch all
 *       /:controller/:action                    :controller.:action

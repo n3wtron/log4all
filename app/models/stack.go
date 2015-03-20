@@ -12,6 +12,18 @@ type Stack struct{
 	Sha string `json:sha`
 }
 
+func CreateStackIndexes(db *mgo.Database) error{
+	index := mgo.Index{
+		Key: []string{"sha"},
+		Unique: true,
+		DropDups: true,
+		Background: true,
+	}
+	return db.C("stacktraces").EnsureIndex(index)
+}
+
+
+
 func (this *Stack) ToJson() map[string]interface{}{
 	result := make(map[string]interface{})
 	result["stacktrace"] = this.Stacktrace
