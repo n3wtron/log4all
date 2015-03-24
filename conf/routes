@@ -6,6 +6,8 @@ module:testrunner
 
 GET     /                                       App.Index
 
+GET     /admin/                                 Admin.Index
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
@@ -16,6 +18,10 @@ GET     /public/*filepath                       Static.Serve("public")
 PUT     /api/log                                ApiLog.AddLog
 PUT     /api/logs                               ApiLog.AddLogs
 POST	/api/logs/search						ApiLog.Search
+
+POST	/api/auth/login							AuthApi.Login
+
+GET		/api/applications						ApplicationApi.List
 
 # Catch all
 *       /:controller/:action                    :controller.:action

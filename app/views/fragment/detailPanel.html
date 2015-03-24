@@ -1,0 +1,22 @@
+<div class="ui segment attached" ng-cloak ng-hide="resultType!='logDetail'">
+    <h2 class="ui header" ng-click="closeDetail()"><i class="ui link left red arrow icon"></i>Detail</h2>
+
+    <div class="ui raised segment">
+        <a class="ui teal ribbon label">Application</a>
+        <p>{[{ logDetail.application }]}</p>
+
+        <a class="ui red ribbon label">Level</a>
+        <p>{[{ logDetail.level }]}</p>
+
+        <a class="ui orange ribbon label">Message</a>
+        <p>{[{ logDetail.message }]}</p>
+
+        <span ng-repeat="(tag,value) in logDetail.tags">
+            <a class="ui yellow ribbon label">#{[{tag}]}</a>
+            <p>{[{ value }]}</p>
+        </span>
+        </br/>
+        <a class="ui blue ribbon label" ng-if="logDetail.stack!=undefined">Stack</a>
+        <p ng-bind-html="logDetail.stack['stacktrace'] | code | unsafe"></p>
+    </div>
+</div>

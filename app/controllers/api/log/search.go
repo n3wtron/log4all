@@ -3,7 +3,6 @@ package log
 import (
 	"github.com/revel/revel"
 	"io/ioutil"
-	"log"
 	"encoding/json"
 	"log4all/app/models"
 	"log4all/app/utils"
@@ -62,7 +61,7 @@ func parseQuery(query string, mongoDbQuery map[string]interface{}){
 
 func getQuery(srcParams *LogSearchParam) map[string]interface{} {
 	// date conversion
-	log.Printf("orig:%v",srcParams)
+	revel.TRACE.Printf("orig:%v",srcParams)
 	dtSince := time.Unix(srcParams.DtSince,0)
 	dtTo := time.Unix(srcParams.DtTo,0)
 	applicationLst := strings.Split(srcParams.Applications,",")
@@ -82,8 +81,7 @@ func getQuery(srcParams *LogSearchParam) map[string]interface{} {
 		}
 	}
 	parseQuery(srcParams.Query, query)
-	log.Printf("%v",query)
-	
+	revel.TRACE.Printf("%v",query)
 	
 	return query
 }

@@ -1,0 +1,68 @@
+package auth
+
+import (
+	"github.com/revel/revel"
+	"io/ioutil"
+	"io"
+	"encoding/hex"
+	"encoding/json"
+	"log4all/app/models"
+	"log4all/app/controllers"
+	"crypto/md5"
+	"gopkg.in/mgo.v2"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/fatih/structs"
+	"time"
+)
+
+type AuthApi struct {
+	controllers.DbController
+}
+
+type LoginRequest struct{
+	Username	string
+	Password	string
+}
+
+func init(){
+}
+
+func (this *AuthApi) Login() revel.Result{
+	result := make(map[string]interface{})
+	byteBody, _ := ioutil.ReadAll(this.Request.Body)
+	loginReq := new(LoginRequest)
+	err := json.Unmarshal(byteBody,&loginReq)
+	revel.INFO.Printf("login :%v",loginReq)
+	srcUserQry := make(map[string]interface{})
+	srcUserQry["email"] = loginReq.Username
+	md5Pwd := md5.New()
+	io.WriteString(md5Pwd,loginReq.Password)
+	srcUserQry["password"] = hex.EncodeToString(md5Pwd.Sum(nil))
+	revel.INFO.Printf("src User :%v",srcUserQry)
+	user,err := models.GetUser(this.Db, srcUserQry)
+	
+	if err !=nil {
+		result["success"]=false
+		if err == mgo.ErrNotFound{
+			result["message"]="Authentication failed"
+		}else{
+			result["message"]=err.Error()
+		}
+	}else{
+		//JWT token
+		jwtToken := jwt.New(jwt.SigningMethodHS256)
+		jwtToken.Claims = structs.Map(user)
+		jwtToken.Claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+		jwtStr,err := jwtToken.SignedString([]byte(revel.Config.StringDefault("jwt.secret","")))
+		if err !=nil{
+			revel.ERROR.Println(jwtToken)
+			result["success"] = false
+			result["message"] = err.Error()
+		}else{
+			result["success"] = true
+			result["result"] = jwtStr
+		}
+	}
+	
+	return this.RenderJson(result)
+}

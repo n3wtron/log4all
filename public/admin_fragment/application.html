@@ -1,0 +1,48 @@
+<div class="ui segment" ng-controller="ApplicationController">
+    <h2 class="ui header">Edit Application</h2>
+
+    <div class="ui form">
+        <div class="field">
+            <label>Name</label>
+            <input type="text" ng-model="application.name"/>
+        </div>
+        <div class="field">
+            <label>Description</label>
+            <input type="text" ng-model="application.description"/>
+        </div>
+        <div class="field">
+            <label>Token</label>
+            <input type="text" ng-model="application.token"/>
+        </div>
+
+    </div>
+    <h2 class="ui header">Configuration</h2>
+
+    <div class="ui buttons">
+        <div class="ui button" ng-class="{green:currentConfigurationLevel=='DEBUG'}"
+             ng-click="changeConfiguration('DEBUG')">Debug
+        </div>
+        <div class="ui button" ng-class="{blue:currentConfigurationLevel=='INFO'}"
+             ng-click="changeConfiguration('INFO')">Info
+        </div>
+        <div class="ui button" ng-class="{orange:currentConfigurationLevel=='WARNING'}"
+             ng-click="changeConfiguration('WARNING')">Warning
+        </div>
+        <div class="ui button" ng-class="{red:currentConfigurationLevel=='ERROR'}"
+             ng-click="changeConfiguration('ERROR')">Error
+        </div>
+    </div>
+    <div class="ui bottom attached segment form">
+        <div class="field">
+            <label>Archive after (days)</label>
+            <input type="number" ng-model="currentConfiguration.archive"/>
+        </div>
+        <div class="field">
+            <label>Delete after (days)</label>
+            <input type="number" ng-model="currentConfiguration.delete"/>
+        </div>
+    </div>
+
+    <div class="ui green icon right button" ng-click="updateApplication()"><i class="ui save icon"></i>Save</div>
+    <div class="ui segment animate-hide" ng-class="{red:!result.success,green:result.success}" ng-hide="result.message == null">{[{ result.message }]}</div>
+</div>

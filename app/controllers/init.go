@@ -13,7 +13,6 @@ type DbController struct {
 }
 
 
-
 var mongoDb *mgo.Database
 
 func InitDB() {
@@ -27,6 +26,7 @@ func InitDB() {
 	
 	models.CreateTagIndexes(mongoDb)
 	models.CreateStackIndexes(mongoDb)
+	models.CreateApplicationIndexes(mongoDb)
 	
 }
 

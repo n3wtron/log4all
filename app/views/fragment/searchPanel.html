@@ -1,0 +1,138 @@
+<div class="ui  segment attached">
+    <div class="ui basic segment attached" style="border: none;margin: -10px;">
+        <h2 class="ui right floated header right aligned" style="margin-right: -30px;">
+            <i class="link icon" ng-class="{'up arrow':!searchHidden,'down arrow':searchHidden}"
+               ng-click="searchHidden=!searchHidden"></i>
+        </h2>
+
+        <h2 class="ui left floated header">
+            <i class="ui search blue icon"></i> Search
+        </h2>
+    </div>
+
+    <div class="ui form " id="searchFrm" ng-cloak ng-hide="searchHidden" style="margin-bottom: -10px;">
+        <div class="two fields">
+            <div class="field">
+                <label>Since</label>
+                <input type="text" class="datetimepicker" id="dtSinceFld"/>
+            </div>
+            <div class="field">
+                <label>To</label>
+                <input type="text" class="datetimepicker" id="dtToFld"/>
+            </div>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                <label>Application</label>
+                <angucomplete-alt id="applications"
+                     type="text"
+                                  placeholder="Applications"
+                                  pause="400"
+                                  selected-object="updateApplication"
+                                  remote-url="helper_applications_autocomplete?searchstr="
+                                  remote-url-data-field="results"
+                                  title-field="field"
+                                  input-class=""/>
+            </div>
+            <div class="field">
+                <label>Levels</label>
+
+                <div class="ui buttons">
+                    <div class="ui button" ng-click="updateLevel('DEBUG')" ng-class="{green:levelIsEnabled('DEBUG')}">
+                        DEBUG
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('INFO')" ng-class="{blue:levelIsEnabled('INFO')}">
+                        INFO
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('WARN')" ng-class="{orange:levelIsEnabled('WARN')}">
+                        WARN
+                    </div>
+                    <div class="ui button" ng-click="updateLevel('ERROR')" ng-class="{red:levelIsEnabled('ERROR')}">
+                        ERROR
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="two fields">
+            <div class="field">
+                <label>Sort Field</label>
+
+                <div class="ui search selection dropdown" id="sortFld">
+                    <input type="hidden" name="sort">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">{[{src_query.sort_field}]}</div>
+                    <div class="menu">
+                        <div class="item" data-value="date">date</div>
+                        <div class="item" data-value="application">application</div>
+                        <div class="item" data-value="level">level</div>
+                        <div class="item" data-value="tags.{[{tag.tag_name}]}" ng-repeat="tag in tags">#{[{ tag.tag_name
+                            }]}
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    $('#sortFld').dropdown({
+                        onChange: function (value, text, choice) {
+                            $(this).scope().src_query.sort_field = value;
+                            console.log($(this).scope().src_query);
+                        }
+                    });
+                </script>
+            </div>
+            <div class="field">
+                <label>Sort Direction</label>
+                <div class="ui checkbox" id="sortDirectionFld">
+                  <input type="checkbox" ng-model="src_query.sort_ascending">
+                  <label>Ascending</label>
+                </div>
+                <script>
+                    $('#sortDirectionFld').checkbox({
+                       onChange:function(){
+                            $(this).scope().src_query.sort_ascending = $('#sortDirectionFld').checkbox('is checked');
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Query</label>
+            <input type="text" ng-model="src_query.query"/>
+        </div>
+
+
+        <div class="field" style="text-align: center;margin-bottom: -10px;">
+            <div class="ui buttons">
+                <div class="ui icon green button" ng-click="search();"><i class="ui search icon"></i>&nbsp;Search&nbsp;&nbsp;
+                </div>
+                <div class="or"></div>
+                <div class="ui icon red button" ng-click="tail();"><i class="ui content icon"></i>&nbsp;&nbsp;Tail&nbsp;
+                </div>
+                <div class="or"></div>
+                <div class="ui icon  button" ng-click="resetSearch()"><i class="ui recycle icon"></i>&nbsp;&nbsp;Reset&nbsp;
+                </div>
+            </div>
+        </div>
+        <script>
+            $('#dtSinceFld').datetimepicker({
+                onChangeDateTime:function(since){
+                    if (since != undefined) {
+                        $(this).scope().src_query.dt_since = since.getTime();
+                    }else{
+                        $(this).scope().src_query.dt_since = since;
+                    }
+                }
+            });
+            $('#dtToFld').datetimepicker({
+                onChangeDateTime:function(to){
+                    if (to != undefined) {
+                        $(this).scope().src_query.dt_to = to.getTime();
+                    }else{
+                        $(this).scope().src_query.dt_to = to;
+                    }
+                }
+            });
+        </script>
+    </div>
+</div>
