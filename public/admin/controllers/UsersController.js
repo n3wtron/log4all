@@ -10,7 +10,9 @@ Log4AllAdmin.controller('UsersController', function ($scope, $http, $location,lo
                 updateUsers();
                 $('#addUserModal').modal('hide');
                 $location.path('users/' + data.user['_id']);
-            }
+            }else{
+				alert(data.message);
+			}
         },function(error){
            alert(error);
         });
@@ -26,7 +28,11 @@ Log4AllAdmin.controller('UsersController', function ($scope, $http, $location,lo
 
     function updateUsers() {
         log4AllUserService.getAll().then(function (data) {
-            $scope.users = data;
+			if (data.success){
+            	$scope.users = data.result;
+			}else{
+				alert(data.message);
+			}
         },function(error){
             alert(error);
         });

@@ -5,7 +5,11 @@ Log4AllAdmin.controller('GroupController', function ($scope, $http, $routeParams
     $scope.group = {};
 
     log4AllGroupService.get($routeParams.groupId).then(function (data) {
-        $scope.group = data;
+		if (data.success){
+        	$scope.group = data.result;
+		}else{
+			alert(data.message);
+		}
     });
 
     $scope.updateGroup = function () {

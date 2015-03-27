@@ -22,8 +22,6 @@ func CreateStackIndexes(db *mgo.Database) error{
 	return db.C("stacktraces").EnsureIndex(index)
 }
 
-
-
 func (this *Stack) ToJson() map[string]interface{}{
 	result := make(map[string]interface{})
 	result["stacktrace"] = this.Stacktrace

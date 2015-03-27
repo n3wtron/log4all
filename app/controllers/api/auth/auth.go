@@ -39,7 +39,7 @@ func (this *AuthApi) Login() revel.Result{
 	io.WriteString(md5Pwd,loginReq.Password)
 	srcUserQry["password"] = hex.EncodeToString(md5Pwd.Sum(nil))
 	revel.INFO.Printf("src User :%v",srcUserQry)
-	user,err := models.GetUser(this.Db, srcUserQry)
+	user,err := models.FindUser(this.Db, srcUserQry)
 	
 	if err !=nil {
 		result["success"]=false
@@ -63,6 +63,13 @@ func (this *AuthApi) Login() revel.Result{
 			result["result"] = jwtStr
 		}
 	}
+	
+	return this.RenderJson(result)
+}
+
+func (this *AuthApi) GetPermissions() revel.Result{
+	result := make([]string,1)
+	result[0] = "admin"
 	
 	return this.RenderJson(result)
 }

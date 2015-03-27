@@ -19,6 +19,8 @@ type ApplicationConfiguration struct{
 }
 
 type Application struct{
+	BasicModel									`bson:"-"`
+	Id				bson.ObjectId				`json:"_id" bson:"_id"`
 	Name 			string 						`json:"name"`
 	Description 	string						`json:"description"`
 	Token			string						`json:"token"`
@@ -35,8 +37,24 @@ func CreateApplicationIndexes(db *mgo.Database) error{
 	return db.C("applications").EnsureIndex(index)
 }
 
-func (this *Application) Save(db *mgo.Database){
-	db.C("applications").Insert(this)
+func (this *Application) Save(db *mgo.Database) error{
+	this.Id = bson.NewObjectId()
+	return db.C("applications").Insert(this)
+}
+
+func (this *Application) Update(db *mgo.Database,id string) error{
+	return db.C("applications").Update(bson.M{"_id":bson.ObjectIdHex(id)},this)
+}
+
+func DeleteApplication(db *mgo.Database, id string) error{
+	err := db.C("applications").Remove(bson.M{"_id":bson.ObjectIdHex(id)})
+	return err
+}
+
+func GetApplicationById(db *mgo.Database, id string) (Application,error){
+	var result Application
+	err := db.C("applications").Find(bson.M{"_id":bson.ObjectIdHex(id)}).One(&result)
+	return result,err
 }
 
 func GetApplications(db *mgo.Database) ([]Application,error){

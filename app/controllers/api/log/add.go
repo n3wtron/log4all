@@ -11,7 +11,6 @@ import (
 	"errors"
 	"encoding/json"
 	"time"
-	
 )
 
 type RawLog struct{
@@ -178,5 +177,3 @@ func (ctrl ApiLog) AddLogs() revel.Result {
 	
 	return ctrl.RenderJson(result)
 }
-
-

@@ -5,7 +5,11 @@ Log4AllAdmin.controller('UserController', function ($scope, $http, $routeParams,
     $scope.user = {};
 
     log4AllUserService.get($routeParams.userId).then(function (data) {
-        $scope.user = data;
+		if (data.success){
+        	$scope.user = data.result;
+		}else{
+			alert(data.message)
+		}
     }, function (error) {
         alert(error);
     });
@@ -51,8 +55,12 @@ Log4AllAdmin.controller('UserController', function ($scope, $http, $routeParams,
         }
     };
 
-    log4AllGroupService.getAll().then(function (groups) {
-        $scope.groups = groups;
+    log4AllGroupService.getAll().then(function (data) {
+		if (data.success){
+        	$scope.groups = data.result;
+		}else{
+			alert(data.message);
+		}
     }, function (error) {
         alert(error);
     });

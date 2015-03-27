@@ -1,13 +1,8 @@
 package models
 
 import (
-	
-//	"log"
 	"time"
-	
 	"gopkg.in/mgo.v2"
-	
-	//"gopkg.in/mgo.v2/bson"
 )
 
 
@@ -25,7 +20,6 @@ func (this *Log) Save(db *mgo.Database) error{
 	err := db.C("logs").Insert(this)
 	return err
 }
-
 
 
 func SearchLog(db *mgo.Database,query map[string]interface{}, sortField string, sortAscending bool, page int, maxResult int) ([]Log,error) {

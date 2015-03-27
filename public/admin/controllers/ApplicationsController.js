@@ -10,7 +10,7 @@ Log4AllAdmin.controller('ApplicationsController', function ($scope, $http, $loca
             if (data['success']) {
                 updateApplications();
                 $('#addApplicationModal').modal('hide');
-                $location.path('applications/' + data.application['_id']);
+                $location.path('applications/' + data.result['_id']);
             }
         }, function (error) {
             alert(error);
@@ -27,7 +27,11 @@ Log4AllAdmin.controller('ApplicationsController', function ($scope, $http, $loca
 
     function updateApplications() {
         log4AllApplicationService.getAll().then(function (data) {
-            $scope.applications = data;
+			if (data['success']) {
+            	$scope.applications = data['result'];
+			}else{
+				alert(data['message']);
+			}
         }, function (error) {
             alert(error);
         });

@@ -27,6 +27,8 @@ func InitDB() {
 	models.CreateTagIndexes(mongoDb)
 	models.CreateStackIndexes(mongoDb)
 	models.CreateApplicationIndexes(mongoDb)
+	models.CreateGroupIndexes(mongoDb)
+	models.CreateUserIndexes(mongoDb)
 	
 }
 

@@ -13,22 +13,16 @@ Log4AllAdmin.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/applications', {
             templateUrl: "/public/admin_fragment/applications.html",
-            controller: 'ApplicationsController'
         }).when('/applications/:applicationId', {
             templateUrl: "/public/admin_fragment/application.html",
-            controller: 'ApplicationController'
         }).when('/groups/', {
             templateUrl: "/public/admin_fragment/groups.html",
-            controller: 'GroupsController'
         }).when('/groups/:groupId', {
             templateUrl: "/public/admin_fragment/group.html",
-            controller: 'GroupController'
         }).when('/users/', {
             templateUrl: "/public/admin_fragment/users.html",
-            controller: 'UsersController'
         }).when('/users/:userId', {
             templateUrl: "/public/admin_fragment/user.html",
-            controller: 'UserController'
         });
 }]);
 

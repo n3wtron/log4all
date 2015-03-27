@@ -20,8 +20,29 @@ PUT     /api/logs                               ApiLog.AddLogs
 POST	/api/logs/search						ApiLog.Search
 
 POST	/api/auth/login							AuthApi.Login
+GET		/api/auth/permissions					AuthApi.GetPermissions
 
-GET		/api/applications						ApplicationApi.List
+## Application
+GET		/api/applications						AdminApi.List("application")
+PUT		/api/application						AdminApi.Add("application")
+GET		/api/application/:id					AdminApi.Get("application")
+POST	/api/application/:id					AdminApi.Update("application")
+DELETE	/api/application/:id					AdminApi.Delete("application")
+
+## Group
+GET		/api/groups								AdminApi.List("group")
+PUT		/api/group								AdminApi.Add("group")
+GET		/api/group/:id							AdminApi.Get("group")
+POST	/api/group/:id							AdminApi.Update("group")
+DELETE	/api/group/:id							AdminApi.Delete("group")
+
+## User
+GET		/api/users								AdminApi.List("user")
+PUT		/api/user								AdminApi.Add("user")
+GET		/api/user/:id							AdminApi.Get("user")
+POST	/api/user/:id							AdminApi.Update("user")
+DELETE	/api/user/:id							AdminApi.Delete("user")
+
 
 # Catch all
 *       /:controller/:action                    :controller.:action

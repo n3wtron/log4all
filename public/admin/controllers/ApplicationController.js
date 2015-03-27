@@ -5,11 +5,15 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
     $scope.application = {};
 
     log4AllApplicationService.get($routeParams.applicationId).then(function (data) {
-        $scope.application = data;
-        if ($scope.application.configuration == null) {
-            $scope.application.configuration = {};
-        }
-        $scope.changeConfiguration("DEBUG");
+		if (data.success){
+			$scope.application = data.result;
+			if ($scope.application.configuration == null) {
+				$scope.application.configuration = {};
+			}
+			$scope.changeConfiguration("debug");
+		}else{
+			alert(data.message);
+		}
     },function(error){
         alert(error);
     });
