@@ -2,16 +2,16 @@
  * Created by igor on 12/23/14.
  */
 
-log4AllURL = "http://localhost:9000";
+ log4AllURL = "http://localhost:9000";
 
-var log4all = angular.module('log4all', ["angucomplete-alt", "ngAnimate","Log4AllServiceModule"]);
+ var log4all = angular.module('log4all', ["angucomplete-alt", "ngAnimate","Log4AllServiceModule"]);
 
-log4all.config(function ($interpolateProvider) {
+ log4all.config(function ($interpolateProvider) {
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
 });
 
-log4all.filter('code', function () {
+ log4all.filter('code', function () {
     return function (text) {
         if (text != undefined) {
             return text.replace(new RegExp('\n', 'g'), '<br/>')
@@ -21,13 +21,13 @@ log4all.filter('code', function () {
     }
 });
 
-log4all.filter('unsafe', function ($sce) {
+ log4all.filter('unsafe', function ($sce) {
     return function (val) {
         return $sce.trustAsHtml(val);
     };
 });
 
-log4all.controller('LogController', function ($scope, $location, $http, $interval,Log4AllService) {
+ log4all.controller('LogController', function ($scope, $location, $http, $interval,Log4AllService) {
     $scope.resultType = null;
     $scope.followLog = false;
     var tailRefresh;
@@ -57,7 +57,7 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
             $scope.tags = data;
         });
     };
-    $scope.getTags();
+    //$scope.getTags();
 
     $scope.addTagInQuery = function (tag) {
         $scope.src_query.query += " #" + tag;
@@ -78,9 +78,9 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
 
     $scope.updateApplication = function (selected) {
         if (selected != null) {
-            $scope.src_query.applications = selected.originalObject.field;
+            $scope.src_query.applications = selected.originalObject.name.split(" ");
         } else {
-            $scope.src_query.applications = null;
+            $scope.src_query.applications = [];
         }
     };
 
@@ -104,45 +104,39 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
             $interval.cancel(tailRefresh);
             tailRefresh = undefined;
         }
-		
-		Log4AllService.searchLog($scope.src_query).then(function (data) {
-            if (data.success == false) {
-                $scope.resultType = 'error';
-                $scope.errorMessage = data.message;
-            } else {
+
+        Log4AllService.searchLog($scope.src_query.applications,
+            $scope.src_query.levels,
+            $scope.src_query.dt_since,
+            $scope.src_query.dt_to,
+            $scope.src_query.query,
+            $scope.src_query.page,
+            $scope.src_query.max_result,
+            $scope.src_query.sort_field,
+            $scope.src_query.sort_ascending).then(function (data) {
+                console.log(data)
                 $scope.resultType = 'searchResult';
                 $scope.errorMessage = null;
+                $scope.logs = data.logs;
+                $scope.resultTags = data.tags;
+            },function(error){
+                $scope.resultType = 'error';
+                $scope.errorMessage = error;
+           });
 
-                var tags = new Set();
-                angular.forEach(data.result, function (log) {
-                    angular.forEach(log.tags, function (key, value) {
-                        tags.add(value);
-                    });
-                });
-                $scope.resultTags = [];
-                tags.forEach(function (tag) {
-                    $scope.resultTags.push(tag);
-                });
-                $scope.src_query.tags = $scope.tags;
-                $scope.logs = data.result;
+        };
+
+
+        $scope.tail = function () {
+            $scope.tailLogs = [];
+            if (angular.isDefined(tailRefresh)) {
+                return;
             }
-        },function(error){
-			alert(error)
-		});
-		
-    };
-
-
-    $scope.tail = function () {
-        $scope.tailLogs = [];
-        if (angular.isDefined(tailRefresh)) {
-            return;
-        }
-        $scope.src_query.dt_since = new Date().getTime();
-        var newLog = false;
-        $scope.resultType = 'tailResult';
-        tailRefresh = $interval(function () {
-            if (newLog && $scope.followLog) {
+            $scope.src_query.dt_since = new Date().getTime();
+            var newLog = false;
+            $scope.resultType = 'tailResult';
+            tailRefresh = $interval(function () {
+                if (newLog && $scope.followLog) {
                 //scroll to bottom
                 window.scrollTo(0, document.body.scrollHeight);
             }
@@ -167,54 +161,54 @@ log4all.controller('LogController', function ($scope, $location, $http, $interva
                 }
             });
 */
-        }, 1000);
-    };
+}, 1000);
+};
 
-    function getStack(log) {
-        if (log['stack_sha'] != undefined) {
-            $http.get(getApiUrl($location, 'stack?sha=' + log['stack_sha'])).success(function (data) {
-                log['stack'] = data;
-            });
-        } else {
-            log['stack'] = undefined;
-        }
+function getStack(log) {
+    if (log['stack_sha'] != undefined) {
+        $http.get(getApiUrl($location, 'stack?sha=' + log['stack_sha'])).success(function (data) {
+            log['stack'] = data;
+        });
+    } else {
+        log['stack'] = undefined;
     }
+}
 
-    $scope.showDetail = function (log) {
-        $scope.prevSearchHidden = $scope.searchHidden;
-        $scope.searchHidden = true;
-        $scope.logDetail = log;
-        getStack($scope.logDetail);
-        $scope.prevResultType = $scope.resultType;
-        $scope.resultType = "logDetail";
-    };
+$scope.showDetail = function (log) {
+    $scope.prevSearchHidden = $scope.searchHidden;
+    $scope.searchHidden = true;
+    $scope.logDetail = log;
+    getStack($scope.logDetail);
+    $scope.prevResultType = $scope.resultType;
+    $scope.resultType = "logDetail";
+};
 
-    $scope.closeDetail = function () {
-        if ($scope.searchHidden != $scope.prevSearchHidden) {
-            $scope.searchHidden = $scope.prevSearchHidden;
-        }
-        $scope.resultType = $scope.prevResultType;
-    };
+$scope.closeDetail = function () {
+    if ($scope.searchHidden != $scope.prevSearchHidden) {
+        $scope.searchHidden = $scope.prevSearchHidden;
+    }
+    $scope.resultType = $scope.prevResultType;
+};
 
-    $scope.changePage = function (page) {
-        if (page < 0) {
-            $scope.src_query.page = 0;
-        } else {
-            $scope.src_query.page = page;
-        }
-        if ($scope.src_query.dt_since != null && $scope.src_query.dt_to != null) {
-            $scope.search();
-        }
-    };
-    $scope.sortResult = function (field) {
-        if ($scope.src_query.sort_field == field) {
-            $scope.src_query.sort_ascending = !$scope.src_query.sort_ascending;
-        } else {
-            $scope.src_query.sort_field = field;
-            $scope.src_query.sort_ascending = true;
-        }
+$scope.changePage = function (page) {
+    if (page < 0) {
+        $scope.src_query.page = 0;
+    } else {
+        $scope.src_query.page = page;
+    }
+    if ($scope.src_query.dt_since != null && $scope.src_query.dt_to != null) {
         $scope.search();
     }
+};
+$scope.sortResult = function (field) {
+    if ($scope.src_query.sort_field == field) {
+        $scope.src_query.sort_ascending = !$scope.src_query.sort_ascending;
+    } else {
+        $scope.src_query.sort_field = field;
+        $scope.src_query.sort_ascending = true;
+    }
+    $scope.search();
+}
 });
 
 log4all.controller('AddLogController', function ($scope, $http, $location,Log4AllService) {
@@ -228,7 +222,7 @@ log4all.controller('AddLogController', function ($scope, $http, $location,Log4Al
     };
     $scope.addLog = function (level) {
         $scope.log.level = level;
-		Log4AllService.addLog($scope.log).then(function (data) {
+        Log4AllService.addLog($scope.log).then(function (data) {
             console.log(data);
             if (!data.success) {
                 $scope.inError = true;
@@ -240,7 +234,7 @@ log4all.controller('AddLogController', function ($scope, $http, $location,Log4Al
                 $('#addLogPanel').modal('hide');
             }
         },function(error){
-			alert(error)
-		});
+           alert(error)
+       });
     };
 });

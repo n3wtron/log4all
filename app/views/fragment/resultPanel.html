@@ -20,7 +20,7 @@
         <script>
             $('.ui.dropdown').dropdown();
             $('#maxResultFld').change(function(){
-               $(this).scope().src_query.max_result=$('#maxResultFld').val();
+               $(this).scope().src_query.max_result=parseInt($('#maxResultFld').val());
                $(this).scope().search();
             });
         </script>

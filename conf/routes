@@ -43,6 +43,9 @@ GET		/api/user/:id							AdminApi.Get("user")
 POST	/api/user/:id							AdminApi.Update("user")
 DELETE	/api/user/:id							AdminApi.Delete("user")
 
+# HELPER
+GET    	/helper/applications/autocomplete/:currText		ApplicationHelper.Autocomplete
+
 
 # Catch all
 *       /:controller/:action                    :controller.:action

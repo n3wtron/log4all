@@ -12,24 +12,32 @@ type DbController struct {
 	Db *mgo.Database
 }
 
-
 var mongoDb *mgo.Database
 
 func InitDB() {
 	mongoSession, err := mgo.Dial("localhost")
 	if err != nil {
-		log.Fatal("Error Initializing DB")
-		panic(err)
+		goto finish
 	}
 	mongoDb = mongoSession.DB("log4all")
-	log.Printf("Db initialized")
-	
+
+	err = models.CreateTailTable(mongoDb)
+	if err != nil {
+		goto finish
+	}
 	models.CreateTagIndexes(mongoDb)
 	models.CreateStackIndexes(mongoDb)
 	models.CreateApplicationIndexes(mongoDb)
 	models.CreateGroupIndexes(mongoDb)
 	models.CreateUserIndexes(mongoDb)
-	
+
+finish:
+	if err != nil {
+		revel.ERROR.Println("Error Initializing DB")
+		revel.ERROR.Panic(err)
+	} else {
+		log.Printf("Db initialized")
+	}
 }
 
 func (c *DbController) Begin() revel.Result {

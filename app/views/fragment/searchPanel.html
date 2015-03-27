@@ -28,10 +28,12 @@
                      type="text"
                                   placeholder="Applications"
                                   pause="400"
+                                  minlength="1"
                                   selected-object="updateApplication"
-                                  remote-url="helper_applications_autocomplete?searchstr="
+                                  remote-url="/helper/applications/autocomplete/"
                                   remote-url-data-field="results"
-                                  title-field="field"
+                                  title-field="name"
+                                  description-field="description"
                                   input-class=""/>
             </div>
             <div class="field">
