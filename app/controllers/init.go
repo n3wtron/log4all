@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
 	"log"
 	"log4all/app/models"
+	"os"
 )
 
 type DbController struct {
@@ -15,7 +17,17 @@ type DbController struct {
 var mongoDb *mgo.Database
 
 func InitDB() {
-	mongoSession, err := mgo.Dial("localhost")
+	var err error
+	var mongoSession *mgo.Session
+	dbConnectionUrl, found := revel.Config.String("db.connectionUrl")
+	if !found {
+		dbConnectionUrl = os.Getenv("L4AL_DB_CONNECTION")
+	}
+	if dbConnectionUrl == "" {
+		err = errors.New("No MongoDB connection Url found on config file (db.ConnectionUrl) or in the L4AL_DB_CONNECTION env variable")
+		goto finish
+	}
+	mongoSession, err = mgo.Dial(dbConnectionUrl)
 	if err != nil {
 		goto finish
 	}

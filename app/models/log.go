@@ -13,6 +13,7 @@ type Log struct {
 	Date        time.Time              `json:"date" bson:"date"`
 	Tags        map[string]interface{} `json:"tags" bson:"tags"`
 	StackSha    string                 `json:"stack_sha" bson:"stack_sha"`
+	DtInsert    time.Time              `json:"-" bson:"_dt_insert"`
 }
 
 func CreateTailTable(db *mgo.Database) error {
@@ -39,11 +40,12 @@ func CreateTailTable(db *mgo.Database) error {
 
 func (this *Log) Save(db *mgo.Database) error {
 	//insert on tail_logs
+	this.DtInsert = time.Now()
 	db.C("tail_logs").Insert(this)
 	return db.C("logs").Insert(this)
 }
 
-func SearchLog(db *mgo.Database, query map[string]interface{}, sortField string, sortAscending bool, page int, maxResult int) ([]Log, error) {
+func SearchLog(db *mgo.Database, tail bool, query map[string]interface{}, sortField string, sortAscending bool, page int, maxResult int) ([]Log, error) {
 	var sort string
 	if !sortAscending {
 		sort = "-" + sortField
@@ -54,6 +56,11 @@ func SearchLog(db *mgo.Database, query map[string]interface{}, sortField string,
 		sort = "-date"
 	}
 	var queryResult []Log
-	err := db.C("logs").Find(query).Sort(sort).Skip(page * maxResult).Limit(maxResult).All(&queryResult)
+	var err error
+	if !tail {
+		err = db.C("logs").Find(query).Sort(sort).Skip(page * maxResult).Limit(maxResult).All(&queryResult)
+	} else {
+		err = db.C("tail_logs").Find(query).Sort("date").All(&queryResult)
+	}
 	return queryResult, err
 }

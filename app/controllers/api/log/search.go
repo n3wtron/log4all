@@ -59,16 +59,26 @@ func parseQuery(query string, mongoDbQuery map[string]interface{}) {
 	}
 }
 
-func getQuery(srcParams *LogSearchParam) map[string]interface{} {
+func getQuery(srcParams *LogSearchParam, tail bool) map[string]interface{} {
 	// date conversion
 	revel.TRACE.Printf("orig:%v", srcParams)
 	dtSince := time.Unix(srcParams.DtSince/1000, 0)
 	dtTo := time.Unix(srcParams.DtTo/1000, 0)
-	query := map[string]interface{}{
-		"date": map[string]time.Time{
-			"$gte": dtSince,
-			"$lte": dtTo,
-		},
+	var query map[string]interface{}
+	if tail {
+		query = map[string]interface{}{
+			"_dt_insert": map[string]time.Time{
+				"$gte": dtSince,
+				"$lte": dtTo,
+			},
+		}
+	} else {
+		query = map[string]interface{}{
+			"date": map[string]time.Time{
+				"$gte": dtSince,
+				"$lte": dtTo,
+			},
+		}
 	}
 	if len(srcParams.Applications) > 0 {
 		query["application"] = map[string]([]string){
@@ -84,7 +94,7 @@ func getQuery(srcParams *LogSearchParam) map[string]interface{} {
 	return query
 }
 
-func (ctrl ApiLog) Search() revel.Result {
+func (ctrl ApiLog) Search(tail bool) revel.Result {
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
 	revel.INFO.Printf("SrcParams:%s", byteBody)
@@ -92,8 +102,9 @@ func (ctrl ApiLog) Search() revel.Result {
 	err := json.Unmarshal(byteBody, srcParams)
 	var logs []models.Log
 	if err == nil {
-		query := getQuery(srcParams)
-		logs, err = models.SearchLog(ctrl.Db, query, srcParams.SortField, srcParams.SortAscending, srcParams.Page, srcParams.MaxResult)
+		query := getQuery(srcParams, tail)
+		revel.INFO.Printf("query:%v", query)
+		logs, err = models.SearchLog(ctrl.Db, tail, query, srcParams.SortField, srcParams.SortAscending, srcParams.Page, srcParams.MaxResult)
 	}
 
 	result["success"] = err == nil
