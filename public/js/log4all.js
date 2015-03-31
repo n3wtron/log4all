@@ -2,7 +2,7 @@
          * Created by igor on 12/23/14.
          */
 
-        log4AllURL = "http://localhost:9000";
+        log4AllURL = "";
 
         var log4all = angular.module('log4all', ["angucomplete-alt", "ngAnimate", "Log4AllServiceModule"]);
 
