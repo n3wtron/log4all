@@ -31,7 +31,7 @@ func InitDB() {
 	if err != nil {
 		goto finish
 	}
-	mongoDb = mongoSession.DB("log4all")
+	mongoDb = mongoSession.DB("")
 
 	err = models.CreateTailTable(mongoDb)
 	if err != nil {
