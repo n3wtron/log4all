@@ -1,9 +1,14 @@
 package app
 
-import(
-"github.com/revel/revel"
+import (
+	//"github.com/revel/modules/jobs/app/jobs"
+	"github.com/revel/revel"
+	//myjob "log4all/app/jobs"
 )
 
+func InitJobs() {
+	//jobs.Schedule("@every 1s", myjob.TestJob{})
+}
 
 func init() {
 	// Filters is the default set of global filters.
@@ -26,6 +31,7 @@ func init() {
 	// ( order dependent )
 	//revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
+	revel.OnAppStart(InitJobs)
 }
 
 // TODO turn this into revel.HeaderFilter

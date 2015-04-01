@@ -10,7 +10,6 @@
             $interpolateProvider.startSymbol('{[{');
             $interpolateProvider.endSymbol('}]}');
         });
-
         log4all.filter('code', function() {
             return function(text) {
                 if (text != undefined) {
@@ -20,13 +19,11 @@
                 }
             }
         });
-
         log4all.filter('unsafe', function($sce) {
             return function(val) {
                 return $sce.trustAsHtml(val);
             };
         });
-
         log4all.controller('LogController', function($scope, $location, $http, $interval, Log4AllService) {
             $scope.resultType = null;
             $scope.followLog = false;
@@ -53,18 +50,22 @@
 
             // Retrieve all tags
             $scope.getTags = function() {
-                $http.get(getApiUrl($location, 'tags')).success(function(data) {
-                    $scope.tags = data;
+                $http.get('/api/tags').success(function(data) {
+                    console.log(data);
+                    $scope.tags = data.result;
                 });
             };
-            //$scope.getTags();
+            $scope.getTags();
 
             $scope.addTagInQuery = function(tag) {
                 $scope.src_query.query += " #" + tag;
             };
 
             $scope.addTagValueInQuery = function(tag, tagValue, searchAfter) {
-                var tag_src = "#" + tag + "=" + tagValue;
+                var tag_src = "#" + tag;
+                if (tagValue != "true" && tagValue != "false") {
+                    tag_src += "=" + tagValue;
+                }
                 if ($scope.src_query.query.indexOf(tag_src) > 0) {
                     $scope.src_query.query = $scope.src_query.query.replace(tag_src, "");
                     $scope.src_query.query = $scope.src_query.query.replace("  ", " ");
@@ -103,6 +104,11 @@
                 if (angular.isDefined(tailRefresh)) {
                     $interval.cancel(tailRefresh);
                     tailRefresh = undefined;
+                }
+
+                if (!($scope.src_query.dt_since > 0 && $scope.src_query.dt_to > 0)) {
+                    alert("Date range is mandatory");
+                    return;
                 }
 
                 Log4AllService.searchLog($scope.src_query.applications,
@@ -148,7 +154,7 @@
 
                     Log4AllService.tailLog($scope.src_query.applications,
                         $scope.src_query.levels,
-                        tailDtTo-1000,
+                        tailDtTo - 1000,
                         tailDtTo,
                         $scope.src_query.query,
                         $scope.src_query.max_result,
@@ -156,7 +162,7 @@
                         $scope.src_query.sort_ascending).then(function(data) {
                         if (data.success) {
                             console.log(data)
-                            //remove first 100 after 200
+                                //remove first 100 after 200
                             if ($scope.tailLogs.length > 200) {
                                 $scope.tailLogs.splice(0, 100);
                             }
@@ -182,8 +188,9 @@
 
             function getStack(log) {
                 if (log['stack_sha'] != undefined) {
-                    $http.get(getApiUrl($location, 'stack?sha=' + log['stack_sha'])).success(function(data) {
-                        log['stack'] = data;
+                    $http.get('/api/stack/' + log['stack_sha']).success(function(data) {
+                        log['stack'] = data.result;
+                        console.log(log)
                     });
                 } else {
                     log['stack'] = undefined;
@@ -242,7 +249,7 @@
                     console.log(data);
                     if (!data.success) {
                         $scope.inError = true;
-                        $scope.errorMessage = data.message;
+                        $scope.errorMessage = data.errorMessage;
                         alert($scope.errorMessage);
                     } else {
                         $scope.inError = false;

@@ -3,6 +3,7 @@
 # ~~~~
 
 module:testrunner
+module:jobs
 
 GET     /                                       App.Index
 
@@ -24,6 +25,12 @@ POST	/api/logs/tail							ApiLog.Search(true)
 
 POST	/api/auth/login							AuthApi.Login
 GET		/api/auth/permissions					AuthApi.GetPermissions
+
+## Stack
+GET 	/api/stack/:sha 						StackApi.Get
+
+## Tags
+GET 	/api/tags 								TagApi.List
 
 ## Application
 GET		/api/applications						AdminApi.List("application")
