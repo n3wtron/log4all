@@ -1,75 +1,48 @@
-# Welcome to Revel
+# Log4All Server
 
-## Getting Started
+Log management server
 
-A high-productivity web framework for the [Go language](http://www.golang.org/).
+## Quick start with docker
 
-### Start the web server:
+### pull docker image
 
-    revel run myapp
-
-   Run with <tt>--help</tt> for options.
-
-### Go to http://localhost:9000/ and you'll see:
-
-"It works"
-
-### Description of Contents
-
-The default directory structure of a generated Revel application:
-
-    myapp               App root
-      app               App sources
-        controllers     App controllers
-          init.go       Interceptor registration
-        models          App domain models
-        routes          Reverse routes (generated code)
-        views           Templates
-      tests             Test suites
-      conf              Configuration files
-        app.conf        Main configuration file
-        routes          Routes definition
-      messages          Message files
-      public            Public assets
-        css             CSS files
-        js              Javascript files
-        images          Image files
-
-app
-
-    The app directory contains the source code and templates for your application.
-
-conf
-
-    The conf directory contains the application’s configuration files. There are two main configuration files:
-
-    * app.conf, the main configuration file for the application, which contains standard configuration parameters
-    * routes, the routes definition file.
+    docker pull n3wtron/log4all
 
 
-messages
+### run docker
+    
+    docker run -d -e L4AL_DB_CONNECTION="mongodb://172.17.42.1/log4all" -p 9000:9000 n3wtron/log4all:latest
 
-    The messages directory contains all localized message files.
+### Open log4all console 
 
-public
+[http://localhost:9000](http://localhost:9000)
 
-    Resources stored in the public directory are static assets that are served directly by the Web server. Typically it is split into three standard sub-directories for images, CSS stylesheets and JavaScript files.
+## Clients
 
-    The names of these directories may be anything; the developer need only update the routes.
+## Java
+[https://github.com/n3wtron/log4all-client-java](https://github.com/n3wtron/log4all-client-java)
 
-test
+#### Maven
 
-    Tests are kept in the tests directory. Revel provides a testing framework that makes it easy to write and run functional tests against your application.
+    <dependency>
+        <groupId>net.log4all</groupId>
+        <artifactId>log4all-client</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </dependency>
 
-### Follow the guidelines to start developing your application:
+## Log4J
+[https://github.com/n3wtron/log4all-client-log4j](https://github.com/n3wtron/log4all-client-log4j)
 
-* The README file created within your application.
-* The [Getting Started with Revel](http://revel.github.io/tutorial/index.html).
-* The [Revel guides](http://revel.github.io/manual/index.html).
-* The [Revel sample apps](http://revel.github.io/samples/index.html).
-* The [API documentation](http://revel.github.io/docs/godoc/index.html).
+#### Maven
 
-## Contributing
-We encourage you to contribute to Revel! Please check out the [Contributing to Revel
-guide](https://github.com/revel/revel/blob/master/CONTRIBUTING.md) for guidelines about how
-to proceed. [Join us](https://groups.google.com/forum/#!forum/revel-framework)!
+    <dependency>
+        <groupId>net.log4all</groupId>
+        <artifactId>log4all-client-log4j</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+
+## AngularJS
+[https://github.com/n3wtron/angular-log4all](angular-log4al)
+
+## Python
+[https://github.com/n3wtron/log4all-client-python](https://github.com/n3wtron/log4all-client-python)
