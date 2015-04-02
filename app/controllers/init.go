@@ -19,6 +19,9 @@ var mongoDb *mgo.Database
 func InitDB() {
 	var err error
 	var mongoSession *mgo.Session
+	var collections []string
+	var userCollectionFound bool
+	var c int
 	dbConnectionUrl, found := revel.Config.String("db.connectionUrl")
 	if !found {
 		dbConnectionUrl = os.Getenv("L4AL_DB_CONNECTION")
@@ -32,6 +35,29 @@ func InitDB() {
 		goto finish
 	}
 	mongoDb = mongoSession.DB("")
+
+	//check if users table exists
+	collections, err = mongoDb.CollectionNames()
+	userCollectionFound = false
+
+	if err != nil {
+		goto finish
+	}
+	for c = range collections {
+		if collections[c] == "users" {
+			userCollectionFound = true
+			break
+		}
+	}
+	//add default admin user
+	if !userCollectionFound {
+		u := new(models.User)
+		u.Name = "Admin User"
+		u.Email = "admin"
+		u.Password = "admin"
+		u.Save(mongoDb)
+		revel.INFO.Println("default admin user created with password admin")
+	}
 
 	err = models.CreateTailTable(mongoDb)
 	if err != nil {
