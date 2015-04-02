@@ -47,33 +47,33 @@ def api_logs_add_options(request):
     return resp
 
 
-@view_config(route_name="api_logs_add", request_method="POST", renderer="json")
-def api_logs_add(request):
-    _log.debug(request.json)
-    application_name = request.json.get('application')
-    application_token = request.json.get('application_token')
-
-    if application_name is None or application_name == '':
-        resp = Response(json_body={'success': False, 'message': 'Application name is mandatory'})
-
-    application = request.applications(application_name)
-
-    if application is None:
-        return __new_response(
-            {'success': False, 'message': 'Application ' + application_name + ' is not present on DB'},
-            ('Access-Control-Allow-Origin', '*'))
-    if application.token is not None and application.token != "":
-        # token is required
-        if application_token is None:
-            return __new_response({'success': False,
-                                   'message': 'Application token is mandatory for ' + application_name + ' application'},
-                                  ('Access-Control-Allow-Origin', '*'))
-        else:
-            if application_token != application.token:
-                return __new_response({'success': False,
-                                       'message': 'The application token ' + application_token + " doesn't match for " +
-                                                  application_name + ' application'},
-                                      ('Access-Control-Allow-Origin', '*'))
+@view_config(route_name="api_log_add", request_method="PUT", renderer="json")
+def api_log_add(request):
+    # _log.debug(request.json)
+    # application_name = request.json.get('application')
+    # application_token = request.json.get('application_token')
+    #
+    # if application_name is None or application_name == '':
+    #     resp = Response(json_body={'success': False, 'message': 'Application name is mandatory'})
+    #
+    # application = request.applications(application_name)
+    #
+    # if application is None:
+    #     return __new_response(
+    #         {'success': False, 'message': 'Application ' + application_name + ' is not present on DB'},
+    #         ('Access-Control-Allow-Origin', '*'))
+    # if application.token is not None and application.token != "":
+    #     # token is required
+    #     if application_token is None:
+    #         return __new_response({'success': False,
+    #                                'message': 'Application token is mandatory for ' + application_name + ' application'},
+    #                               ('Access-Control-Allow-Origin', '*'))
+    #     else:
+    #         if application_token != application.token:
+    #             return __new_response({'success': False,
+    #                                    'message': 'The application token ' + application_token + " doesn't match for " +
+    #                                               application_name + ' application'},
+    #                                   ('Access-Control-Allow-Origin', '*'))
 
     try:
         # check if is a multiple log
@@ -88,3 +88,7 @@ def api_logs_add(request):
     except Exception as e:
         _log.exception(e)
         return __new_response({'success': False, 'message': str(e)}, ('Access-Control-Allow-Origin', '*'))
+
+@view_config(route_name="api_logs_add", request_method="PUT", renderer="json")
+def api_logs_add(request):
+    return api_log_add(request)

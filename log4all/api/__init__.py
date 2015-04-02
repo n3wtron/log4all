@@ -3,7 +3,8 @@ __author__ = 'Igor Maculan <n3wtron@gmail.com>'
 
 def init_api_url(config):
     config.add_route('api_logs_add_options', '/api/logs/add', request_method='OPTIONS')
-    config.add_route('api_logs_add', '/api/logs/add', request_method='POST')
+    config.add_route('api_log_add', '/api/log', request_method='PUT')
+    config.add_route('api_logs_add', '/api/logs', request_method='PUT')
 
     config.add_route('api_logs_search_options', '/api/logs/search', request_method='OPTIONS')
     config.add_route('api_logs_search', '/api/logs/search', request_method='POST')
