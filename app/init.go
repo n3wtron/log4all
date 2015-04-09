@@ -1,13 +1,86 @@
 package app
 
 import (
-	//"github.com/revel/modules/jobs/app/jobs"
+	"errors"
+	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
-	//myjob "log4all/app/jobs"
+	"gopkg.in/mgo.v2"
+	"log"
+	log4allJobs "log4all/app/jobs"
+	"log4all/app/models"
+	"os"
 )
 
+var MongoDb *mgo.Database
+
+func InitDB() {
+	var err error
+	var mongoSession *mgo.Session
+	var collections []string
+	var userCollectionFound bool
+	var c int
+
+	dbConnectionUrl, found := revel.Config.String("db.connectionUrl")
+	if !found {
+		dbConnectionUrl = os.Getenv("L4AL_DB_CONNECTION")
+	}
+
+	if dbConnectionUrl == "" {
+		err = errors.New("No MongoDB connection Url found on config file (db.ConnectionUrl) or in the L4AL_DB_CONNECTION env variable")
+		goto finish
+	}
+
+	mongoSession, err = mgo.Dial(dbConnectionUrl)
+	if err != nil {
+		goto finish
+	}
+
+	MongoDb = mongoSession.DB("")
+
+	//check if users table exists
+	collections, err = MongoDb.CollectionNames()
+	userCollectionFound = false
+	if err != nil {
+		goto finish
+	}
+	for c = range collections {
+		if collections[c] == "users" {
+			userCollectionFound = true
+			break
+		}
+	}
+	//add default admin user
+	if !userCollectionFound {
+		u := new(models.User)
+		u.Name = "Admin User"
+		u.Email = "admin"
+		u.Password = "admin"
+		u.Save(MongoDb)
+		revel.INFO.Println("default admin user created with password admin")
+	}
+
+	// Create Collection index
+	err = models.CreateTailTable(MongoDb)
+	if err != nil {
+		goto finish
+	}
+	models.CreateTagIndexes(MongoDb)
+	models.CreateStackIndexes(MongoDb)
+	models.CreateApplicationIndexes(MongoDb)
+	models.CreateGroupIndexes(MongoDb)
+	models.CreateUserIndexes(MongoDb)
+
+finish:
+	if err != nil {
+		revel.ERROR.Println("Error Initializing DB")
+		revel.ERROR.Panic(err)
+	} else {
+		log.Printf("Db initialized")
+	}
+}
+
 func InitJobs() {
-	//jobs.Schedule("@every 1s", myjob.TestJob{})
+	jobs.Schedule("cron.deleteJobScheduler", log4allJobs.DeleteJob{Db: MongoDb})
 }
 
 func init() {
@@ -31,6 +104,7 @@ func init() {
 	// ( order dependent )
 	//revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
+	revel.OnAppStart(InitDB)
 	revel.OnAppStart(InitJobs)
 }
 

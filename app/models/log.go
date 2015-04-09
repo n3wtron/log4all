@@ -1,7 +1,10 @@
 package models
 
 import (
+	"errors"
+	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
+	"strings"
 	"time"
 )
 
@@ -63,4 +66,26 @@ func SearchLog(db *mgo.Database, tail bool, query map[string]interface{}, sortFi
 		err = db.C("tail_logs").Find(query).Sort("date").All(&queryResult)
 	}
 	return queryResult, err
+}
+
+func DeleteLog(db *mgo.Database, application string, level string, beforeDays int) error {
+	if beforeDays <= 0 {
+		return errors.New("delete before days configuration of app " + application + " for level " + level + " has to be >0")
+	}
+	now := time.Now()
+	uxDelLimit := now.Unix() - int64(beforeDays*24*60*60)
+	delLimit := time.Unix(uxDelLimit, 0)
+	delQuery := map[string]interface{}{
+		"application": application,
+		"level":       strings.ToUpper(level),
+		"date": map[string]interface{}{
+			"$lte": delLimit,
+		},
+	}
+	revel.TRACE.Printf("delquery %v", delQuery)
+	changeInfo, err := db.C("logs").RemoveAll(delQuery)
+	if err == nil {
+		revel.INFO.Printf("deleted %d records", changeInfo.Removed)
+	}
+	return err
 }
