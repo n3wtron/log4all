@@ -17,11 +17,11 @@ func (j DeleteJob) Run() {
 	apps, _ := models.GetApplications(j.Db)
 	for a := range apps {
 		revel.INFO.Printf("cleaning %s application logs", apps[a].Name)
-		appConf := apps[a].Configuration
-		cnfEl := reflect.ValueOf(appConf)
+		appRetentionConf := apps[a].Configuration.Retention
+		cnfEl := reflect.ValueOf(appRetentionConf)
 		for l := 0; l < cnfEl.NumField(); l++ {
 			fld := cnfEl.Field(l)
-			fldType := reflect.TypeOf(appConf).Field(l)
+			fldType := reflect.TypeOf(appRetentionConf).Field(l)
 			level := fldType.Tag.Get("json")
 			err := models.DeleteLog(j.Db, apps[a].Name, level, fld.Interface().(models.LevelConfiguration).DeleteDays)
 			if err != nil {

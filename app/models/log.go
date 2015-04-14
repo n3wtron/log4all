@@ -41,11 +41,22 @@ func CreateTailTable(db *mgo.Database) error {
 	return db.C("tail_logs").Create(&tailInfo)
 }
 
-func (this *Log) Save(db *mgo.Database) error {
+func (this *Log) Save(db *mgo.Database, writeSafe bool) error {
 	//insert on tail_logs
 	this.DtInsert = time.Now()
 	db.C("tail_logs").Insert(this)
-	return db.C("logs").Insert(this)
+
+	var saveDb *mgo.Database
+	if writeSafe {
+		revel.INFO.Println("Safe Writing enabled, opening new session")
+		safeSess := db.Session.Clone()
+		safeSess.SetSafe(&mgo.Safe{W: 1})
+		defer safeSess.Close()
+		saveDb = safeSess.DB("")
+	} else {
+		saveDb = db
+	}
+	return saveDb.C("logs").Insert(this)
 }
 
 func SearchLog(db *mgo.Database, tail bool, query map[string]interface{}, sortField string, sortAscending bool, page int, maxResult int) ([]Log, error) {

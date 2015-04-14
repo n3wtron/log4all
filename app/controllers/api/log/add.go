@@ -72,7 +72,7 @@ func addTags(db *mgo.Database, logToAdd *models.Log) {
 	}
 }
 
-func (ctrl ApiLog) dbAdd(logToAdd *models.Log) error {
+func (ctrl ApiLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
 	// add stack
 	if logToAdd.Stack != "" {
 		stack := &models.Stack{Stacktrace: logToAdd.Stack}
@@ -81,7 +81,7 @@ func (ctrl ApiLog) dbAdd(logToAdd *models.Log) error {
 	}
 
 	//add Log
-	err := logToAdd.Save(ctrl.Db)
+	err := logToAdd.Save(ctrl.Db, writeSafe)
 	if err != nil {
 		return errors.New("Cannot insert log")
 	} else {
@@ -91,22 +91,21 @@ func (ctrl ApiLog) dbAdd(logToAdd *models.Log) error {
 }
 
 // add a single log
-func (ctrl ApiLog) CheckApplication(applicationName string, applicationToken string) error {
+func (ctrl ApiLog) GetApplication(applicationName string, applicationToken string) (*models.Application, error) {
 	//search application
 	var err error
+	var app *models.Application
 	if applicationToken != "" {
-		_, err = models.GetApplicationByToken(ctrl.Db, applicationName, applicationToken)
+		app, err = models.GetApplicationByToken(ctrl.Db, applicationName, applicationToken)
 	} else {
-		_, err = models.GetApplicationByName(ctrl.Db, applicationName)
+		app, err = models.GetApplicationByName(ctrl.Db, applicationName)
 	}
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			return errors.New("No Application found:" + applicationName + " with token:" + applicationToken)
-		} else {
-			return err
+			err = errors.New("No Application found:" + applicationName + " with token:" + applicationToken)
 		}
 	}
-	return nil
+	return app, err
 }
 
 // API: add single log
@@ -118,13 +117,13 @@ func (ctrl ApiLog) AddLog() revel.Result {
 	json.Unmarshal(byteBody, rawLog)
 	var logToAdd *models.Log
 	var err error
-	err = ctrl.CheckApplication(rawLog.Application, rawLog.ApplicationToken)
+	app, err := ctrl.GetApplication(rawLog.Application, rawLog.ApplicationToken)
 	if err != nil {
 		goto addLogFinish
 	}
 
 	logToAdd = NewLogFromRawLog(rawLog)
-	err = ctrl.dbAdd(logToAdd)
+	err = ctrl.dbAdd(logToAdd, app.Configuration.WriteSafe)
 
 addLogFinish:
 	if err != nil {
@@ -145,7 +144,7 @@ func (ctrl ApiLog) AddLogs() revel.Result {
 	logs := new(MultiLog)
 	json.Unmarshal(byteBody, logs)
 
-	err := ctrl.CheckApplication(logs.Application, logs.ApplicationToken)
+	app, err := ctrl.GetApplication(logs.Application, logs.ApplicationToken)
 
 	if err != nil {
 		result["success"] = false
@@ -160,7 +159,7 @@ func (ctrl ApiLog) AddLogs() revel.Result {
 		logs.Logs[i].ApplicationToken = logs.ApplicationToken
 		logToAdd := NewLogFromRawLog(&logs.Logs[i])
 
-		addError := ctrl.dbAdd(logToAdd)
+		addError := ctrl.dbAdd(logToAdd, app.Configuration.WriteSafe)
 		if addError != nil {
 			addErrors = append(addErrors, addError)
 			allAdded = false

@@ -7,8 +7,8 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
     log4AllApplicationService.get($routeParams.applicationId).then(function (data) {
 		if (data.success){
 			$scope.application = data.result;
-			if ($scope.application.configuration == null) {
-				$scope.application.configuration = {};
+			if ($scope.application.configuration.retention == null) {
+				$scope.application.configuration.retention = {};
 			}
 			$scope.changeConfiguration("debug");
 		}else{
@@ -21,14 +21,14 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
     $scope.currentConfiguration = {};
     $scope.changeConfiguration = function (level) {
         $scope.currentConfigurationLevel = level;
-        if ($scope.application.configuration == null || !(level in $scope.application.configuration)) {
+        if ($scope.application.configuration.retention == null || !(level in $scope.application.configuration.retention)) {
             $scope.currentConfiguration = {
                 archive: 30,
                 delete: 90
             };
-            $scope.application.configuration[level] = $scope.currentConfiguration;
+            $scope.application.configuration.retention[level] = $scope.currentConfiguration;
         } else {
-            $scope.currentConfiguration = $scope.application.configuration[level];
+            $scope.currentConfiguration = $scope.application.configuration.retention[level];
         }
     };
 

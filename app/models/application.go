@@ -10,20 +10,25 @@ type LevelConfiguration struct {
 	DeleteDays  int `json:"delete"`
 }
 
+type RetentionConfiguration struct {
+	Debug   LevelConfiguration `json:"debug" bson:"debug"`
+	Info    LevelConfiguration `json:"info" bson:"info"`
+	Warning LevelConfiguration `json:"warning" bson:"warning"`
+	Error   LevelConfiguration `json:"error" bson:"error"`
+}
+
 type ApplicationConfiguration struct {
-	Debug   LevelConfiguration `json:"debug"`
-	Info    LevelConfiguration `json:"info"`
-	Warning LevelConfiguration `json:"warning"`
-	Error   LevelConfiguration `json:"error"`
+	Retention RetentionConfiguration `json:"retention" bson:"retention"`
+	WriteSafe bool                   `json:"writeSafe" bson:"writeSafe"`
 }
 
 type Application struct {
 	BasicModel    `bson:"-"`
 	Id            bson.ObjectId            `json:"_id" bson:"_id"`
-	Name          string                   `json:"name"`
-	Description   string                   `json:"description"`
-	Token         string                   `json:"token"`
-	Configuration ApplicationConfiguration `json:"configuration"`
+	Name          string                   `json:"name" bson:"name"`
+	Description   string                   `json:"description" bson:"description"`
+	Token         string                   `json:"token" bson:"token"`
+	Configuration ApplicationConfiguration `json:"configuration" bson:"configuration"`
 }
 
 func CreateApplicationIndexes(db *mgo.Database) error {
