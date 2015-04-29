@@ -83,7 +83,7 @@ func (ctrl ApiLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
 	//add Log
 	err := logToAdd.Save(ctrl.Db, writeSafe)
 	if err != nil {
-		return errors.New("Cannot insert log")
+		return errors.New("Cannot insert log " + err.Error())
 	} else {
 		go addTags(ctrl.Db, logToAdd)
 		return nil

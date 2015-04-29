@@ -94,6 +94,13 @@ func getQuery(srcParams *LogSearchParam, tail bool) map[string]interface{} {
 	return query
 }
 
+func (ctrl ApiLog) SearchOptions() revel.Result {
+	ctrl.Response.Out.Header().Add("Access-Control-Allow-Methods", "POST")
+	ctrl.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+
+	return ctrl.RenderText("")
+}
+
 func (ctrl ApiLog) Search(tail bool) revel.Result {
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)

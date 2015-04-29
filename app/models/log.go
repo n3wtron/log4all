@@ -19,6 +19,40 @@ type Log struct {
 	DtInsert    time.Time              `json:"-" bson:"_dt_insert"`
 }
 
+func CreateLogIndexes(db *mgo.Database) error {
+	dtIndex := mgo.Index{
+		Key:        []string{"date"},
+		Unique:     false,
+		DropDups:   false,
+		Background: true,
+		Sparse:     true,
+	}
+	appDtIndex := mgo.Index{
+		Key:        []string{"application", "date"},
+		Unique:     false,
+		DropDups:   false,
+		Background: true,
+		Sparse:     true,
+	}
+	appIndex := mgo.Index{
+		Key:        []string{"application"},
+		Unique:     false,
+		DropDups:   false,
+		Background: true,
+		Sparse:     true,
+	}
+	err := db.C("logs").EnsureIndex(dtIndex)
+	if err != nil {
+		return err
+	}
+	err = db.C("logs").EnsureIndex(appDtIndex)
+	if err != nil {
+		return err
+	}
+	err = db.C("logs").EnsureIndex(appIndex)
+	return err
+}
+
 func CreateTailTable(db *mgo.Database) error {
 	collections, err := db.CollectionNames()
 	if err != nil {

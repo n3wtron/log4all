@@ -64,6 +64,7 @@ func InitDB() {
 	if err != nil {
 		goto finish
 	}
+	models.CreateLogIndexes(MongoDb)
 	models.CreateTagIndexes(MongoDb)
 	models.CreateStackIndexes(MongoDb)
 	models.CreateApplicationIndexes(MongoDb)
@@ -113,9 +114,10 @@ func init() {
 // not sure if it can go in the same filter or not
 var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 	// Add some common security headers
-	c.Response.Out.Header().Add("X-Frame-Options", "SAMEORIGIN")
+	/*c.Response.Out.Header().Add("X-Frame-Options", "SAMEORIGIN")
 	c.Response.Out.Header().Add("X-XSS-Protection", "1; mode=block")
-	c.Response.Out.Header().Add("X-Content-Type-Options", "nosniff")
+	c.Response.Out.Header().Add("X-Content-Type-Options", "nosniff")*/
+	c.Response.Out.Header().Add("Access-Control-Allow-Origin", "*")
 
 	fc[0](c, fc[1:]) // Execute the next filter stage.
 }

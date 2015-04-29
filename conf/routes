@@ -22,6 +22,7 @@ PUT     /api/log                                ApiLog.AddLog
 PUT     /api/logs                               ApiLog.AddLogs
 POST	/api/logs/search						ApiLog.Search(false)
 POST	/api/logs/tail							ApiLog.Search(true)
+OPTIONS	/api/logs/search 						ApiLog.SearchOptions
 
 POST	/api/auth/login							AuthApi.Login
 GET		/api/auth/permissions					AuthApi.GetPermissions
