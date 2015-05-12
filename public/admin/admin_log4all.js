@@ -23,6 +23,8 @@ Log4AllAdmin.config(['$routeProvider', function ($routeProvider) {
             templateUrl: "/public/admin_fragment/users.html",
         }).when('/users/:userId', {
             templateUrl: "/public/admin_fragment/user.html",
+        }).when('/indexes',{
+          templateUrl:"/public/admin_fragment/indexes.html"  
         });
 }]);
 

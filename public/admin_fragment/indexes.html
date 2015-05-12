@@ -1,0 +1,47 @@
+<div ng-controller="IndexesController" >
+   <div class="ui menu" style="height: 36px;">
+        <div class="item link" id="openAddIndexModalBtn">
+            <i class="ui add icon"></i>Add Index
+        </div>
+    </div>
+    <script>
+        $('#openAddIndexModalBtn').click(function () {
+            $('#addIndexModal').modal('show');
+        });
+    </script>
+
+    <div class="ui modal" id="addIndexModal">
+        <i class="close icon"></i>
+
+        <div class="header">
+            Add Index
+        </div>
+        <div class="ui content form">
+            <div class="field">
+                <label>Index</label>
+                <input type="text" ng-model="index">
+            </div>
+            <div class="ui icon button" ng-click="addIndex()">
+                <i class="add icon"></i>Add Index
+            </div>
+        </div>
+    </div>
+	<table class="ui table">
+		<thead>
+			<tr>
+				<th>Index</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="index in indexes">
+				<td>
+					{[{index}]}
+				</td>
+				<td>
+					<div class="ui icon button" ng-click="deleteIndex(index)"><i class="ui trash icon"></i></div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

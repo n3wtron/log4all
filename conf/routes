@@ -54,6 +54,11 @@ GET		/api/user/:id							AdminApi.Get("user")
 POST	/api/user/:id							AdminApi.Update("user")
 DELETE	/api/user/:id							AdminApi.Delete("user")
 
+## Indexes
+GET 	/api/indexes 							IndexesApi.List
+PUT		/api/index/:indexKey					IndexesApi.Add
+DELETE	/api/index/:indexKey					IndexesApi.Delete
+
 # HELPER
 GET    	/helper/applications/autocomplete/:currText		ApplicationHelper.Autocomplete
 
