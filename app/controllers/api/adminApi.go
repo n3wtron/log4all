@@ -81,7 +81,10 @@ func (ctrl *AdminApi) Delete(modelType string, id string) revel.Result {
 	var err error
 	switch modelType {
 	case "application":
-		err = models.DeleteApplication(ctrl.Db, id)
+		app, err := models.DeleteApplication(ctrl.Db, id)
+		if err == nil {
+			err = models.DeleteLogsByApplication(ctrl.Db, app.Name)
+		}
 	case "group":
 		err = models.DeleteGroup(ctrl.Db, id)
 	case "user":

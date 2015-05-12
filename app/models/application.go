@@ -50,9 +50,12 @@ func (this *Application) Update(db *mgo.Database, id string) error {
 	return db.C("applications").Update(bson.M{"_id": bson.ObjectIdHex(id)}, this)
 }
 
-func DeleteApplication(db *mgo.Database, id string) error {
-	err := db.C("applications").Remove(bson.M{"_id": bson.ObjectIdHex(id)})
-	return err
+func DeleteApplication(db *mgo.Database, id string) (Application, error) {
+	app, err := GetApplicationById(db, id)
+	if err == nil {
+		err = db.C("applications").Remove(bson.M{"_id": bson.ObjectIdHex(id)})
+	}
+	return app, err
 }
 
 func GetApplicationById(db *mgo.Database, id string) (Application, error) {

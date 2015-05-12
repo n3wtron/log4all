@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
 )
@@ -132,5 +133,10 @@ func DeleteLog(db *mgo.Database, application string, level string, beforeDays in
 	if err == nil {
 		revel.INFO.Printf("deleted %d records", changeInfo.Removed)
 	}
+	return err
+}
+
+func DeleteLogsByApplication(db *mgo.Database, application string) error {
+	_, err := db.C("logs").RemoveAll(bson.M{"application": application})
 	return err
 }
