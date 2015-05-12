@@ -32,6 +32,12 @@ func (ctrl *IndexesApi) List() revel.Result {
 	}
 	return ctrl.RenderJson(result)
 }
+func (ctrl *IndexesApi) asyncAddIndex(tagIndex mgo.Index) {
+	err := ctrl.Db.C("logs").EnsureIndex(tagIndex)
+	if err != nil {
+		revel.ERROR.Println(err.Error())
+	}
+}
 
 func (ctrl *IndexesApi) Add(indexKey string) revel.Result {
 	result := make(map[string]interface{})
@@ -43,13 +49,10 @@ func (ctrl *IndexesApi) Add(indexKey string) revel.Result {
 		Background: true,
 		Sparse:     true,
 	}
-	err := ctrl.Db.C("logs").EnsureIndex(tagIndex)
-	result["success"] = err == nil
+	defer ctrl.asyncAddIndex(tagIndex)
+	result["success"] = true
 	result["indexKey"] = tagIndex
 	result["indexes"], _ = ctrl.getTagIndexes()
-	if err != nil {
-		result["message"] = err.Error()
-	}
 	return ctrl.RenderJson(result)
 }
 
