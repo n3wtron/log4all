@@ -47,7 +47,15 @@ func (this *Application) Save(db *mgo.Database) error {
 }
 
 func (this *Application) Update(db *mgo.Database, id string) error {
-	return db.C("applications").Update(bson.M{"_id": bson.ObjectIdHex(id)}, this)
+	app, err := GetApplicationById(db, id)
+	if err == nil {
+		err = db.C("applications").Update(bson.M{"_id": bson.ObjectIdHex(id)}, this)
+		if this.Name != app.Name {
+			//rename all logs for this application
+			_, err = db.C("logs").UpdateAll(bson.M{"application": app.Name}, bson.M{"$set": bson.M{"application": this.Name}})
+		}
+	}
+	return err
 }
 
 func DeleteApplication(db *mgo.Database, id string) error {
