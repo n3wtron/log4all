@@ -26,15 +26,16 @@
 <body ng-controller="LogController">
 <div>
     <div class="ui basic segment center aligned" style="padding: 0px;">
-        {{ template  "fragment/rightMenu.html" . }}
-        {{ template  "fragment/leftMenu.html" . }}
+        <ng-include src="'/public/fragment/rightMenu.html'" ></ng-include>
+        <ng-include src="'/public/fragment/leftMenu.html'" ></ng-include>
     </div>
-    {{ template  "fragment/addLogPanel.html" . }}
-    {{ template  "fragment/searchPanel.html" . }}
-    {{ template  "fragment/tailPanel.html" . }}
-    {{ template  "fragment/errorPanel.html" . }}
-    {{ template  "fragment/resultPanel.html" . }}
-    {{ template  "fragment/detailPanel.html" . }}
+
+    <ng-include src="'/public/fragment/addLogPanel.html'" ></ng-include>
+    <ng-include src="'/public/fragment/searchPanel.html'" ></ng-include>
+    <ng-include src="'/public/fragment/tailPanel.html'" ></ng-include>
+    <ng-include src="'/public/fragment/errorPanel.html'" ></ng-include>
+    <ng-include src="'/public/fragment/resultPanel.html'" ></ng-include>
+    <ng-include src="'/public/fragment/detailPanel.html'" ></ng-include>
     <div class="ui segment right aligned" style="padding: 0;">
         Realized by <a href="https://github.com/n3wtron"> Igor Maculan (n3wtron@gmail.com)</a>
         <div>
