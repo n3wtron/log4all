@@ -22,14 +22,24 @@ Log4AllAdmin.controller('IndexesController', function ($scope, $http, $location,
 			},function(error){alert(error);}); 
 		}
 
-		$scope.deleteIndex = function(index){
-			log4AllIndexesService.deleteIndex(index).then(function(data){
+		$scope.openDelIndexMdl = function(index){
+			$scope.indexToDel = index;
+			$('#delIndexMdl').modal('show');
+		}
+
+		$scope.deleteIndex = function(){
+			log4AllIndexesService.deleteIndex($scope.indexToDel).then(function(data){
 				if (!data.success){
 					alert(data.message);
 				}else{
 					$scope.refreshIndexes();
 				}
+				$('#delIndexMdl').modal('hide');
 			},function(error){alert(error);}); 
+		};
+		$scope.closeDelIndexMdl=function(){
+			$('#delIndexMdl').modal('hide');
+			$scope.indexToDel = undefined;
 		};
 
 		$scope.refreshIndexes();

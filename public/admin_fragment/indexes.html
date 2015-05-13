@@ -26,6 +26,19 @@
             </div>
         </div>
     </div>
+
+    <div class="ui modal" id="delIndexMdl">
+        <i class="close icon"></i>
+        <div class="ui header">Are you sure to delete the index {[{indexToDel}]}?</div>
+        <div class="content " style="text-align:center;">
+            <div class="ui  buttons ">
+                <div class="ui icon green button" ng-click="closeDelIndexMdl()"><i class="ui cancel icon" ></i>Cancel</div>
+                <div class="or"></div>
+                <div class="ui icon red button" ng-click="deleteIndex()"><i class="ui trash icon"></i>Delete</div>
+            </div>
+        </div>
+    </div>
+
 	<table class="ui table">
 		<thead>
 			<tr>
@@ -39,7 +52,7 @@
 					{[{index}]}
 				</td>
 				<td>
-					<div class="ui icon button" ng-click="deleteIndex(index)"><i class="ui trash icon"></i></div>
+					<div class="ui icon button" ng-click="openDelIndexMdl(index)"><i class="ui trash icon"></i></div>
 				</td>
 			</tr>
 		</tbody>
