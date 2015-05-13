@@ -8,7 +8,7 @@ import (
 )
 
 type IndexesApi struct {
-	controllers.DbController
+	controllers.AuthenticatedController
 }
 
 func (ctrl *IndexesApi) getTagIndexes() ([]string, error) {
@@ -47,7 +47,7 @@ func (ctrl *IndexesApi) Add(indexKey string) revel.Result {
 		Unique:     false,
 		DropDups:   false,
 		Background: true,
-		Sparse:     true,
+		Sparse:     false,
 	}
 	defer ctrl.asyncAddIndex(tagIndex)
 	result["success"] = true
