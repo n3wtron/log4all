@@ -34,9 +34,9 @@
 </head>
 <body ng-controller="MainController">
 
-    <div class="ui segment attached inverted">
+    <div class="ui segment inverted" style="margin-top:0px; padding-top:0px;padding-bottom:0px;margin-bottom:0px;">
         <div class="ui grid ">
-            <div class="column twelve wide column " style="padding-top: 0px;">
+            <div class="column twelve wide column " >
                 <h1 class="header item inverted">
                     <i class="ui settings red icon"></i>Log4All Admin
                 </h1>
@@ -58,16 +58,15 @@
                                 <i class="lock icon"></i>
                               </div>
                         </div>
-
                     </div>
-                    <div class="ui icon small red button" ng-click="logout()" ng-cloak ng-show="isLogged()"><i class="ui sign out icon"></i> Logout</div>
+                    <div class="ui icon small red button" style="margin-top:10px;" ng-click="logout()" ng-cloak ng-show="isLogged()"><i class="ui sign out icon"></i> Logout</div>
                 </div>
             </div>
         </div>
     </div>
-    <div ng-show="isLogged()" ng-cloak>
-        <div class="ui grid">
-            <div class="ui two wide column vertical menu inverted" >
+    <div class="ui grid" ng-show="isLogged()" ng-cloak style="margin-left:0px; margin-right:0px;">
+        <div class="ui two wide column " style="background-color:black;">
+            <div class="ui vertical menu inverted">
                 <a class="item" href="#applications">
                    <i class="ui rocket icon"></i>Applications
                 </a>
@@ -84,8 +83,8 @@
                    <i class="ui user icon"></i>Users
                 </a>
             </div>
-            <div class="ui fourteen wide column" ng-view=""></div>
         </div>
+        <div class="ui fourteen wide column" ng-view=""></div>
     </div>
     <div ng-cloak ng-hide="isLogged()" class="ui segment center aligned">
         <h2 class="ui header">Login required</h2>
