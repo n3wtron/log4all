@@ -49,7 +49,7 @@ func (ctrl *IndexesApi) Add(indexKey string) revel.Result {
 		Background: true,
 		Sparse:     false,
 	}
-	defer ctrl.asyncAddIndex(tagIndex)
+	go ctrl.asyncAddIndex(tagIndex)
 	result["success"] = true
 	result["indexKey"] = tagIndex
 	result["indexes"], _ = ctrl.getTagIndexes()
