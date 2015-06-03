@@ -1,0 +1,15 @@
+<div class="ui right floated huge blue attached button" id="showTagMenuBtn">
+    <i class="ui tag icon"></i>
+</div>
+
+<div id="rightMenu" class="ui right inverted vertical thin sidebar menu">
+        <div class="inverted item link " ng-repeat="tag in tags" ng-click="addTagInQuery(tag.name)">
+            <i class="ui tag icon green"></i># {[{tag.name}]}
+        </div>
+</div>
+
+<script>
+    $('#showTagMenuBtn').click(function () {
+        $('#rightMenu').sidebar('setting', 'transition', 'overlay').sidebar('toggle');
+    });
+</script>

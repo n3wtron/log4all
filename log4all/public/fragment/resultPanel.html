@@ -1,0 +1,77 @@
+<div class="ui segment attached" ng-cloak ng-hide="resultType!='searchResult'">
+    <h2 class="ui header"><i class="ui content green icon"></i>Result</h2>
+
+    <div style="float: right; display: inline-block; margin-bottom: 4px;">
+        <div class="ui selection dropdown">
+            <input type="hidden" name="max_result" id="maxResultFld"  value="10">
+
+            <div class="default text">Max Result</div>
+            <i class="dropdown icon"></i>
+
+            <div class="menu">
+                <div class="item" data-value="10">10</div>
+                <div class="item" data-value="20">20</div>
+                <div class="item" data-value="30">30</div>
+                <div class="item" data-value="40">40</div>
+                <div class="item" data-value="50">50</div>
+                <div class="item" data-value="100">100</div>
+            </div>
+        </div>
+        <script>
+            $('.ui.dropdown').dropdown();
+            $('#maxResultFld').change(function(){
+             $(this).scope().src_query.max_result=parseInt($('#maxResultFld').val());
+             $(this).scope().search();
+         });
+     </script>
+     <i class="ui backward icon"  ng-click="changePage(src_query.page-1)"></i>
+     <div class="ui input compact">
+        <input  type="number" ng-model="src_query.page" ng-change="search()"/>
+    </div>
+    <i class="ui forward icon" ng-click="changePage(src_query.page+1)"></i>
+</div>
+
+<div style="float: left;">
+    <a class="ui tag green label" ng-repeat="tag in resultTags">
+        #{[{ tag }]}
+    </a>
+</div>
+<table class="ui table">
+    <thead>
+        <tr>
+            <th>
+                Detail
+            </th>
+            <th>
+                <a class="ui link" ng-click="sortResult('level')">Level</a>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='level' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='level' && !src_query.sort_ascending)}"></i>
+            </th>
+            <th>
+                <a class="ui link" ng-click="sortResult('application')">Application</a>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='application' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='application' && !src_query.sort_ascending)}"></i>
+            </th>
+            <th>Message</th>
+            <th>
+                <a class="ui link" ng-click="sortResult('date')">Date</a>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='date' && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='date' && !src_query.sort_ascending)}"></i>
+            </th>
+            <th ng-repeat="tag in resultTags">
+                <a class="ui link" ng-click="sortResult('tags.'+tag)">{[{tag}]}</a>
+                <i ng-class="{'ui sort ascending icon':(src_query.sort_field=='tags.'+tag && src_query.sort_ascending),'ui sort descending icon':(src_query.sort_field=='tags.'+tag && !src_query.sort_ascending)}"></i>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="log in logs">
+            <td><div class="ui icon button" ng-click="showDetail(log)"><i class="content icon"></i></div> </td>
+            <td>{[{ log.level }]}</td>
+            <td>{[{ log.application }]}</td>
+            <td>{[{ log.message }]}</td>
+            <td>{[{ log.date }]}</td>
+            <td ng-repeat="tag in resultTags">
+                {[{log.tags[tag]}]}<i class="ui filter icon link" ng-if="log.tags[tag]" ng-click="addTagValueInQuery(tag,log.tags[tag],true)"></i>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</div>

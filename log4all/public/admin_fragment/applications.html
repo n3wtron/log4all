@@ -1,0 +1,71 @@
+<div ng-controller="ApplicationsController">
+    <div class="ui menu" style="height: 36px;">
+        <div class="item link" id="openAddAppModalBtn">
+            <i class="ui add icon"></i>Add Application
+        </div>
+    </div>
+    <script>
+        $('#openAddAppModalBtn').click(function () {
+            $('#addApplicationModal').modal('show');
+        });
+    </script>
+
+    <div class="ui modal" id="addApplicationModal">
+        <i class="close icon"></i>
+
+        <div class="header">
+            Add Application
+        </div>
+        <div class="ui content form">
+            <div class="field">
+                <label>Name</label>
+                <input type="text" ng-model="application.name">
+            </div>
+            <div class="field">
+                <label>Description</label>
+                <input type="text" ng-model="application.description">
+            </div>
+            <div class="ui icon button" ng-click="addApplication()">
+                <i class="add icon"></i>Add Application
+            </div>
+        </div>
+    </div>
+    
+    <div class="ui modal" id="delApplicationMdl">
+        <i class="close icon"></i>
+        <div class="ui header">Are you sure to delete the application {[{applicationToDel.name}]}?</div>
+        <div class="content " style="text-align:center;">
+            <div class="ui  buttons ">
+                <div class="ui icon green button" ng-click="closeDelApplicationMdl()"><i class="ui cancel icon" ></i>Cancel</div>
+                <div class="or"></div>
+                <div class="ui icon red button" ng-click="deleteApplication()"><i class="ui trash icon"></i>Delete</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui bottom attached segment">
+        <table class="ui table attached">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="app in applications">
+                <td>{[{ app.name }]}</td>
+                <td>{[{ app.description }]}</td>
+                <td>
+                    <a class="ui icon button" href="#applications/{[{ app._id }]}">
+                        <i class="edit icon"></i>
+                    </a>
+                      <a class="ui icon button" ng-click="openDelApplicationMdl(app)">
+                        <i class="trash icon"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
