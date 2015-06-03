@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/n3wtron/log4all_go_client/errors"
+	"github.com/n3wtron/log4all/client/errors"
 	"testing"
 	"time"
 )

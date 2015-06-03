@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/jinzhu/copier"
-	"github.com/n3wtron/log4all_go_client/errors"
+	"github.com/n3wtron/log4all/client/errors"
 	"io/ioutil"
 	"net/http"
 )

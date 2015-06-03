@@ -3,7 +3,7 @@ package log
 import (
 	"bufio"
 	"fmt"
-	"github.com/log4all/agent/config"
+	"github.com/n3wtron/log4all/agent/config"
 	"os"
 	"regexp"
 	"strings"

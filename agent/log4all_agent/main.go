@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/log4all/agent/config"
-	"github.com/log4all/agent/log"
-	"github.com/log4all/agent/util"
+	"github.com/n3wtron/log4all/agent/config"
+	"github.com/n3wtron/log4all/agent/log"
+	"github.com/n3wtron/log4all/agent/util"
 	_log "log"
 	"os"
 	"strconv"
