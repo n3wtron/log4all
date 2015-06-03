@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"github.com/jinzhu/copier"
 	"github.com/n3wtron/log4all/client/errors"
+	commonsLog "github.com/n3wtron/log4all/commons/log"
 	"io/ioutil"
+	_log "log"
 	"net/http"
 )
 
@@ -13,23 +15,6 @@ type Client struct {
 	Url              string
 	Application      string
 	ApplicationToken string
-}
-
-type AddLogRequest struct {
-	Log
-	Application      string `json:"application"`
-	ApplicationToken string `json:"application_token"`
-}
-
-type AddLogsRequest struct {
-	Logs             []*Log `json:"logs"`
-	Application      string `json:"application"`
-	ApplicationToken string `json:"application_token"`
-}
-
-type AddLogResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 func NewClient(url, application, applicationToken string) (*Client, error) {
@@ -54,7 +39,7 @@ func commonsCall(request *http.Request) error {
 	}
 	defer resp.Body.Close()
 	jsResponse, err := ioutil.ReadAll(resp.Body)
-	var addLogResponse AddLogResponse
+	var addLogResponse commonsLog.AddLogResponse
 	err = json.Unmarshal(jsResponse, &addLogResponse)
 	if err != nil {
 		return err
@@ -65,8 +50,8 @@ func commonsCall(request *http.Request) error {
 	return nil
 }
 
-func (client *Client) AddLog(log *Log) error {
-	var addLogRequestData AddLogRequest
+func (client *Client) AddLog(log *commonsLog.Log) error {
+	var addLogRequestData commonsLog.SingleLog
 	copier.Copy(&addLogRequestData, log)
 	addLogRequestData.Application = client.Application
 	addLogRequestData.ApplicationToken = client.ApplicationToken
@@ -74,7 +59,7 @@ func (client *Client) AddLog(log *Log) error {
 	if err != nil {
 		return err
 	}
-
+	_log.Printf("%s\n", addLogRequestDataJson)
 	addLogRequest, err := http.NewRequest("PUT", client.Url+"/api/log", bytes.NewReader(addLogRequestDataJson))
 	if err != nil {
 		return err
@@ -82,11 +67,11 @@ func (client *Client) AddLog(log *Log) error {
 	return commonsCall(addLogRequest)
 }
 
-func (client *Client) AddLogs(logs []*Log) error {
-	var addLogsRequestData AddLogsRequest
+func (client *Client) AddLogs(logs []*commonsLog.Log) error {
+	var addLogsRequestData commonsLog.MultiLog
 	addLogsRequestData.Application = client.Application
 	addLogsRequestData.ApplicationToken = client.ApplicationToken
-	addLogsRequestData.Logs = logs
+	copier.Copy(&addLogsRequestData.Logs, logs)
 	addLogsRequestDataJson, err := json.Marshal(addLogsRequestData)
 	if err != nil {
 		return err

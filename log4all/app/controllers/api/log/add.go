@@ -3,35 +3,21 @@ package log
 import (
 	"encoding/json"
 	"errors"
+	commonsLog "github.com/n3wtron/log4all/commons/log"
 	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/n3wtron/log4all/log4all/app/utils"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
 	"io/ioutil"
-	"log"
+	_log "log"
 	"strings"
 	"time"
 )
 
-type RawLog struct {
-	Application      string `json:"application"`
-	ApplicationToken string `json:"application_token"`
-	Level            string
-	Message          string
-	Stack            string
-	Date             int64
-}
-
-type MultiLog struct {
-	Application      string `json:"application"`
-	ApplicationToken string `json:"application_token"`
-	Logs             []RawLog
-}
-
 /*
 	Convert a RawLog to models.Log
 */
-func NewLogFromRawLog(rawLog *RawLog) *models.Log {
+func NewLogFromRawLog(rawLog *commonsLog.SingleLog) *models.Log {
 	logResult := new(models.Log)
 	logResult.Tags = make(map[string]interface{})
 	logResult.Level = rawLog.Level
@@ -67,7 +53,7 @@ func addTags(db *mgo.Database, logToAdd *models.Log) {
 	for tag := range logToAdd.Tags {
 		dbTag := &models.Tag{Name: tag}
 		if err := dbTag.Save(db); err != nil && !mgo.IsDup(err) {
-			log.Println("Error inserting tag " + tag + " error:" + err.Error())
+			_log.Println("Error inserting tag " + tag + " error:" + err.Error())
 		}
 	}
 }
@@ -90,7 +76,6 @@ func (ctrl ApiLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
 	}
 }
 
-// add a single log
 func (ctrl ApiLog) GetApplication(applicationName string, applicationToken string) (*models.Application, error) {
 	//search application
 	var err error
@@ -113,7 +98,7 @@ func (ctrl ApiLog) AddLog() revel.Result {
 	revel.INFO.Println("addLog")
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
-	rawLog := new(RawLog)
+	rawLog := new(commonsLog.SingleLog)
 	json.Unmarshal(byteBody, rawLog)
 	var logToAdd *models.Log
 	var err error
@@ -141,7 +126,7 @@ func (ctrl ApiLog) AddLogs() revel.Result {
 
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
-	logs := new(MultiLog)
+	logs := new(commonsLog.MultiLog)
 	json.Unmarshal(byteBody, logs)
 
 	app, err := ctrl.GetApplication(logs.Application, logs.ApplicationToken)

@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/n3wtron/log4all/client/errors"
+	commonsLog "github.com/n3wtron/log4all/commons/log"
 	"testing"
 	"time"
 )
@@ -38,7 +39,8 @@ func TestAddLog(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	log, err := NewLog(time.Now(), "DEBUG", "test da go #go", "")
+	now := time.Now()
+	log, err := commonsLog.NewLog(now.UnixNano()/1000000, "DEBUG", "test max da go #go", "")
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -53,12 +55,14 @@ func TestAddLogs(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	logs := make([]*Log, 2)
-	logs[0], err = NewLog(time.Now(), "DEBUG", "test da go log1/2 #go", "")
+	logs := make([]*commonsLog.Log, 2)
+	now := time.Now()
+	logs[0], err = commonsLog.NewLog(now.UnixNano()/1000000, "DEBUG", "test da go log1/2 #go", "")
 	if err != nil {
 		t.Error(err.Error())
 	}
-	logs[1], err = NewLog(time.Now(), "DEBUG", "test da go log2/2 #go", "")
+	now = time.Now()
+	logs[1], err = commonsLog.NewLog(now.UnixNano()/1000000, "DEBUG", "test da go log2/2 #go", "")
 	if err != nil {
 		t.Error(err.Error())
 	}
