@@ -1,8 +1,7 @@
 package client
 
 import (
-	"github.com/n3wtron/log4all/client/errors"
-	commonsLog "github.com/n3wtron/log4all/commons/log"
+	commonsLog "github.com/n3wtron/log4all/commons"
 	"testing"
 	"time"
 )
@@ -19,7 +18,7 @@ func TestUrlEmpty(t *testing.T) {
 	if err == nil {
 		t.Error("expect url is mandatory")
 	}
-	if err.(errors.ClientError).ErrorType != errors.ERR_URL_MANDATORY {
+	if err.(ClientError).ErrorType != ERR_URL_MANDATORY {
 		t.Error("expect url is mandatory but received:" + err.Error())
 	}
 }
@@ -29,7 +28,7 @@ func TestApplicationEmpty(t *testing.T) {
 	if err == nil {
 		t.Error("expect application is mandatory")
 	}
-	if err.(errors.ClientError).ErrorType != errors.ERR_APPLICATION_MANDATORY {
+	if err.(ClientError).ErrorType != ERR_APPLICATION_MANDATORY {
 		t.Error("expect application is mandatory but received:" + err.Error())
 	}
 }

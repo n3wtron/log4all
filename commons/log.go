@@ -1,4 +1,4 @@
-package log
+package commons
 
 type Log struct {
 	Date    int64  `json:"date"`

@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/jinzhu/copier"
-	"github.com/n3wtron/log4all/client/errors"
-	commonsLog "github.com/n3wtron/log4all/commons/log"
+	commonsLog "github.com/n3wtron/log4all/commons"
 	"io/ioutil"
-	_log "log"
 	"net/http"
 )
 
@@ -20,10 +18,10 @@ type Client struct {
 func NewClient(url, application, applicationToken string) (*Client, error) {
 	cl := new(Client)
 	if len(url) == 0 {
-		return nil, errors.NewClientError(errors.ERR_URL_MANDATORY)
+		return nil, NewClientError(ERR_URL_MANDATORY)
 	}
 	if len(application) == 0 {
-		return nil, errors.NewClientError(errors.ERR_APPLICATION_MANDATORY)
+		return nil, NewClientError(ERR_APPLICATION_MANDATORY)
 	}
 	cl.Application = application
 	cl.ApplicationToken = applicationToken
@@ -45,7 +43,7 @@ func commonsCall(request *http.Request) error {
 		return err
 	}
 	if !addLogResponse.Success {
-		return errors.NewClientError(errors.ERR_ADD_LOG, addLogResponse.Message)
+		return NewClientError(ERR_ADD_LOG, addLogResponse.Message)
 	}
 	return nil
 }
@@ -59,7 +57,6 @@ func (client *Client) AddLog(log *commonsLog.Log) error {
 	if err != nil {
 		return err
 	}
-	_log.Printf("%s\n", addLogRequestDataJson)
 	addLogRequest, err := http.NewRequest("PUT", client.Url+"/api/log", bytes.NewReader(addLogRequestDataJson))
 	if err != nil {
 		return err

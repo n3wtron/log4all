@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/n3wtron/log4all/agent/config"
-	"github.com/n3wtron/log4all/agent/log"
-	"github.com/n3wtron/log4all/agent/util"
-	"github.com/n3wtron/log4all/client/client"
+	"github.com/n3wtron/log4all/agent"
+	"github.com/n3wtron/log4all/client"
 	_log "log"
 	"os"
 	"strconv"
@@ -17,10 +15,10 @@ func usage() string {
 	return usage
 }
 
-func elabLog(wg *sync.WaitGroup, logFileInfo *util.LogFileInfo, cnf *config.Config, statusCnf *config.StatusConfig) {
+func elabLog(wg *sync.WaitGroup, logFileInfo *agent.LogFileInfo, cnf *agent.Config, statusCnf *agent.StatusConfig) {
 	var exist bool
 	var toRead bool = false
-	var logRecord config.LogRecord
+	var logRecord agent.LogRecord
 	var readFrom uint64
 
 	defer logFileInfo.File.Close()
@@ -47,7 +45,7 @@ func elabLog(wg *sync.WaitGroup, logFileInfo *util.LogFileInfo, cnf *config.Conf
 		}
 	}
 	if toRead {
-		logFile, err := log.NewLogFile(cnf, logFileInfo.File, readFrom)
+		logFile, err := agent.NewLogFile(cnf, logFileInfo.File, readFrom)
 		if err != nil {
 			_log.Fatalf("Error opening %s:%s", logFileInfo, err.Error())
 		} else {
@@ -70,8 +68,8 @@ func elabLog(wg *sync.WaitGroup, logFileInfo *util.LogFileInfo, cnf *config.Conf
 
 func main() {
 
-	var logFileInfos []*util.LogFileInfo
-	var statusCnf *config.StatusConfig
+	var logFileInfos []*agent.LogFileInfo
+	var statusCnf *agent.StatusConfig
 	var inodes []uint64
 	var wg sync.WaitGroup
 
@@ -80,17 +78,18 @@ func main() {
 		return
 	}
 	configFile := os.Args[1]
-	cnf, err := config.ReadConfig(configFile)
+	cnf, err := agent.ReadConfig(configFile)
 	if err != nil {
 		goto finish
 	}
-	statusCnf, err = config.ReadStatusConfig(cnf.StatusFilePath)
+
+	statusCnf, err = agent.ReadStatusConfig(cnf.StatusFilePath)
 	if err != nil {
 		goto finish
 	}
 
 	//scan logfolder
-	logFileInfos, err = util.ScanDir(cnf.LogPath, cnf.LogFileFormat)
+	logFileInfos, err = agent.ScanDir(cnf.LogPath, cnf.LogFileFormat)
 	if err != nil {
 		goto finish
 	}

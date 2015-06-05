@@ -1,11 +1,9 @@
-package log
+package agent
 
 import (
 	"bufio"
 	"fmt"
-	"github.com/n3wtron/log4all/agent/config"
-	commonsLog "github.com/n3wtron/log4all/commons/log"
-	/*_log "log"*/
+	commonsLog "github.com/n3wtron/log4all/commons"
 	"os"
 	"regexp"
 	"strings"
@@ -20,7 +18,7 @@ type LogFile struct {
 	Readed        uint64
 }
 
-func NewLogFile(cnf *config.Config, logFile *os.File, readFrom uint64) (*LogFile, error) {
+func NewLogFile(cnf *Config, logFile *os.File, readFrom uint64) (*LogFile, error) {
 	var err error
 	lgf := new(LogFile)
 	lgf.File = logFile
@@ -66,7 +64,7 @@ func (lgf *LogFile) Parse() ([]*commonsLog.Log, error) {
 			singleLog.Level = lgf.NewLineRegExp.FindStringSubmatch(line)[lgf.FieldPos["level"]]
 			//singleLog.Class = lgf.NewLineRegExp.FindStringSubmatch(line)[lgf.FieldPos["class"]]
 			strDate = lgf.NewLineRegExp.FindStringSubmatch(line)[lgf.FieldPos["date"]]
-			dtLog, err := time.Parse(config.GetConfig().DateFormat, strDate)
+			dtLog, err := time.Parse(GetConfig().DateFormat, strDate)
 			if err != nil {
 				return nil, err
 			}
