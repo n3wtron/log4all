@@ -1,9 +1,9 @@
 package jobs
 
 import (
+	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
-	"log4all/app/models"
 	"reflect"
 )
 

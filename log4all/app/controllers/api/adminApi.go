@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/n3wtron/log4all/log4all/app/controllers"
+	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/revel"
 	"io/ioutil"
-	"log4all/app/controllers"
-	"log4all/app/models"
 )
 
 type AdminApi struct {

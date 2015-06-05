@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	app "github.com/n3wtron/log4all/log4all/app"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
-	app "log4all/app"
 )
 
 type DbController struct {

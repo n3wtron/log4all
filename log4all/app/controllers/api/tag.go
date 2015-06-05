@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/n3wtron/log4all/log4all/app/controllers"
+	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/revel"
-	"log4all/app/controllers"
-	"log4all/app/models"
 )
 
 type TagApi struct {

@@ -3,8 +3,8 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/n3wtron/log4all/commons/log"
 	"github.com/revel/revel/testing"
-	"log4all/app/controllers/api/log"
 )
 
 type AddLogTest struct {
@@ -12,7 +12,7 @@ type AddLogTest struct {
 }
 
 func (t *AddLogTest) TestBadToken() {
-	lg := new(log.RawLog)
+	lg := new(log.SingleLog)
 	lg.Application = "test"
 	lg.ApplicationToken = "badToken"
 	lg.Level = "ERROR"

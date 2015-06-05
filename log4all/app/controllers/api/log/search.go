@@ -2,10 +2,10 @@ package log
 
 import (
 	"encoding/json"
+	"github.com/n3wtron/log4all/log4all/app/models"
+	"github.com/n3wtron/log4all/log4all/app/utils"
 	"github.com/revel/revel"
 	"io/ioutil"
-	"log4all/app/models"
-	"log4all/app/utils"
 	"strings"
 	"time"
 )

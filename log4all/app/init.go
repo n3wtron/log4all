@@ -2,12 +2,12 @@ package app
 
 import (
 	"errors"
+	log4allJobs "github.com/n3wtron/log4all/log4all/app/jobs"
+	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
 	"log"
-	log4allJobs "log4all/app/jobs"
-	"log4all/app/models"
 	"os"
 )
 

@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/n3wtron/log4all/log4all/app/controllers"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
-	"log4all/app/controllers"
 	"strings"
 )
 

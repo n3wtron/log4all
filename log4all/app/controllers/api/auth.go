@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/structs"
+	"github.com/n3wtron/log4all/log4all/app/controllers"
+	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
 	"io"
 	"io/ioutil"
-	"log4all/app/controllers"
-	"log4all/app/models"
 	"time"
 )
 

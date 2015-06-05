@@ -15,6 +15,7 @@ func (ctrl *AuthenticatedController) checkAuthentication() revel.Result {
 	token, err := jwt.ParseFromRequest(ctrl.Request.Request, func(t *jwt.Token) (interface{}, error) {
 		return []byte(revel.Config.StringDefault("jwt.secret", "")), nil
 	})
+
 	if err != nil {
 		revel.ERROR.Println(err)
 		return ctrl.RenderError(errors.New("401: Not authorized"))
