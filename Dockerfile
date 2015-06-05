@@ -1,6 +1,6 @@
 FROM google/golang
 
-WORKDIR /gopath/src/github.com/n3wtron/log4all
+WORKDIR /gopath/src/github.com/n3wtron/log4all/log4all
 ADD . /gopath/src/github.com/n3wtron/log4all
 
 RUN curl -sL https://deb.nodesource.com/setup | bash -
@@ -15,7 +15,7 @@ RUN go get /gopath/src/github.com/n3wtron/log4all/...
 
 ENV PATH /gopath/bin:$PATH
 
-RUN revel build log4all /log4all
+RUN revel build github.com/n3wtron/log4all/log4ll /log4all
 
 EXPOSE 9000
 
