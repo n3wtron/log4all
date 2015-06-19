@@ -3,7 +3,7 @@ package log
 import (
 	"encoding/json"
 	"errors"
-	commonsLog "github.com/n3wtron/log4all/commons/log"
+	commonsLog "github.com/n3wtron/log4all/commons"
 	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/n3wtron/log4all/log4all/app/utils"
 	"github.com/revel/revel"

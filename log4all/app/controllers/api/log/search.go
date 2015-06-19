@@ -2,6 +2,7 @@ package log
 
 import (
 	"encoding/json"
+	"github.com/n3wtron/log4all/commons"
 	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/n3wtron/log4all/log4all/app/utils"
 	"github.com/revel/revel"
@@ -9,18 +10,6 @@ import (
 	"strings"
 	"time"
 )
-
-type LogSearchParam struct {
-	Applications  []string `json:"applications"`
-	Levels        []string `json:"levels"`
-	DtSince       int64    `json:"dt_since"`
-	DtTo          int64    `json:"dt_to"`
-	Query         string   `json:"query"`
-	Page          int      `json:"page"`
-	MaxResult     int      `json:"max_result"`
-	SortField     string   `json:"sort_field"`
-	SortAscending bool     `json:"sort_ascending"`
-}
 
 func parseQuery(query string, mongoDbQuery map[string]interface{}) {
 	srcs := utils.SearchLogMatcher().FindAllStringSubmatch(query, -1)
@@ -59,7 +48,7 @@ func parseQuery(query string, mongoDbQuery map[string]interface{}) {
 	}
 }
 
-func getQuery(srcParams *LogSearchParam, tail bool) map[string]interface{} {
+func getQuery(srcParams *commons.LogSearchParam, tail bool) map[string]interface{} {
 	// date conversion
 	revel.TRACE.Printf("orig:%v", srcParams)
 	dtSince := time.Unix(srcParams.DtSince/1000, 0)
@@ -102,10 +91,10 @@ func (ctrl ApiLog) SearchOptions() revel.Result {
 }
 
 func (ctrl ApiLog) Search(tail bool) revel.Result {
-	result := make(map[string]interface{})
+	result := new(commons.SearchResponse)
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
 	revel.INFO.Printf("SrcParams:%s", byteBody)
-	srcParams := new(LogSearchParam)
+	srcParams := new(commons.LogSearchParam)
 	err := json.Unmarshal(byteBody, srcParams)
 	var logs []models.Log
 	if err == nil {
@@ -114,12 +103,15 @@ func (ctrl ApiLog) Search(tail bool) revel.Result {
 		logs, err = models.SearchLog(ctrl.Db, tail, query, srcParams.SortField, srcParams.SortAscending, srcParams.Page, srcParams.MaxResult)
 	}
 
-	result["success"] = err == nil
+	result.Success = err == nil
 	if err != nil {
 		revel.ERROR.Printf("ApiLog.Search Error:%v", err)
-		result["message"] = err.Error()
+		result.Message = err.Error()
 	} else {
-		result["result"] = logs
+		result.Result = make([]commons.DbLog, len(logs))
+		for i, dbLog := range logs {
+			result.Result[i] = dbLog.DbLog
+		}
 	}
 	return ctrl.RenderJson(result)
 }

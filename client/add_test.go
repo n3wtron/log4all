@@ -23,16 +23,6 @@ func TestUrlEmpty(t *testing.T) {
 	}
 }
 
-func TestApplicationEmpty(t *testing.T) {
-	_, err := NewClient("http://localhost:9000", "", "")
-	if err == nil {
-		t.Error("expect application is mandatory")
-	}
-	if err.(ClientError).ErrorType != ERR_APPLICATION_MANDATORY {
-		t.Error("expect application is mandatory but received:" + err.Error())
-	}
-}
-
 func TestAddLog(t *testing.T) {
 	cl, err := NewClient("http://localhost:9000", "test", "")
 	if err != nil {

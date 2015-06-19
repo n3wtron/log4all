@@ -8,9 +8,8 @@ var (
 	ERR_URL_MANDATORY         ErrorType = ErrorType{"Url is mandatory"}
 	ERR_APPLICATION_MANDATORY ErrorType = ErrorType{"Application is mandatory"}
 	ERR_ADD_LOG               ErrorType = ErrorType{"Error adding log"}
+	ERR_SEARCH_LOG            ErrorType = ErrorType{"Error searching log"}
 )
-
-var errorMessages = []string{"Url is mandatory", "Application is mandatory", ""}
 
 type ClientError struct {
 	error

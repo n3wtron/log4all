@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"github.com/n3wtron/log4all/commons"
 	"github.com/revel/revel"
 	"gopkg.in/mgo.v2"
 	"strings"
@@ -9,14 +10,7 @@ import (
 )
 
 type Log struct {
-	Application string                 `json:"application" bson:"application"`
-	Level       string                 `json:"level" bson:"level"`
-	Message     string                 `json:"message" bson:"message"`
-	Stack       string                 `json:"-" bson:"-"`
-	Date        time.Time              `json:"date" bson:"date"`
-	Tags        map[string]interface{} `json:"tags" bson:"tags"`
-	StackSha    string                 `json:"stack_sha" bson:"stack_sha"`
-	DtInsert    time.Time              `json:"-" bson:"_dt_insert"`
+	commons.DbLog `json:",inline" bson:",inline"`
 }
 
 func CreateLogIndexes(db *mgo.Database) error {

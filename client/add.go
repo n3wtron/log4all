@@ -9,26 +9,6 @@ import (
 	"net/http"
 )
 
-type Client struct {
-	Url              string
-	Application      string
-	ApplicationToken string
-}
-
-func NewClient(url, application, applicationToken string) (*Client, error) {
-	cl := new(Client)
-	if len(url) == 0 {
-		return nil, NewClientError(ERR_URL_MANDATORY)
-	}
-	if len(application) == 0 {
-		return nil, NewClientError(ERR_APPLICATION_MANDATORY)
-	}
-	cl.Application = application
-	cl.ApplicationToken = applicationToken
-	cl.Url = url
-	return cl, nil
-}
-
 func commonsCall(request *http.Request) error {
 	httpClient := &http.Client{}
 	resp, err := httpClient.Do(request)
@@ -51,6 +31,9 @@ func commonsCall(request *http.Request) error {
 func (client *Client) AddLog(log *commonsLog.Log) error {
 	var addLogRequestData commonsLog.SingleLog
 	copier.Copy(&addLogRequestData, log)
+	if len(client.Application) == 0 {
+		return NewClientError(ERR_APPLICATION_MANDATORY)
+	}
 	addLogRequestData.Application = client.Application
 	addLogRequestData.ApplicationToken = client.ApplicationToken
 	addLogRequestDataJson, err := json.Marshal(addLogRequestData)
@@ -66,6 +49,9 @@ func (client *Client) AddLog(log *commonsLog.Log) error {
 
 func (client *Client) AddLogs(logs []*commonsLog.Log) error {
 	var addLogsRequestData commonsLog.MultiLog
+	if len(client.Application) == 0 {
+		return NewClientError(ERR_APPLICATION_MANDATORY)
+	}
 	addLogsRequestData.Application = client.Application
 	addLogsRequestData.ApplicationToken = client.ApplicationToken
 	copier.Copy(&addLogsRequestData.Logs, logs)
