@@ -18,11 +18,11 @@ GET     /public/*filepath                       Static.Serve("public")
 # API
 
 ## Log
-PUT     /api/log                                ApiLog.AddLog
-PUT     /api/logs                               ApiLog.AddLogs
-POST	/api/logs/search						ApiLog.Search(false)
-POST	/api/logs/tail							ApiLog.Search(true)
-OPTIONS	/api/logs/search 						ApiLog.SearchOptions
+PUT     /api/log                                ApiAddLog.AddLog
+PUT     /api/logs                               ApiAddLog.AddLogs
+POST	/api/logs/search						ApiSearchLog.Search(false)
+POST	/api/logs/tail							ApiSearchLog.Search(true)
+OPTIONS	/api/logs/search 						ApiSearchLog.SearchOptions
 
 POST	/api/auth/login							AuthApi.Login
 GET		/api/auth/permissions					AuthApi.GetPermissions

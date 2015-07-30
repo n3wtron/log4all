@@ -58,7 +58,7 @@ func addTags(db *mgo.Database, logToAdd *models.Log) {
 	}
 }
 
-func (ctrl ApiLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
+func (ctrl ApiAddLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
 	// add stack
 	if logToAdd.Stack != "" {
 		stack := &models.Stack{Stacktrace: logToAdd.Stack}
@@ -76,7 +76,7 @@ func (ctrl ApiLog) dbAdd(logToAdd *models.Log, writeSafe bool) error {
 	}
 }
 
-func (ctrl ApiLog) GetApplication(applicationName string, applicationToken string) (*models.Application, error) {
+func (ctrl ApiAddLog) GetApplication(applicationName string, applicationToken string) (*models.Application, error) {
 	//search application
 	var err error
 	var app *models.Application
@@ -94,7 +94,7 @@ func (ctrl ApiLog) GetApplication(applicationName string, applicationToken strin
 }
 
 // API: add single log
-func (ctrl ApiLog) AddLog() revel.Result {
+func (ctrl ApiAddLog) AddLog() revel.Result {
 	revel.INFO.Println("addLog")
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
@@ -122,7 +122,7 @@ addLogFinish:
 }
 
 // API: add multiple log
-func (ctrl ApiLog) AddLogs() revel.Result {
+func (ctrl ApiAddLog) AddLogs() revel.Result {
 
 	result := make(map[string]interface{})
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)

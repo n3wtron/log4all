@@ -83,14 +83,14 @@ func getQuery(srcParams *commons.LogSearchParam, tail bool) map[string]interface
 	return query
 }
 
-func (ctrl ApiLog) SearchOptions() revel.Result {
+func (ctrl ApiSearchLog) SearchOptions() revel.Result {
 	ctrl.Response.Out.Header().Add("Access-Control-Allow-Methods", "POST")
 	ctrl.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 	return ctrl.RenderText("")
 }
 
-func (ctrl ApiLog) Search(tail bool) revel.Result {
+func (ctrl ApiSearchLog) Search(tail bool) revel.Result {
 	result := new(commons.SearchResponse)
 	byteBody, _ := ioutil.ReadAll(ctrl.Request.Body)
 	revel.INFO.Printf("SrcParams:%s", byteBody)
