@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	//"github.com/n3wtron/log4all/log4all/app/controllers"
 	log4allJobs "github.com/n3wtron/log4all/log4all/app/jobs"
 	"github.com/n3wtron/log4all/log4all/app/models"
 	"github.com/revel/modules/jobs/app/jobs"
@@ -16,9 +17,9 @@ var MongoDb *mgo.Database
 func InitDB() {
 	var err error
 	var mongoSession *mgo.Session
-	var collections []string
-	var userCollectionFound bool
-	var c int
+	/*var collections []string*/
+	//var userCollectionFound bool
+	//var c int
 
 	dbConnectionUrl, found := revel.Config.String("db.connectionUrl")
 	if !found {
@@ -38,8 +39,8 @@ func InitDB() {
 	MongoDb = mongoSession.DB("")
 
 	//check if users table exists
-	collections, err = MongoDb.CollectionNames()
-	userCollectionFound = false
+	// collections, err = MongoDb.CollectionNames()
+	/*userCollectionFound = false
 	if err != nil {
 		goto finish
 	}
@@ -57,7 +58,7 @@ func InitDB() {
 		u.Password = "admin"
 		u.Save(MongoDb)
 		revel.INFO.Println("default admin user created with password admin")
-	}
+	}*/
 
 	// Create Collection index
 	err = models.CreateTailTable(MongoDb)
@@ -68,9 +69,9 @@ func InitDB() {
 	models.CreateTagIndexes(MongoDb)
 	models.CreateStackIndexes(MongoDb)
 	models.CreateApplicationIndexes(MongoDb)
-	models.CreateGroupIndexes(MongoDb)
+	/*models.CreateGroupIndexes(MongoDb)
 	models.CreateUserIndexes(MongoDb)
-
+	*/
 finish:
 	if err != nil {
 		revel.ERROR.Println("Error Initializing DB")
@@ -82,6 +83,12 @@ finish:
 
 func InitJobs() {
 	jobs.Schedule("cron.deleteJobScheduler", log4allJobs.DeleteJob{Db: MongoDb})
+}
+
+func InitSecurity() {
+	if GetAuthSystem() != nil {
+		GetAuthSystem().Initialize()
+	}
 }
 
 func init() {
@@ -107,6 +114,7 @@ func init() {
 	// revel.OnAppStart(FillCache)
 	revel.OnAppStart(InitDB)
 	revel.OnAppStart(InitJobs)
+	revel.OnAppStart(InitSecurity)
 }
 
 // TODO turn this into revel.HeaderFilter

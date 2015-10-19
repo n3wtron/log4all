@@ -3,6 +3,7 @@
  */
 Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $routeParams,$interval,log4AllApplicationService) {
     $scope.application = {};
+    $scope.newAppPermission = {};
 
     log4AllApplicationService.get($routeParams.applicationId).then(function (data) {
 		if (data.success){
@@ -31,6 +32,19 @@ Log4AllAdmin.controller('ApplicationController', function ($scope, $http, $route
             $scope.currentConfiguration = $scope.application.configuration.retention[level];
         }
     };
+
+    $scope.addUserPermission = function(){
+        if ($scope.application.permissions==undefined){
+            $scope.application.permissions=[];
+        }
+        $scope.application.permissions.push($scope.newAppPermission);
+        
+        $scope.newAppPermission = {}
+    }
+
+    $scope.removeUserPermission = function(index){
+        $scope.application.permissions.splice(index,1);
+    }
 
     $scope.updateApplication = function () {
         $scope.result = {};

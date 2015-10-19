@@ -10,6 +10,11 @@ type LevelConfiguration struct {
 	DeleteDays  int `json:"delete"`
 }
 
+type ApplicationPermission struct {
+	Username   string `json:"username" bson:"username"`
+	Permission string `json:"permission" bson:"permission`
+}
+
 type RetentionConfiguration struct {
 	Debug   LevelConfiguration `json:"debug" bson:"debug"`
 	Info    LevelConfiguration `json:"info" bson:"info"`
@@ -29,6 +34,7 @@ type Application struct {
 	Description   string                   `json:"description" bson:"description"`
 	Token         string                   `json:"token" bson:"token"`
 	Configuration ApplicationConfiguration `json:"configuration" bson:"configuration"`
+	Permissions   []ApplicationPermission  `json:"permissions" bson:"permissions"`
 }
 
 func CreateApplicationIndexes(db *mgo.Database) error {

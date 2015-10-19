@@ -27,14 +27,15 @@ var (
 	// Search Command Options
 	searchCommand          = app.Command("search", "search logs")
 	searchCmd_Url          = searchCommand.Flag("log4allUrl", "Log4All Server url").Short('u').Required().String()
-	searchCmd_Since        = searchCommand.Flag("since", "Since").Short('s').Required().String()
-	searchCmd_To           = searchCommand.Flag("to", "To").Short('t').Required().String()
+	searchCmd_Since        = searchCommand.Flag("since", "Since (yyyy-MM-dd HH:mm:ss)").Short('s').Required().String()
+	searchCmd_To           = searchCommand.Flag("to", "To (yyyy-MM-dd HH:mm:ss)").Short('t').String()
 	searchCmd_Applications = searchCommand.Flag("applications", "Application list").Short('a').Strings()
 	searchCmd_Levels       = searchCommand.Flag("levels", "Level list").Short('l').Strings()
 	searchCmd_MaxResult    = searchCommand.Flag("maxResult", "max result").Short('m').Default("20").Int()
 	searchCmd_Page         = searchCommand.Flag("page", "page").Short('p').Default("0").Int()
 	searchCmd_SortField    = searchCommand.Flag("orderBy", "order by Field").Short('o').Default("date").String()
 	searchCmd_Reverse      = searchCommand.Flag("ascending", "ascending").Short('r').Bool()
+	searchCmd_Interactive  = searchCommand.Flag("interactive", "interactive mode").Short('i').Bool()
 	searchCmd_Format       = searchCommand.Flag("format", "output format [json|jsonIntended|plain]").Short('f').Default("json").String()
 	searchCmd_Query        = searchCommand.Arg("query", "Query").String()
 )
@@ -84,10 +85,15 @@ func searchCommandExec() {
 		os.Exit(1)
 	}
 	srcQuery.DtSince = dtSince.UnixNano() / 1000000
-	dtTo, err := time.Parse("2006-01-02 15:04:05", *searchCmd_To)
-	if err != nil {
-		printError("Error: %s", err.Error())
-		os.Exit(1)
+	var dtTo time.Time
+	if searchCmd_To != nil && len(*searchCmd_To) > 0 {
+		dtTo, err = time.Parse("2006-01-02 15:04:05", *searchCmd_To)
+		if err != nil {
+			printError("Error: %s", err.Error())
+			os.Exit(1)
+		}
+	} else {
+		dtTo = time.Now()
 	}
 	srcQuery.DtTo = dtTo.UnixNano() / 1000000
 	srcQuery.Levels = *searchCmd_Levels
@@ -96,35 +102,76 @@ func searchCommandExec() {
 	srcQuery.Page = *searchCmd_Page
 	srcQuery.SortField = *searchCmd_SortField
 	srcQuery.SortAscending = !(*searchCmd_Reverse)
-
-	logs, err := cl.Search(srcQuery)
-	if err != nil {
-		printError("Error: %s", err.Error())
-		os.Exit(1)
-	}
 	var result []byte
 
-	if strings.EqualFold(*searchCmd_Format, "json") {
-		result, err = json.Marshal(logs)
-	}
-	if strings.EqualFold(*searchCmd_Format, "jsonIndented") {
-		result, err = json.MarshalIndent(logs, "", "\t")
-	}
-	if strings.EqualFold(*searchCmd_Format, "plain") {
-		var plainLogs string
-		for _, log := range logs {
-			plainLogs = plainLogs + "[" + log.Application + "]: " + log.Date.String() + " " + log.Level + " " + log.Message + "\n"
-			if len(log.Stack) > 0 {
-				plainLogs = plainLogs + log.Stack
+	if *searchCmd_Interactive {
+		srcQuery.Page = 0
+		logsRes, err := cl.Search(srcQuery)
+		if err != nil {
+			printError("Error: %s", err.Error())
+			os.Exit(1)
+		}
+		doNext := true
+		for len(logsRes) > 0 && doNext {
+			for _, log := range logsRes {
+				var logStr string
+				if strings.EqualFold(*searchCmd_Format, "json") {
+					result, _ = json.Marshal(log)
+					logStr = string(result)
+				}
+				if strings.EqualFold(*searchCmd_Format, "jsonIndented") {
+					result, _ = json.MarshalIndent(log, "", "\t")
+					logStr = string(result)
+				}
+				if strings.EqualFold(*searchCmd_Format, "plain") {
+					logStr = "[" + log.Application + "]: " + log.Date.String() + " " + log.Level + " " + log.Message
+				}
+				fmt.Println(logStr)
+			}
+			var nextPress string
+			fmt.Print("Premere c per uscire..")
+			fmt.Scanf("%s", &nextPress)
+			if !strings.EqualFold(nextPress, "c") {
+				doNext = true
+				srcQuery.Page++
+				logsRes, err = cl.Search(srcQuery)
+				if err != nil {
+					printError("Error: %s", err.Error())
+					os.Exit(1)
+				}
+			} else {
+				doNext = false
 			}
 		}
-		result = []byte(plainLogs)
+	} else {
+		logs, err := cl.Search(srcQuery)
+		if err != nil {
+			printError("Error: %s", err.Error())
+			os.Exit(1)
+		}
+
+		if strings.EqualFold(*searchCmd_Format, "json") {
+			result, err = json.Marshal(logs)
+		}
+		if strings.EqualFold(*searchCmd_Format, "jsonIndented") {
+			result, err = json.MarshalIndent(logs, "", "\t")
+		}
+		if strings.EqualFold(*searchCmd_Format, "plain") {
+			var plainLogs string
+			for _, log := range logs {
+				plainLogs = plainLogs + "[" + log.Application + "]: " + log.Date.String() + " " + log.Level + " " + log.Message + "\n"
+				if len(log.Stack) > 0 {
+					plainLogs = plainLogs + log.Stack
+				}
+			}
+			result = []byte(plainLogs)
+		}
+		if err != nil {
+			printError("Error: %s", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", string(result))
 	}
-	if err != nil {
-		printError("Error: %s", err.Error())
-		os.Exit(1)
-	}
-	fmt.Printf("%s\n", string(result))
 }
 
 func main() {
